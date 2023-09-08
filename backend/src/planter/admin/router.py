@@ -3,7 +3,6 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func, case, extract, desc, asc, cast, String
 from starlette.responses import JSONResponse
 from datetime import date, datetime, timedelta
-from pytz import timezone
 from collections import defaultdict
 
 
@@ -12,7 +11,7 @@ import src.planter.models as planterModels
 import src.planter.admin.schemas as planterAdminSchemas
 import src.crops.models as cropModels
 from utils.database import get_db
-from utils.db_shortcuts import get_current_user
+from utils.db_shortcuts import get_current_user, get_
 
 
 router = APIRouter()
@@ -703,3 +702,38 @@ def search_planter_tray_total_for_admin(
     planter_tray_total_response = [result[0] for result in planter_tray_total_query]
 
     return planter_tray_total_response
+
+
+@router.patch(
+    "/tray/update/{tray_id}", description="관리자 파종기 트레이 정보 업데이트 api", status_code=200
+)
+async def update_admin_tray_info(
+    request: Request,
+    tray_id: int,
+    width: int = None,
+    height: int = None,
+    total: int = None,
+    is_del: bool = None,
+    db: Session = Depends(get_db),
+):
+    get_current_user("99", request.cookies, db)
+
+    planter_tray = get_(db, planterModels.PlanterTray, id=tray_id)
+
+    if not planter_tray:
+        return JSONResponse(status_code=404, content=dict(msg="NOT_FOUND_PLANTER_TRAY"))
+
+    if width:
+        planter_tray.width = width
+    if height:
+        planter_tray.height = height
+    if total:
+        planter_tray.total = total
+
+    if is_del is not None:
+        planter_tray.is_del = is_del
+
+    db.commit()
+    db.refresh(planter_tray)
+
+    return JSONResponse(status_code=200, content=dict(msg="SUCCESS"))

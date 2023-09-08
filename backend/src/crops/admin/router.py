@@ -38,9 +38,10 @@ def search_crop_name_for_admin(
 async def update_admin_crop_info(
     request: Request,
     crop_id: int,
-    name: str = Form(...),
-    color: str = Form(...),
-    image: UploadFile = File(...),
+    name: str = Form(None),
+    color: str = Form(None),
+    image: UploadFile = File(None),
+    is_del: bool = Form(None),
     db: Session = Depends(get_db),
 ):
     get_current_user("99", request.cookies, db)
@@ -50,20 +51,27 @@ async def update_admin_crop_info(
     if not crop:
         return JSONResponse(status_code=404, content=dict(msg="NOT_FOUND_CROP"))
 
-    old_image = crop.image
+    if name:
+        crop.name = name
+    if color:
+        color.name = color
+    if image:
+        old_image = crop.image
 
-    saved_file = await single_file_uploader(image)
+        saved_file = await single_file_uploader(image)
 
-    if not saved_file["is_success"]:
-        return JSONResponse(status_code=400, content=dict(msg="FAIL_SAVE_DATA"))
+        if not saved_file["is_success"]:
+            return JSONResponse(status_code=400, content=dict(msg="FAIL_SAVE_DATA"))
 
-    crop.name = name
-    crop.color = color
-    crop.image = saved_file["url"]
+        crop.image = saved_file["url"]
+
+    if is_del:
+        crop.is_del = is_del
 
     db.commit()
     db.refresh(crop)
 
-    await delete_file(old_image)
+    if image or is_del:
+        await delete_file(old_image)
 
-    return JSONResponse(status_code=201, content=dict(msg="CROP_CREATE_SUCCESS"))
+    return JSONResponse(status_code=200, content=dict(msg="SUCCESS"))
