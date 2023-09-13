@@ -12,7 +12,7 @@ const nextConfig = {
     return config;
   },
   images: {
-    domains: ["192.168.2.102", "192.168.1.69", "b.datanursery.kr", "192.168.2.100"],
+    domains: ["192.168.2.102", "192.168.1.69", "b.datanursery.kr", "b.data-nursery.viasoft.ai", "192.168.2.100"],
   },
 };
 
