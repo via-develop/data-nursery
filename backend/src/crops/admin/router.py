@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Request, Form, UploadFile
+from fastapi import APIRouter, Depends, Request, File, Form, UploadFile
 from sqlalchemy.orm import Session
 from starlette.responses import JSONResponse
 
@@ -41,7 +41,7 @@ async def update_crop_info(
     crop_id: int,
     name: str = Form(None),
     color: str = Form(None),
-    image: UploadFile = Form(None),
+    image: UploadFile = File(None),
     is_del: bool = Form(None),
     db: Session = Depends(get_db),
 ):
@@ -60,6 +60,7 @@ async def update_crop_info(
 
         if not saved_file["is_success"]:
             return JSONResponse(status_code=400, content=dict(msg="FAIL_SAVE_DATA"))
+        crop.image = saved_file["url"]
 
     if is_del is not None:
         crop.is_del = is_del
