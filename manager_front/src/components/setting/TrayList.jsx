@@ -89,7 +89,10 @@ const S = {
 
       p {
         color: ${({ theme }) => theme.basic.gray60};
-        ${({ theme }) => theme.textStyle.h7Reguler}
+        ${({ theme }) => theme.textStyle.h7Reguler};
+        display: flex;
+        justify-content: center;
+        align-items: center;
       }
 
       svg {
@@ -100,6 +103,22 @@ const S = {
         width: 100%;
       }
     }
+
+    .table-header-fir {
+      width: 136px;
+    }
+    .table-header-sec {
+      width: 109px;
+    }
+    .table-header-thir {
+      width: 169px;
+    }
+    .table-header-four {
+      width: 78px;
+    }
+    .table-header-five {
+      width: 104px;
+    }
   `,
   ListBlockWrap: styled.div`
     height: 368px;
@@ -109,6 +128,11 @@ const S = {
     .selected {
       border: 1px solid ${({ theme }) => theme.primery.primery};
     }
+    p {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
 
     .list-inner {
       display: flex;
@@ -117,6 +141,22 @@ const S = {
     }
     .option-modal-wrap {
       position: relative;
+    }
+
+    .table-text-fir {
+      width: 120px;
+    }
+    .table-text-sec {
+      width: 120px;
+    }
+    .table-text-thir {
+      width: 120px;
+    }
+    .table-text-four {
+      width: 120px;
+    }
+    .table-text-fiv {
+      width: 43px;
     }
   `,
   ListBlock: styled.div`
@@ -145,6 +185,7 @@ const S = {
       align-items: center;
       display: flex;
       gap: 8px;
+      justify-content: center;
     }
   `,
   EmptyData: styled.div`
@@ -317,11 +358,11 @@ function TrayList() {
               </div>
               {checkArray.length === 0 ? (
                 <>
-                  <p>NO</p>
-                  <p>트레이공수</p>
-                  <p>가로</p>
-                  <p>세로</p>
-                  <p></p>
+                  <p className="table-header-fir">NO</p>
+                  <p className="table-header-sec">트레이공수</p>
+                  <p className="table-header-thir">가로</p>
+                  <p className="table-header-four">세로</p>
+                  <p className="table-header-five"></p>
                 </>
               ) : (
                 <>
@@ -353,14 +394,14 @@ function TrayList() {
                       ) : (
                         <CheckBoxOff width={24} height={24} onClick={() => toggleItem(false, tray.id)} />
                       )}
-                      <p>{index + 1}</p>
-                      <div className="icon-wrap">
+                      <p className="table-text-fir">{index + 1}</p>
+                      <div className="table-text-sec icon-wrap">
                         <TrayIcon width={24} height={24} />
                         <p>{tray.total}</p>
                       </div>
-                      <p>{tray.width}</p>
-                      <p>{tray.height}</p>
-                      <div className="option-modal-wrap">
+                      <p className="table-text-thir">{tray.width}</p>
+                      <p className="table-text-four">{tray.height}</p>
+                      <div className="table-text-fiv option-modal-wrap">
                         <div
                           className="option-dot"
                           onClick={() => {

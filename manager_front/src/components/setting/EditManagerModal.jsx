@@ -218,16 +218,13 @@ function EditManagerModal({ editManagerModalOpen, setEditManagerModalOpen, setEd
     closeModal();
   }, [editManagerCompany, editManagerDepartment, editManagerPosition, editManagerName, editManagerPhone]);
 
-  console.log("editManagerModalOpen", editManagerModalOpen);
-
   const handlePasswordChangeClick = useCallback(() => {
     setEditManagerPWChangeModalOpen({ open: true, data: editManagerModalOpen });
   });
 
   const { mutate: updateManagerList } = useUpdateManager(
     () => {
-      // invalidateQueries([useFarmAllListKey]);
-      // closeModal();
+      closeModal();
       setIsDefaultAlertShowState({
         isShow: true,
         type: "success",

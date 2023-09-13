@@ -1,5 +1,11 @@
 import React, { useCallback, useEffect, useState } from "react";
 import styled from "styled-components";
+import { useRecoilState } from "recoil";
+
+import { isDefaultAlertShowState } from "@src/states/isDefaultAlertShowState";
+import useUpdateManager from "@src/hooks/queries/auth/useUpdateManager";
+import useInvalidateQueries from "@src/hooks/queries/common/useInvalidateQueries";
+import { settingManagerListKey } from "@src/utils/query-keys/AuthQueryKeys";
 
 import XIcon from "@images/common/icon-x.svg";
 
@@ -138,6 +144,9 @@ const S = {
 };
 
 function EditManagerPasswordModal({ editManagerModalOpen, setEditManagerPWChangeModalOpen, setManagerPassword }) {
+  const invalidateQueries = useInvalidateQueries();
+  const [isDefaultAlertShow, setIsDefaultAlertShowState] = useRecoilState(isDefaultAlertShowState);
+
   //기존 비밀번호
   const [originPw, setOriginPw] = useState(editManagerModalOpen.data.data.password);
   //현재 입력하는 비밀번호
@@ -159,10 +168,29 @@ function EditManagerPasswordModal({ editManagerModalOpen, setEditManagerPWChange
     setNewPw("");
     setNewPwCheck("");
   }, []);
+  console.log("editManagerModalOpen",editManagerModalOpen)
 
-  const handleTraySaveClick = useCallback(() => {
-    setManagerPassword(newPw);
-    closeModal();
+  const handleSaveClick = useCallback(() => {
+    
+    // setManagerPassword(newPw);
+    // closeModal();
+    updateManagerPassword({
+    data:{
+      userId:editManagerModalOpen.data.data.user.id,
+      user_data: {
+        password: newPw,
+        name: null,
+        is_del: false
+      },
+      admin_user_info_data: {
+        company: null,
+        department: null,
+        position: null,
+        phone: null,
+        is_del: false
+      }
+    }
+    })
   }, [newPw]);
 
   //기존 비밀번호와 입력 비밀번호 동일한지 체크
@@ -183,6 +211,27 @@ function EditManagerPasswordModal({ editManagerModalOpen, setEditManagerPWChange
     }
   }, [newPw, newPwCheck]);
 
+  const {mutate : updateManagerPassword} = useUpdateManager(
+    ()=>{
+      setIsDefaultAlertShowState({
+        isShow: true,
+        type: "success",
+        text: "정상적으로 저장되었습니다.",
+        okClick: null,
+      });
+      invalidateQueries([settingManagerListKey]);
+      closeModal();
+    },
+    (error) => {
+      setIsDefaultAlertShowState({
+        isShow: true,
+        type: "error",
+        text: "오류가 발생했습니다.",
+        okClick: null,
+      });
+    },
+  )
+
   return (
     <S.Wrap>
       <S.WrapInner>
@@ -195,7 +244,7 @@ function EditManagerPasswordModal({ editManagerModalOpen, setEditManagerPWChange
           </div>
         </S.TitleWrap>
         <S.InputWrap>
-          <S.TextWrap>
+          {/* <S.TextWrap>
             <p className="input-title">현재비밀번호</p>
           </S.TextWrap>
           <div className="input-wrap">
@@ -214,7 +263,7 @@ function EditManagerPasswordModal({ editManagerModalOpen, setEditManagerPWChange
             <>
               <p className="password-true">* 현재 비밀번호와 일치합니다.</p>
             </>
-          )}
+          )} */}
 
           <S.TextWrap>
             <p className="input-title">새 비밀번호</p>
@@ -255,16 +304,17 @@ function EditManagerPasswordModal({ editManagerModalOpen, setEditManagerPWChange
           )}
         </S.InputWrap>
 
-        {originInputPwCheck === false ||
-        newPwSameCheck === false ||
-        inputPw.length === 0 ||
+        {
+        // originInputPwCheck === false ||
+        // newPwSameCheck === false ||
+        // inputPw.length === 0 ||
         newPw.length === 0 ||
         newPwCheck.length === 0 ? (
           <S.ButtonWrapOff>
             <p>저장</p>
           </S.ButtonWrapOff>
         ) : (
-          <S.ButtonWrap onClick={handleTraySaveClick}>
+          <S.ButtonWrap onClick={handleSaveClick}>
             <p>저장</p>
           </S.ButtonWrap>
         )}

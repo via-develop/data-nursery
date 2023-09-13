@@ -6,7 +6,7 @@ import { useRecoilState } from "recoil";
 import useCreateCrop from "@src/hooks/queries/crop/useCreateCrop";
 import useInvalidateQueries from "@src/hooks/queries/common/useInvalidateQueries";
 
-import { cropColorArray } from "@components/common/ListColor";
+import cropColorArray from "@components/common/CropListColor";
 
 import XIcon from "@images/common/icon-x.svg";
 import CropsNoIcon from "@images/setting/crops-no-img.svg";
@@ -324,7 +324,7 @@ function AddCropsModal({ addCropsModalOpen, setAddCropsModalOpen }) {
                 width: "100%",
                 justifyContent: "space-between",
               }}>
-              {cropColorArray.map((color, index) => (
+              {cropColorArray?.map((color, index) => (
                 <div
                   key={`map${index}`}
                   onClick={() => handleColorClick(color)}

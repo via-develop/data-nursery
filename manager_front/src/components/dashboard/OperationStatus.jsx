@@ -2,6 +2,9 @@ import React, { useState, useCallback, useEffect } from "react";
 import styled from "styled-components";
 import { useInView } from "react-intersection-observer";
 
+import { PlanterRealTimeKey } from "@src/utils/query-keys/PlanterQueryKeys";
+import useInvalidateQueries from "@src/hooks/queries/common/useInvalidateQueries";
+
 import { Tooltip } from "react-tooltip";
 import { NumberCommaFormatting, CountPlusFormatting } from "@src/utils/Formatting";
 import BarIcon from "@images/dashboard/icon-bar.svg";
@@ -158,6 +161,8 @@ const S = {
 };
 
 function OperationStatus({ currentDate }) {
+  const invalidateQueries = useInvalidateQueries();
+
   const [operationListPage, setOperationListPage] = useState(1);
   const [operationList, setOperationList] = useState([]);
 
@@ -189,6 +194,20 @@ function OperationStatus({ currentDate }) {
       console.log("!!err", err);
     },
   });
+
+  console.log("planterOperationStatus", planterOperationStatus);
+
+  useEffect(() => {
+    if (!planterOperationStatus) {
+      return;
+    }
+    const intervalId = setInterval(() => {
+      // planterOperationStatus
+      invalidateQueries[PlanterRealTimeKey];
+    }, 30000); // 30초마다 업데이트
+
+    return () => clearInterval(intervalId);
+  }, [planterOperationStatus, PlanterRealTimeKey]);
 
   return (
     <S.Wrap>

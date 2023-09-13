@@ -282,6 +282,7 @@ function WorkHistoryPage() {
     threshold: 0, // 요소가 얼마나 노출되었을때 inView를 true로 변경할지 (0~1 사이의 값)
   });
 
+  const [koreanDate, setKoreanDate] = useState(null);
   const [workHistoryListPage, setWorkHistoryListPage] = useState(1);
   const [workHistoryList, setWorkHistoryList] = useState([]);
 
@@ -329,6 +330,10 @@ function WorkHistoryPage() {
       setWorkHistoryListPage(workHistoryListPage + 1);
     }
   }, [workHistoryListPage, workHistoryList]);
+
+  useEffect(() => {
+    setKoreanDate(new Date(date.year, date.month - 1, date.day));
+  }, []);
 
   useEffect(() => {
     if (inView) {
@@ -380,7 +385,8 @@ function WorkHistoryPage() {
         </S.DateSelectWrap>
         <S.ContentWrap>
           <S.SelectedDateWrap>
-            <p>{DateKoreanFormatting(new Date(date.year, date.month - 1, date.day))}</p>
+            {/* <p>{DateKoreanFormatting(new Date(date.year, date.month - 1, date.day))}</p> */}
+            <p>{DateKoreanFormatting(koreanDate)}</p>
           </S.SelectedDateWrap>
           <p className="total-seed-quantity-text">총파종량</p>
           <S.TotalSeedQuantityValueWrap>

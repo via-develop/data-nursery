@@ -553,6 +553,8 @@ function FarmList() {
     setDeleteModalOpen({ open: true, data: { data: { id: checkArray } } });
   }, [checkArray]);
 
+  console.log("farmList", farmList);
+
   return (
     <S.Wrap>
       <S.InfoBlock>
@@ -641,7 +643,7 @@ function FarmList() {
                 <p className="table-first serial_number">{data.planter.serial_number}</p>
                 <p className="table-second farm_id">{data.farm_house_id}</p>
                 <div className="table-third farm_name_wrap">
-                  <div className="farm-name-first" style={{ backgroundColor: colorArray[index % farmList.length] }}>
+                  <div className="farm-name-first" style={{ backgroundColor: colorArray[data.id % 20] }}>
                     {data?.name?.slice(0, 1)}
                   </div>
                   <p className="farm_name">{data?.name}</p>

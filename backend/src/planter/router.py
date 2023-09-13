@@ -127,24 +127,26 @@ def create_planter_output(
             db.refresh(new_planter_status)
 
             return JSONResponse(status_code=201, content=dict(msg="SUCCESS"))
-        elif planter_status == "1" and current_planter_status.status == "OFF":
-            new_planter_status = create_(
-                db,
-                models.PlanterStatus,
-                status="ON",
-                operating_time=operating_time,
-                planter_status__planter=planter,
-            )
-            db.add(new_planter_status)
-            db.commit()
-            db.refresh(new_planter_status)
+        elif planter_status == "1":
+            if current_planter_status.status == "OFF":
+                new_planter_status = create_(
+                    db,
+                    models.PlanterStatus,
+                    status="ON",
+                    operating_time=operating_time,
+                    planter_status__planter=planter,
+                )
+                db.add(new_planter_status)
+                db.commit()
+                db.refresh(new_planter_status)
+            else:
+                current_planter_status.operating_time = operating_time
+                db.commit()
             return JSONResponse(status_code=201, content=dict(msg="SUCCESS"))
         else:
             return JSONResponse(status_code=404, content=dict(msg="NOT_WORKING_STATUS"))
 
     planter_output = planter_work_status_in_working.planter_works__planter_output
-
-
 
     new_planter_status = None
 
@@ -630,6 +632,7 @@ def planter_work_done_datetime_list(
         db.query(
             pws.planter_work_id,
             func.max(pws.id).label("last_pws_id"),
+            func.max(pws.updated_at).label("last_pws_updated"),
         )
         .filter(pws.is_del == False)
         .group_by(pws.planter_work_id)
@@ -649,9 +652,13 @@ def planter_work_done_datetime_list(
             pw.planter_id == planter.id,
             pws.status == "DONE",
             # cast(func.timezone("Asia/Seoul", pw.created_at), Date) == target_date,
-            func.Date(func.timezone("Asia/Seoul", pw.created_at)) == target_date,
+            # func.Date(func.timezone("Asia/Seoul", pw.updated_at)) == target_date,
+            func.Date(
+                func.timezone("Asia/Seoul", recent_status_subquery.c.last_pws_updated)
+            )
+            == target_date,
         )
-        .order_by(pw.created_at.desc())
+        .order_by(pw.updated_at.desc())
     )
 
     total = planter_works_with_recent_done_status.count()
@@ -953,11 +960,15 @@ def get_farmhouse_today_dashboard(request: Request, db: Session = Depends(get_db
         db.query(
             pws.planter_work_id,
             func.max(pws.id).label("last_pws_id"),
+            func.max(pws.updated_at).label("last_pws_updated"),
         )
         .filter(pws.is_del == False)
         .group_by(pws.planter_work_id)
         .subquery()
     )
+
+    target_timezone = timezone("Asia/Seoul")
+    target_date = datetime.now(tz=target_timezone).date()
 
     base_query = (
         db.query(pw)
@@ -982,22 +993,29 @@ def get_farmhouse_today_dashboard(request: Request, db: Session = Depends(get_db
             pw.is_del == False,
             pws.status == "DONE",
             # func.Date(pws.created_at) == datetime.now(tz=utc).date(),
-            func.Date(pws.updated_at) == datetime.utcnow().date(),
+            # func.Date(pws.updated_at) == datetime.utcnow().date(),
+            func.Date(
+                func.timezone(
+                    "Asia/Seoul",
+                    last_plant_work_status_done_subquery.c.last_pws_updated,
+                )
+            )
+            == target_date,
         )
     )
 
     # today_total_seed_quantity = base_query.with_entities(
     #     func.sum(pw.seed_quantity)
     # ).scalar()
-    today_total_seed_quantity_query = base_query.with_entities(
-        pw.id,
-        pw.seed_quantity
-    ).group_by(pw.id, pw.seed_quantity).all()
+    today_total_seed_quantity_query = (
+        base_query.with_entities(pw.id, pw.seed_quantity)
+        .group_by(pw.id, pw.seed_quantity)
+        .all()
+    )
+
     today_total_seed_quantity = 0
     for _, pw_seed_quantity in today_total_seed_quantity_query:
         today_total_seed_quantity += pw_seed_quantity
-
-    
 
     today_best_crop_kind = (
         # base_query.with_entities(pw.crop_kind, func.sum(pw.seed_quantity))
@@ -1019,7 +1037,6 @@ def get_farmhouse_today_dashboard(request: Request, db: Session = Depends(get_db
         }
 
     today_planter_usage = base_query.with_entities(pw.id).group_by(pw.id).count()
-
 
     planter_status_operating_time = (
         db.query(func.sum(models.PlanterStatus.operating_time))
@@ -1077,14 +1094,11 @@ def get_farmhouse_month_statics(
         )
         .filter(
             models.PlanterWork.is_del == False,
-            extract(
-                "year", func.timezone("Asia/Seoul", models.PlanterWork.updated_at)
-            )
+            extract("year", func.timezone("Asia/Seoul", models.PlanterWork.updated_at))
             == year,
-            models.PlanterWorkStatus.status == "DONE"
+            models.PlanterWorkStatus.status == "DONE",
         )
     )
-
 
     done_count = (
         db.query(
@@ -1126,6 +1140,39 @@ def get_farmhouse_month_statics(
     #         == year,
     #     )
     # )
+    last_planter_work_status_subquery = (
+        db.query(
+            models.PlanterWorkStatus.planter_work_id,
+            func.max(models.PlanterWorkStatus.id).label("last_pws_id"),
+            func.max(models.PlanterWorkStatus.updated_at).label("last_pws_updated"),
+        )
+        .filter(models.PlanterWorkStatus.is_del == False)
+        .group_by(models.PlanterWorkStatus.planter_work_id)
+        .subquery()
+    )
+    # check_working_puase_planter_work = (
+    #             db.query(pw)
+    #             .join(
+    #                 last_planter_work_status_subquery,
+    #                 last_planter_work_status_subquery.c.planter_work_id == pw.id,
+    #             )
+    #             .join(
+    #                 pws,
+    #                 (
+    #                     pws.planter_work_id
+    #                     == last_planter_work_status_subquery.c.planter_work_id
+    #                 )
+    #                 & (pws.id == last_planter_work_status_subquery.c.last_pwd_id),
+    #             )
+    #             .filter(
+    #                 pw.is_del == False,
+    #                 pw.planter_id == request_planter.id,
+    #                 pws.status.in_(["WORKING", "PAUSE"]),
+    #             )
+    #             .order_by(pw.created_at.desc())
+    #             .all()
+    #         )
+
     popular_crop = (
         db.query(
             cropModels.Crop.name,
@@ -1137,11 +1184,26 @@ def get_farmhouse_month_statics(
             (cropModels.Crop.id == models.PlanterWork.crop_id)
             & (planter.id == models.PlanterWork.planter_id),
         )
+        .join(
+            last_planter_work_status_subquery,
+            last_planter_work_status_subquery.c.planter_work_id
+            == models.PlanterWork.id,
+        )
+        .join(
+            models.PlanterWorkStatus,
+            (
+                models.PlanterWorkStatus.planter_work_id
+                == last_planter_work_status_subquery.c.planter_work_id
+            )
+            & (
+                models.PlanterWorkStatus.id
+                == last_planter_work_status_subquery.c.last_pws_id
+            ),
+        )
         .filter(
             models.PlanterWork.is_del == False,
-            extract(
-                "year", func.timezone("Asia/Seoul", models.PlanterWork.updated_at)
-            )
+            models.PlanterWorkStatus.status == "DONE",
+            extract("year", func.timezone("Asia/Seoul", models.PlanterWork.updated_at))
             == year,
         )
     )
@@ -1173,9 +1235,26 @@ def get_farmhouse_month_statics(
                 extract("month", models.PlanterWork.updated_at).label("month"),
                 func.sum(models.PlanterWork.seed_quantity).label("total_output"),
             )
+            .join(
+                last_planter_work_status_subquery,
+                last_planter_work_status_subquery.c.planter_work_id
+                == models.PlanterWork.id,
+            )
+            .join(
+                models.PlanterWorkStatus,
+                (
+                    models.PlanterWorkStatus.planter_work_id
+                    == last_planter_work_status_subquery.c.planter_work_id
+                )
+                & (
+                    models.PlanterWorkStatus.id
+                    == last_planter_work_status_subquery.c.last_pws_id
+                ),
+            )
             .filter(
                 models.PlanterWork.planter_id == planter.id,
                 models.PlanterWork.is_del == False,
+                models.PlanterWorkStatus.status == "DONE",
                 extract(
                     "year", func.timezone("Asia/Seoul", models.PlanterWork.updated_at)
                 )
@@ -1242,12 +1321,38 @@ def get_farmhouse_month_statics(
         # )
         daily_output = (
             db.query(
-                extract("day", models.PlanterWork.updated_at).label("day"),
+                # extract("day", models.PlanterWork.updated_at).label("day"),
+                extract(
+                    "day",
+                    func.Date(
+                        func.timezone(
+                            "Asia/Seoul",
+                            last_planter_work_status_subquery.c.last_pws_updated,
+                        )
+                    ),
+                ).label("day"),
                 func.sum(models.PlanterWork.seed_quantity).label("total_output"),
+            )
+            .join(
+                last_planter_work_status_subquery,
+                last_planter_work_status_subquery.c.planter_work_id
+                == models.PlanterWork.id,
+            )
+            .join(
+                models.PlanterWorkStatus,
+                (
+                    models.PlanterWorkStatus.planter_work_id
+                    == last_planter_work_status_subquery.c.planter_work_id
+                )
+                & (
+                    models.PlanterWorkStatus.id
+                    == last_planter_work_status_subquery.c.last_pws_id
+                ),
             )
             .filter(
                 models.PlanterWork.planter_id == planter.id,
                 models.PlanterWork.is_del == False,
+                models.PlanterWorkStatus.status == "DONE",
                 extract(
                     "year", func.timezone("Asia/Seoul", models.PlanterWork.updated_at)
                 )

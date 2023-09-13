@@ -8,7 +8,7 @@ import useUpdateCrop from "@src/hooks/queries/crop/useUpdateCrop";
 import useInvalidateQueries from "@src/hooks/queries/common/useInvalidateQueries";
 
 import CropsImgDeleteModal from "./CropsImgDeleteModal";
-import { cropColorArray } from "@components/common/ListColor";
+import { cropColorArray } from "@components/common/CropListColor";
 
 import XIcon from "@images/common/icon-x.svg";
 import CropsNoIcon from "@images/setting/crops-no-img.svg";
