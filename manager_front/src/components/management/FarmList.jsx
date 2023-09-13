@@ -348,23 +348,23 @@ function FarmList() {
   const [isNameOrderBy, setIsNameOrderBy] = useState(0);
   const [isStateOrderBy, setIsStateOrderBy] = useState(0);
 
-    // 농가명 정렬
-    const sortByFarmName = useCallback(() => {
-      if(isNameOrderBy === 0){
-        setIsNameOrderBy(1);
-      }else{
-        setIsNameOrderBy(0);
-      }
-    }, [isNameOrderBy]);
-  
-    // 상태 정렬
-    const sortByStatus = useCallback(() => {
-      if(isStateOrderBy === 0){
-        setIsStateOrderBy(1);
-      }else{
-        setIsStateOrderBy(0);
-      }
-    }, [isStateOrderBy]);
+  // 농가명 정렬
+  const sortByFarmName = useCallback(() => {
+    if (isNameOrderBy === 0) {
+      setIsNameOrderBy(1);
+    } else {
+      setIsNameOrderBy(0);
+    }
+  }, [isNameOrderBy]);
+
+  // 상태 정렬
+  const sortByStatus = useCallback(() => {
+    if (isStateOrderBy === 0) {
+      setIsStateOrderBy(1);
+    } else {
+      setIsStateOrderBy(0);
+    }
+  }, [isStateOrderBy]);
 
   const [isAddDataClick, setIsAddDataClick] = useState(false); // 더보기 클릭 여부
 
@@ -393,7 +393,7 @@ function FarmList() {
   const [addressDetailData, setAddressDetailData] = useState("");
   const [addressCode, setAddressCode] = useState("");
   const [qrCodeUrl, setQrCodeUrl] = useState("");
-  const [nameOrder,setNameOrder] = useState(0)
+  const [nameOrder, setNameOrder] = useState(0);
 
   // ...클릭시 나오는 모달
   const [optionModalOpen, setOptionModalOpen] = useState({
@@ -475,10 +475,8 @@ function FarmList() {
   const [isFarmNameAscending, setIsFarmNameAscending] = useState(true);
   const [isStatusAscending, setIsStatusAscending] = useState(true);
 
-
-
-  console.log("isNameOrderBy",isNameOrderBy)
-  console.log("isStateOrderBy",isStateOrderBy)
+  console.log("isNameOrderBy", isNameOrderBy);
+  console.log("isStateOrderBy", isStateOrderBy);
 
   // // 엑셀 다운로드 버튼
   // const handleExcelClick = useCallback(() => {
