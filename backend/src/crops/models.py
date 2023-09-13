@@ -11,7 +11,7 @@ class Crop(BaseModel):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(length=255), index=True)
-    image = Column(String)
+    image = Column(String, nullable=True)
     color = Column(String(length=10))
 
     crop__planter_work = relationship(
