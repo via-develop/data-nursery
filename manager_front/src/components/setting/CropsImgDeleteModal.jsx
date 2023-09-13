@@ -80,7 +80,6 @@ const S = {
 function CropsImgDeleteModal({ setDeleteCropsImgModalOpen, setEditCropsImg }) {
   const closeModal = useCallback(() => {
     setDeleteCropsImgModalOpen({ open: false, data: undefined });
-    setEditCropsImg(null);
   }, []);
 
   const handleDeleteOkClick = useCallback(() => {

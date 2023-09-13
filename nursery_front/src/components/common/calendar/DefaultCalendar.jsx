@@ -21,7 +21,7 @@ const S = {
     left: 0%;
   `,
   Wrap: styled.div`
-    max-height: 90vh;
+    max-height: 90svh;
     overflow-y: auto;
     position: absolute;
     z-index: 99;

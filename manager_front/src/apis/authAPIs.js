@@ -62,7 +62,7 @@ export const updateFarmhouseAPI = async (data) => {
 export const deleteFarmhouseAPI = async (data) => {
   try {
     const res = await axios.patch(
-      process.env.NEXT_PUBLIC_END_POINT + `/api/auth/farmhouse/delete?farmhouse_id=${data.farmhouseId}`,
+      process.env.NEXT_PUBLIC_END_POINT + `/api/auth/farmhouse/delete?farmhouse_ids=${data.farmhouseIds}`,
       data,
       {
         withCredentials: true,
@@ -131,5 +131,64 @@ export const getFarmHouseNameList = async (searchText) => {
     return res.data;
   } catch (error) {
     throw new Error(error.response?.status || "농가명 목록을 가져오는데 실패하였습니다. 잠시 후 다시 시도해주세요.");
+  }
+};
+
+//설정 페이지 : 관리자 추가
+export const addAdminAPI = async (data) => {
+  try {
+    const res = await axios.post(process.env.NEXT_PUBLIC_END_POINT + `/api/admin/auth/admin/create`, data, {
+      withCredentials: true,
+    });
+    return res.data;
+  } catch (error) {
+    throw new Error(error.response?.status || "관리자를 추가하는데 실패하였습니다. 잠시 후 다시 시도해주세요.");
+  }
+};
+
+//설정 페이지 : 관리자 목록
+export const getAdminListAPI = async (page, size) => {
+  try {
+    const res = await axios.get(
+      process.env.NEXT_PUBLIC_END_POINT + `/api/admin/auth/admin/user/list?page=${page}&size=${size}`,
+      {
+        withCredentials: true,
+      },
+    );
+    return res.data;
+  } catch (error) {
+    throw new Error(error.response?.status || "관리자 리스트를 불러오는데 실패하였습니다. 잠시 후 다시 시도해주세요.");
+  }
+};
+
+//설정 페이지 : 관리자 수정
+export const updateAdminAPI = async (data) => {
+  try {
+    const res = await axios.post(
+      process.env.NEXT_PUBLIC_END_POINT + `/api/admin/auth/admin/update/${data.userId}`,
+      data,
+      {
+        withCredentials: true,
+      },
+    );
+    return res.data;
+  } catch (error) {
+    throw new Error(error.response?.status || "관리자를 수정하는데 실패하였습니다. 잠시 후 다시 시도해주세요.");
+  }
+};
+
+//설정 페이지 : 관리자 삭제
+export const deleteAdminAPI = async (data) => {
+  try {
+    const res = await axios.patch(
+      process.env.NEXT_PUBLIC_END_POINT + `/api/admin/auth/user/multiple/delete/${data.userIds}`,
+      data,
+      {
+        withCredentials: true,
+      },
+    );
+    return res.data;
+  } catch (error) {
+    throw new Error(error.response?.status || "관리자를 삭제하는데 실패하였습니다. 잠시 후 다시 시도해주세요.");
   }
 };

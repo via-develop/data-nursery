@@ -9,15 +9,15 @@ import useInvalidateQueries from "@src/hooks/queries/common/useInvalidateQueries
 import MainLayout from "@components/layout/MainLayout";
 import DefaultYearMonthSelect from "@components/common/calendar/DefaultYearMonthSelect";
 import DefaultYearMonthList from "@components/common/calendar/DefaultYearMonthList";
+import StatisticsDayChart from "@components/statistics/StatisticsDayChart";
+import StatisticsMonthChart from "@components/statistics/StatisticsMonthChart";
 
 import { requireAuthentication } from "@utils/LoginCheckAuthentication";
 import theme from "@src/styles/theme";
 import { ImagePathCheck, NumberFormatting } from "@utils/Formatting";
 import PopularCropKindIcon from "@images/common/popular-crop-kind.svg";
 import NoneIcon from "@images/dashboard/none-icon.svg";
-import StatisticsDayChart from "@components/statistics/StatisticsDayChart";
 import { statisticsKey } from "@utils/query-keys/PlanterQueryKeys";
-import StatisticsMonthChart from "@components/statistics/StatisticsMonthChart";
 
 const S = {
   Wrap: styled.div`
@@ -312,7 +312,7 @@ function StatisticsPage() {
           <S.MonthOutputWrap isOutput={statisticsInfo?.total_output !== 0}>
             {date.month === 0 && <p className="output-title">년간 생산량</p>}
             {date.month !== 0 && <p className="output-title">월간 생산량</p>}
-            <p className="y-tick-text">개 (단위 : 천)</p>
+            <p className="y-tick-text">개</p>
             {date.month === 0 && (
               <StatisticsMonthChart
                 dailyOutput={statisticsInfo?.daily_output}

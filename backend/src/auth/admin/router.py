@@ -106,7 +106,7 @@ def update_admin_user(
     request: Request,
     user_id: int,
     user_data: authSchemas.UserUpdate,
-    admin_user_info_data: list[authAdminSchemas.AdminUserInfoUpdate],
+    admin_user_info_data: authAdminSchemas.AdminUserInfoUpdate,
     db: Session = Depends(get_db),
 ):
     get_current_user("99", request.cookies, db)

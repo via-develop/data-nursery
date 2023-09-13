@@ -51,10 +51,15 @@ function getCurrentDate() {
 
 function Dashboard() {
   // 현재시간
-  const [currentDateTime, setCurrentDateTime] = useState(getCurrentDateTime());
-  const [currentDate, setCurrentDate] = useState(getCurrentDate());
+  const [currentDateTime, setCurrentDateTime] = useState(null);
+  const [currentDate, setCurrentDate] = useState(null);
+  // const [currentDateTime, setCurrentDateTime] = useState(getCurrentDateTime());
+  // const [currentDate, setCurrentDate] = useState(getCurrentDate());
 
   useEffect(() => {
+    setCurrentDateTime(getCurrentDateTime());
+    setCurrentDate(getCurrentDate());
+
     const intervalId = setInterval(() => {
       setCurrentDateTime(getCurrentDateTime());
       setCurrentDate(getCurrentDate());

@@ -94,7 +94,7 @@ function ManagerOptionModal({
           </div>
           <p>수정</p>
         </div>
-        {optionModalOpen.data.member_type === "second" && (
+        {optionModalOpen.data.admin_user_info.is_top_admin === false && (
           <div className="line" onClick={handleDeleteClick}>
             <div className="icon">
               <DeleteIcon width={16} height={16} />

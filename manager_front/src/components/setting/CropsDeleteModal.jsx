@@ -1,6 +1,11 @@
 import React, { useCallback } from "react";
 import styled from "styled-components";
 
+import useUpdateCrop from "@src/hooks/queries/crop/useUpdateCrop";
+import useInvalidateQueries from "@src/hooks/queries/common/useInvalidateQueries";
+
+import { cropListKey } from "@src/utils/query-keys/CropQueryKeys";
+
 const S = {
   Wrap: styled.div`
     width: 100%;
@@ -77,15 +82,24 @@ const S = {
   `,
 };
 
-function CropsDeleteModal({ setDeleteCropsModalOpen }) {
+function CropsDeleteModal({ deleteId, setDeleteCropsModalOpen }) {
+  const invalidateQueries = useInvalidateQueries();
+
   const closeModal = useCallback(() => {
-    setDeleteCropsModalOpen({ open: false, data: undefined });
+    setDeleteCropsModalOpen({ open: false, deleteId: undefined });
   }, []);
 
-  const handleDeleteOkClick = useCallback(() => {
-    alert("확인 클릭");
-    closeModal();
-  }, []);
+  // 작물정보 수정 API
+  const { mutate: updateCropMutate } = useUpdateCrop(
+    () => {
+      // 작물목록 정보 다시 불러오기 위해 쿼리키 삭제
+      invalidateQueries([cropListKey]);
+      closeModal();
+    },
+    (error) => {
+      alert(error);
+    },
+  );
 
   return (
     <S.Wrap>
@@ -98,7 +112,16 @@ function CropsDeleteModal({ setDeleteCropsModalOpen }) {
           <div className="cancel-button" onClick={closeModal}>
             <p>취소</p>
           </div>
-          <div className="ok-button" onClick={handleDeleteOkClick}>
+          <div
+            className="ok-button"
+            onClick={() => {
+              updateCropMutate({
+                data: {
+                  cropId: deleteId,
+                  is_del: true,
+                },
+              });
+            }}>
             <p>확인</p>
           </div>
         </S.ButtonWrap>

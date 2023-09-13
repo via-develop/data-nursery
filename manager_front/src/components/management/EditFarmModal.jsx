@@ -175,28 +175,19 @@ function EditFarmModal({ editModalOpen, setEditModalOpen }) {
     setEditModalOpen({ open: false, data: undefined });
   }, []);
 
-  console.log("editModalOpen", editModalOpen);
-
   const FarmInfoSave = useCallback(() => {
-    let editAddressAll = editAddressCode + "||" + editAddress + "||" + editAddressData;
-
     updateFarmhouseMutate({
       data: {
         id: editModalOpen.data.data.id,
-        name: editName,
-        producer_name: editFarmName,
+        name: editFarmName,
+        producer_name: editName,
         phone: editPhone,
-        address: editAddressAll,
+        address: editAddressCode + "||" + editAddress + "||" + editAddressData,
       },
     });
-    console.log("아이디 : ", editModalOpen.data.data.id);
-    console.log("농가명 : ", editFarmName);
-    console.log("생산자명 : ", editName);
-    console.log("연락처 : ", editPhone);
-    console.log("주소 : ", editAddressAll);
 
     closeModal();
-  }, [editModalOpen, editName, editFarmName]);
+  }, [editModalOpen, editName, editFarmName, editAddressCode, editAddress, editAddressData]);
 
   const open = useDaumPostcodePopup("https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js");
 
@@ -204,9 +195,7 @@ function EditFarmModal({ editModalOpen, setEditModalOpen }) {
     (data) => {
       let fullAddress = data.address;
       let extraAddress = "";
-      // let zoneCode = data.zonecode;
       setEditAddressCode(data.zonecode);
-      // setEditAddress("(" + zoneCode + ") " + fullAddress);
       setEditAddress(fullAddress);
 
       if (data.addressType === "R") {
@@ -236,6 +225,7 @@ function EditFarmModal({ editModalOpen, setEditModalOpen }) {
         text: "정상적으로 저장되었습니다.",
         okClick: null,
       });
+      invalidateQueries([useFarmAllListKey]);
     },
     (error) => {
       setIsDefaultAlertShowState({
@@ -288,18 +278,16 @@ function EditFarmModal({ editModalOpen, setEditModalOpen }) {
             <input
               placeholder="연락처를 입력하세요."
               value={editPhone}
-              onChange={(e) => setEditPhone(e.target.value)}
+              onChange={(e) =>
+                setEditPhone(e.target.value.replace(/[^0-9]/g, "").replace(/^(\d{2,3})(\d{3,4})(\d{4})$/, `$1-$2-$3`))
+              }
+              maxLength="13"
             />
           </div>
           <p className="title-info">주소</p>
           <div className="address-wrap">
             <div className="input-wrap">
-              <input
-                placeholder="주소를 입력하세요."
-                // value={editAddress}
-                value={"(" + editAddressCode + ") " + editAddress}
-                disabled
-              />
+              <input placeholder="주소를 입력하세요." value={"(" + editAddressCode + ") " + editAddress} disabled />
               <div className="search" onClick={handleClick}>
                 <SearchIcon width={40} height={40} />
               </div>

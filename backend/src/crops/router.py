@@ -18,16 +18,20 @@ async def crop_create(
     request: Request,
     name: str = Form(...),
     color: str = Form(...),
-    image: UploadFile = File(...),
+    image: UploadFile = File(None),
     db: Session = Depends(get_db),
 ):
     get_current_user("99", request.cookies, db)
-    saved_file = await single_file_uploader(image)
 
-    if not saved_file["is_success"]:
-        return JSONResponse(status_code=400, content=dict(msg="FAIL_SAVE_DATA"))
+    if image:
+        saved_file = await single_file_uploader(image)
 
-    new_crop = models.Crop(name=name, image=saved_file["url"], color=color)
+        if not saved_file["is_success"]:
+            return JSONResponse(status_code=400, content=dict(msg="FAIL_SAVE_DATA"))
+
+        new_crop = models.Crop(name=name, image=saved_file["url"], color=color)
+    else:
+        new_crop = models.Crop(name=name, color=color)
 
     db.add(new_crop)
     db.commit()

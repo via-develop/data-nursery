@@ -204,7 +204,6 @@ function AddFarmSaveModal({
 
   const { mutate: createFarmhouseMutate } = useCreateFarmhouse(
     () => {
-      invalidateQueries([useFarmAllListKey]);
       closeModal();
       setIsDefaultAlertShowState({
         isShow: true,
@@ -212,6 +211,7 @@ function AddFarmSaveModal({
         text: "정상적으로 저장되었습니다.",
         okClick: null,
       });
+      invalidateQueries([useFarmAllListKey]);
     },
     (error) => {
       setIsDefaultAlertShowState({
@@ -237,7 +237,7 @@ function AddFarmSaveModal({
 
       return new File([u8arr], fileName, { type: mime });
     };
-    //Usage example:
+
     var file = dataURLtoFile(qrCodeUrl, addFarmSerialNumber + ".png");
 
     createFarmhouseMutate({
@@ -252,91 +252,6 @@ function AddFarmSaveModal({
         qrcode: file,
       },
     });
-
-    console.log("파종기 시리얼번호 : ", addFarmSerialNumber);
-    console.log("육묘업 등록번호 : ", nurseryRegNumber);
-    console.log("농가ID : ", farmId);
-    console.log("농가명 : ", farmName);
-    console.log("생산자명 : ", producerName);
-    console.log("연락처 : ", phoneNumber);
-    console.log("주소 : ", addressCode + "||" + addressData.split(") ")[1] + addressDetailData);
-    console.log("큐알코드 : ", file);
-    console.log("큐알코드 : ", qrCodeUrl);
-    console.log("전체 주소 : ", addressData);
-
-    // // Base64 문자열을 ArrayBuffer로 디코딩합니다.
-    // const binaryString = atob(qrCodeUrl.split(',')[1]);
-    // const length = binaryString.length;
-    // const binaryArray = new Uint8Array(length);
-
-    // for (let i = 0; i < length; i++) {
-    //   binaryArray[i] = binaryString.charCodeAt(i);
-    // }
-
-    // // binaryArray에 이진 데이터가 저장됩니다.
-    // console.log(binaryArray);
-
-    ////////
-
-    //     // Base64 문자열
-    // const base64String = qrCodeUrl; // 실제 Base64 문자열을 여기에 넣으세요.
-
-    // // Base64 문자열을 바이너리로 디코딩
-    // const binaryString = atob(base64String);
-
-    // // 바이너리 문자열을 Uint8Array로 변환
-    // const uint8Array = new Uint8Array(binaryString.length);
-    // for (let i = 0; i < binaryString.length; i++) {
-    //   uint8Array[i] = binaryString.charCodeAt(i);
-    // }
-
-    // // Uint8Array를 ArrayBuffer로 변환
-    // const arrayBuffer = uint8Array.buffer;
-
-    // // ArrayBuffer를 Blob으로 변환
-    // const blob = new Blob([arrayBuffer], { type: 'application/octet-stream' });
-
-    // // Blob URL 생성
-    // const blobUrl = URL.createObjectURL(blob);
-
-    // console.log(blobUrl);
-
-    //     const base64Image = qrCodeUrl; // Base64 이미지 문자열
-
-    // const img = new Image();
-    // img.src = base64Image;
-
-    // console.log("img",img)
-
-    //     // Base64 문자열 이미지
-    // const base64Image = qrCodeUrl; // 이 부분에 실제 Base64 이미지 데이터를 넣어야 합니다.
-
-    // // Base64 문자열을 Blob으로 변환
-    // function base64ToBlob(base64) {
-    //   const parts = base64.split(';base64,');
-    //   const contentType = parts[0].split(':')[1];
-    //   const raw = window.atob(parts[1]);
-    //   const rawLength = raw.length;
-    //   const uInt8Array = new Uint8Array(rawLength);
-
-    //   for (let i = 0; i < rawLength; ++i) {
-    //     uInt8Array[i] = raw.charCodeAt(i);
-    //   }
-
-    //   return new Blob([uInt8Array], { type: contentType });
-    // }
-
-    // // 변환된 Blob을 사용할 수 있습니다.
-    // const blobImage = base64ToBlob(base64Image);
-
-    // // Blob을 URL로 변환
-    // const blobUrl = URL.createObjectURL(blobImage);
-
-    // // Blob URL을 사용하여 이미지를 표시하거나 다운로드 가능합니다.
-    // console.log(blobUrl);
-
-    // // 필요에 따라 URL을 해제할 수 있습니다.
-    // // URL.revokeObjectURL(blobUrl);
   }, [
     addFarmSerialNumber,
     nurseryRegNumber,

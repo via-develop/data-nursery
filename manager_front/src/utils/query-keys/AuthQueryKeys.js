@@ -3,3 +3,4 @@ export const useFarmAllListKey = "useFarmAllListKey";
 export const staticsKey = "staticsKey";
 export const farmHouseIdListKey = "farmHouseIdListKey";
 export const farmHouseNameListKey = "farmHouseNameListKey";
+export const settingManagerListKey = "settingManagerListKey";

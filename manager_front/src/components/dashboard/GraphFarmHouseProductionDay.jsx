@@ -35,7 +35,7 @@ function GraphFarmHouseProductionDay() {
   //육묘장 데이터
   const dataArray = planterFarm?.map((item) => item.total_output);
 
-  console.log("planterFarm", planterFarm);
+  console.log("!!!! planterFarm", planterFarm);
 
   const graphRef = useRef(null);
   const graphUnitRef = useRef(null);
@@ -44,6 +44,10 @@ function GraphFarmHouseProductionDay() {
   let graphUnitInstance = null;
 
   useEffect(() => {
+    if (!planterFarm) {
+      return;
+    }
+
     const graphCtx = graphRef.current?.getContext("2d");
     const graphUnitCtx = graphUnitRef.current?.getContext("2d");
 
@@ -204,7 +208,7 @@ function GraphFarmHouseProductionDay() {
     return () => {
       destroyChart(); // 컴포넌트가 unmount될 때 차트 파괴
     };
-  }, [graphRef, graphUnitRef]);
+  }, [planterFarm, graphRef, graphUnitRef]);
 
   return (
     <S.Wrap>

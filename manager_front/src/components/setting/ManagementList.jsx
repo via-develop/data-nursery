@@ -1,6 +1,8 @@
 import React, { useCallback, useState } from "react";
 import styled from "styled-components";
 
+import useManagerList from "@src/hooks/queries/auth/useManagerList";
+
 import AddIcon from "@images/management/add-icon.svg";
 import CheckBoxNone from "@images/setting/check-icon-none.svg";
 import CheckBoxOff from "@images/common/check-icon-off.svg";
@@ -86,11 +88,24 @@ const S = {
       p {
         color: ${({ theme }) => theme.basic.gray60};
         ${({ theme }) => theme.textStyle.h7Reguler}
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
 
       .btn-wrap {
         width: 100%;
       }
+    }
+
+    .header-table-first {
+      width: 250px;
+    }
+    .header-table {
+      width: 160px;
+    }
+    .header-table-fin {
+      width: 100px;
     }
   `,
   ListBlockWrap: styled.div`
@@ -111,6 +126,19 @@ const S = {
     .option-modal-wrap {
       position: relative;
     }
+    .table-first {
+      width: 155px;
+      margin-left: 50px;
+    }
+    .table-text {
+      width: 130px;
+    }
+    .table-thir {
+      width: 50px;
+    }
+    .table-sec {
+      width: 110px;
+    }
   `,
   ListBlock: styled.div`
     align-items: center;
@@ -124,6 +152,9 @@ const S = {
     p {
       color: ${({ theme }) => theme.basic.gray50};
       ${({ theme }) => theme.textStyle.h7Bold}
+      display: flex;
+      justify-content: center;
+      align-items: center;
     }
 
     .option-dot {
@@ -150,6 +181,17 @@ const S = {
 };
 
 function ManagementList() {
+  const { data: managerList } = useManagerList({
+    page: 1,
+    size: 8,
+    successFn: () => {},
+    errorFn: (err) => {
+      console.log("!!err", err);
+    },
+  });
+
+  console.log("managerList", managerList?.data);
+
   const [optionModalOpen, setOptionModalOpen] = useState({
     open: false,
     index: undefined,
@@ -370,14 +412,14 @@ function ManagementList() {
           </div>
           {checkArray.length === 0 ? (
             <>
-              <p>회원유형</p>
-              <p>계정아이디</p>
-              <p>회사명</p>
-              <p>부서명</p>
-              <p>직책</p>
-              <p>이름</p>
-              <p>연락처</p>
-              <p></p>
+              <p className="header-table-first">회원유형</p>
+              <p className="header-table">계정아이디</p>
+              <p className="header-table">회사명</p>
+              <p className="header-table">부서명</p>
+              <p className="header-table">직책</p>
+              <p className="header-table">이름</p>
+              <p className="header-table">연락처</p>
+              <p className="header-table-fin"></p>
             </>
           ) : (
             <>
@@ -392,10 +434,10 @@ function ManagementList() {
         </div>
         <S.ListBlockWrap>
           <div className="list-inner">
-            {listData.map((data, index, item) => {
+            {managerList?.data?.map((data, index, item) => {
               return (
                 <S.ListBlock key={item.id} className={`table-row ${isChecked[index] ? "selected" : ""}`}>
-                  {data.member_type === "top" ? (
+                  {data.admin_user_info.is_top_admin === true ? (
                     <CheckBoxNone width={24} height={24} />
                   ) : (
                     <label key={item.id} className="table-row">
@@ -416,18 +458,18 @@ function ManagementList() {
                     </label>
                   )}
 
-                  {data.member_type === "top" ? (
-                    <TopManager width={107} height={28} />
+                  {data.admin_user_info.is_top_admin === true ? (
+                    <TopManager width={107} height={28} className="table-first" />
                   ) : (
-                    <CommonManager width={107} height={28} />
+                    <CommonManager width={107} height={28} className="table-first" />
                   )}
-                  <p>{data.accountId}</p>
-                  <p>{data.company}</p>
-                  <p>{data.department}</p>
-                  <p>{data.position}</p>
-                  <p>{data.name}</p>
-                  <p>{data.phone}</p>
-                  <div className="option-modal-wrap">
+                  <p className="table-sec">{data.user.login_id}</p>
+                  <p className="table-text">{data.admin_user_info.company}</p>
+                  <p className="table-text">{data.admin_user_info.department}</p>
+                  <p className="table-text">{data.admin_user_info.position}</p>
+                  <p className="table-text">{data.user.name}</p>
+                  <p className="table-text">{data.admin_user_info.phone}</p>
+                  <div className="option-modal-wrap table-thir">
                     <div
                       className="option-dot"
                       onClick={() => {
@@ -501,7 +543,10 @@ function ManagementList() {
       {/* 관리자 삭제모달 */}
       {deleteManagerModalOpen.open && (
         <div className="modal-wrap">
-          <ManagerDeleteModal setDeleteManagerModalOpen={setDeleteManagerModalOpen} />
+          <ManagerDeleteModal
+            deleteManagerModalOpen={deleteManagerModalOpen}
+            setDeleteManagerModalOpen={setDeleteManagerModalOpen}
+          />
         </div>
       )}
     </S.Wrap>

@@ -10,7 +10,7 @@ export default function usePlanterTotal({ queryType, successFn, errorFn }) {
     retry: 0,
     enabled: true,
     refetchOnWindowFocus: false,
-    refetchOnMount: true,
+    refetchOnMount: "always",
     refetchOnReconnect: false,
     refetchInterval: false,
     onSuccess: (data) => successFn(data),

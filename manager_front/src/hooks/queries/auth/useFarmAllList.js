@@ -13,7 +13,7 @@ export default function useFarmAllList({ nameOrder, statusOrder, page, size, suc
       retry: 0,
       enabled: true,
       refetchOnWindowFocus: false,
-      refetchOnMount: true,
+      refetchOnMount: "always",
       refetchOnReconnect: false,
       refetchInterval: false,
       onSuccess: (data) => successFn(data),

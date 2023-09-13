@@ -60,7 +60,7 @@ export default function useStatics({
       retry: 0,
       enabled: true,
       refetchOnWindowFocus: false,
-      refetchOnMount: false,
+      refetchOnMount: "always",
       refetchOnReconnect: false,
       refetchInterval: false,
       onError: (error) => errorFn(error),

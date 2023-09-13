@@ -1,7 +1,13 @@
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import styled from "styled-components";
+import { useRecoilState } from "recoil";
+
+import useCreateTray from "@src/hooks/queries/planter/useCreateTray";
+import useInvalidateQueries from "@src/hooks/queries/common/useInvalidateQueries";
 
 import XIcon from "@images/common/icon-x.svg";
+import { trayListKey } from "@src/utils/query-keys/PlanterQueryKeys";
+import { isDefaultAlertShowState } from "@src/states/isDefaultAlertShowState";
 
 const S = {
   Wrap: styled.div`
@@ -70,6 +76,7 @@ const S = {
       input {
         background-color: ${({ theme }) => theme.blackWhite.white};
         border: 1px solid ${({ theme }) => theme.blackWhite.white};
+        outline: none;
         width: 100%;
         ${({ theme }) => theme.textStyle.h6Bold};
       }
@@ -133,15 +140,15 @@ const S = {
   `,
 };
 
-function AddTrayModal({
-  setAddTrayModalOpen,
-  trayWidthNum,
-  setTrayWidthNum,
-  trayHeighthNum,
-  setTrayHeighthNum,
-  trayNum,
-  setTrayNum,
-}) {
+function AddTrayModal({ setAddTrayModalOpen }) {
+  const invalidateQueries = useInvalidateQueries();
+  const [isDefaultAlertShow, setIsDefaultAlertShowState] = useRecoilState(isDefaultAlertShowState);
+
+  //트레이 가로 숫자
+  const [trayWidthNum, setTrayWidthNum] = useState("");
+  const [trayHeighthNum, setTrayHeighthNum] = useState("");
+  const [trayNum, setTrayNum] = useState("");
+
   useEffect(() => {
     setTrayNum(trayWidthNum * trayHeighthNum);
   }, [trayWidthNum, trayHeighthNum]);
@@ -152,9 +159,28 @@ function AddTrayModal({
     setTrayHeighthNum("");
   }, [trayWidthNum, trayHeighthNum]);
 
-  const handleTraySaveClick = useCallback(() => {
-    closeModal();
-  }, []);
+  // 트레이 등록 API
+  const { mutate: createTrayMutate } = useCreateTray(
+    () => {
+      // 트레이목록 정보 다시 불러오기 위해 쿼리키 삭제
+      invalidateQueries([trayListKey]);
+      setIsDefaultAlertShowState({
+        isShow: true,
+        type: "success",
+        text: "정상적으로 추가되었습니다.",
+        okClick: null,
+      });
+      closeModal();
+    },
+    (error) => {
+      setIsDefaultAlertShowState({
+        isShow: true,
+        type: "error",
+        text: "오류가 발생했습니다.",
+        okClick: null,
+      });
+    },
+  );
 
   return (
     <S.Wrap>
@@ -195,7 +221,7 @@ function AddTrayModal({
             <p className="input-info">※ 가로,세로값이 입력되면 자동으로 계산됩니다.</p>
           </S.TextWrap>
           <div className="input-wrap-off">
-            <input value={trayNum} />
+            <input value={trayNum} readOnly={true} />
           </div>
         </S.InputWrap>
 
@@ -204,7 +230,16 @@ function AddTrayModal({
             <p>저장</p>
           </S.ButtonWrapOff>
         ) : (
-          <S.ButtonWrap onClick={handleTraySaveClick}>
+          <S.ButtonWrap
+            onClick={() => {
+              createTrayMutate({
+                data: {
+                  width: trayWidthNum,
+                  height: trayHeighthNum,
+                  total: trayNum,
+                },
+              });
+            }}>
             <p>저장</p>
           </S.ButtonWrap>
         )}

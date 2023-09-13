@@ -1,6 +1,11 @@
 import React, { useCallback } from "react";
 import styled from "styled-components";
 
+import useUpdateTray from "@src/hooks/queries/planter/useUpdateTray";
+import useInvalidateQueries from "@src/hooks/queries/common/useInvalidateQueries";
+
+import { trayListKey } from "@src/utils/query-keys/PlanterQueryKeys";
+
 const S = {
   Wrap: styled.div`
     width: 100%;
@@ -77,15 +82,24 @@ const S = {
   `,
 };
 
-function TrayDeleteModal({ setDeleteTrayModalOpen }) {
+function TrayDeleteModal({ deleteId, setDeleteTrayModalOpen }) {
+  const invalidateQueries = useInvalidateQueries();
+
   const closeModal = useCallback(() => {
-    setDeleteTrayModalOpen({ open: false, data: undefined });
+    setDeleteTrayModalOpen({ open: false, deleteId: undefined });
   }, []);
 
-  const handleDeleteOkClick = useCallback(() => {
-    alert("확인 클릭");
-    closeModal();
-  }, []);
+  // 작물정보 수정 API
+  const { mutate: updateTrayMutate } = useUpdateTray(
+    () => {
+      // 작물목록 정보 다시 불러오기 위해 쿼리키 삭제
+      invalidateQueries([trayListKey]);
+      closeModal();
+    },
+    (error) => {
+      alert(error);
+    },
+  );
 
   return (
     <S.Wrap>
@@ -98,7 +112,19 @@ function TrayDeleteModal({ setDeleteTrayModalOpen }) {
           <div className="cancel-button" onClick={closeModal}>
             <p>취소</p>
           </div>
-          <div className="ok-button" onClick={handleDeleteOkClick}>
+          <div
+            className="ok-button"
+            onClick={() => {
+              updateTrayMutate({
+                data: {
+                  trayId: deleteId,
+                  width: null,
+                  height: null,
+                  total: null,
+                  is_del: true,
+                },
+              });
+            }}>
             <p>확인</p>
           </div>
         </S.ButtonWrap>

@@ -22,26 +22,50 @@ function GraphTotalProduction() {
     },
   });
 
-  const dataArray = [];
-  for (let i = 0; i < 31; i++) {
-    const data = null;
-    dataArray.push(data);
-  }
-
-  planterTotal?.map((data) => {
-    dataArray[data?.day - 1] = data?.output;
-  });
-
-  console.log("dataArray", dataArray);
-
   const graphRef = useRef(null);
   let graphInstance = null;
 
-  const monthDay = [];
-  for (let i = 1; i <= 30; i++) {
-    monthDay.push(i);
-  }
   useEffect(() => {
+    if (!planterTotal) {
+      return;
+    }
+
+    const dataArray = []; //데이터
+    const dayLabel = [];
+    const currentDate = new Date(); // 현재 날짜와 시간을 얻습니다.
+    const currentMonth = currentDate.getMonth() + 1; // 현재 월을 가져옵니다. (0부터 시작하므로 +1 해줍니다.)
+    const currentYear = currentDate.getFullYear(); // 현재 연도를 가져옵니다.
+
+    console.log("planterTotal", planterTotal);
+    console.log("dataArray", dataArray);
+
+    // 해당 월의 마지막 날짜를 구합니다.
+    const lastDayOfMonth = new Date(currentYear, currentMonth, 0).getDate();
+
+    // for (let i = 0; i <=lastDayOfMonth; i++) {
+    //   const data = null;
+    //   dataArray.push(data);
+    // }
+
+    // planterTotal?.map((data) => {
+    //   dataArray[data?.day - 1] = data?.output;
+    // });
+
+    // const monthDay = [];
+    // for (let i = 1; i <= 30; i++) {
+    //   monthDay.push(i);
+    // }
+
+    for (let day = 1; day <= lastDayOfMonth; day++) {
+      dayLabel.push(day);
+
+      if (planterTotal.filter((output) => output.day === day).length !== 0) {
+        dataArray.push(planterTotal.filter((output) => output.day === day)[0].output);
+      } else {
+        dataArray.push(0);
+      }
+    }
+
     const graphCtx = graphRef.current?.getContext("2d");
 
     const backgroundBar = {
@@ -70,7 +94,7 @@ function GraphTotalProduction() {
       graphInstance = new Chart(graphCtx, {
         type: "bar",
         data: {
-          labels: monthDay,
+          labels: dayLabel,
           datasets: [
             {
               data: dataArray,
@@ -182,7 +206,7 @@ function GraphTotalProduction() {
     return () => {
       destroyChart(); // 컴포넌트가 unmount될 때 차트 파괴
     };
-  }, []);
+  }, [planterTotal]);
 
   return (
     <S.Wrap>

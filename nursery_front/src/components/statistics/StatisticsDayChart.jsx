@@ -4,7 +4,6 @@ import styled from "styled-components";
 import Chart from "chart.js/auto";
 import { registerables } from "chart.js";
 import theme from "@src/styles/theme";
-import { NumberFormatting } from "@utils/Formatting";
 
 const S = {
   Wrap: styled.div`
@@ -153,7 +152,7 @@ function StatisticsDayChart({ dailyOutput, selectDate, isOutput }) {
                   return context[0].label + "일";
                 },
                 beforeBody: function (context) {
-                  return NumberFormatting(context[0].formattedValue) + "개";
+                  return context[0].formattedValue + "개";
                 },
                 label: function (context) {
                   return "";

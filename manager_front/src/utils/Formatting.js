@@ -87,3 +87,13 @@ export function GetMonthList(selectYear) {
 
   return result;
 }
+
+export function ImagePathCheck(imagePath) {
+  const path = imagePath?.match(/^https?:\/\/[^/]*(\/[^?#]*)/i);
+
+  if (path) {
+    return imagePath;
+  } else {
+    return process.env.NEXT_PUBLIC_END_POINT + imagePath;
+  }
+}

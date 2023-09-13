@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useRef, useEffect } from "react";
+import React, { useCallback, useRef } from "react";
 import styled from "styled-components";
 import { QRCodeCanvas } from "qrcode.react";
 
@@ -211,48 +211,7 @@ function AddFarmModal({
 
   //큐알코드
   const qrRef = useRef();
-  // const downloadQRCode = (e) => {
-  //   e.preventDefault();
-  //   let canvas = qrRef.current.querySelector("canvas");
-  //   let image = canvas.toDataURL("image/png");
-  //   let anchor = document.createElement("a");
-  //   anchor.href = image;
-  //   anchor.download = `qr-code.png`;
-  //   document.body.appendChild(anchor);
-  //   anchor.click();
-  //   document.body.removeChild(anchor);
-  //   setAddFarmSerialNumber("");
-  // };
-  // const qrCodeEncoder = (e) => {
-  //   setAddFarmSerialNumber(e.target.value);
-  // };
-  // const downloadQR = () => {
-  //   const canvas = document.getElementById(addFarmSerialNumber);
-  //   const pngUrl = canvas
-  //     .toDataURL("image/png")
-  //     .replace("image/png", "image/octet-stream");
-  //   let downloadLink = document.createElement("a");
-  //   downloadLink.href = pngUrl;
-  //   downloadLink.download = "qrcode.png";
-  //   document.body.appendChild(downloadLink);
-  //   downloadLink.click();
-  //   document.body.removeChild(downloadLink);
-  // };
-
   const qrcode = <QRCodeCanvas id="qrCode" value={addFarmSerialNumber} size={231} bgColor={"#ffffff"} level={"H"} />;
-
-  // useEffect(() => {
-  //   if (qrRef.current) {
-  //     // 캔버스 요소를 얻습니다.
-  //     const canvas = qrRef.current.querySelector('canvas');
-
-  //     if (canvas) {
-  //       // 캔버스를 이미지로 변환합니다.
-  //       const imgURL = canvas.toDataURL('image/png');
-  //       console.log(imgURL);
-  //     }
-  //   }
-  // }, []);
 
   const qrUrlDown = useCallback(() => {
     if (qrRef.current) {
@@ -262,43 +221,14 @@ function AddFarmModal({
       if (canvas) {
         // 캔버스를 이미지로 변환합니다.
         const imgURL = canvas.toDataURL("image/png");
-        // console.log(imgURL);
         setQrCodeUrl(imgURL);
       }
     }
   }, [qrRef, qrCodeUrl]);
 
-  // const qrUrlDown = useCallback(() => {
-  //   if (qrRef.current) {
-  //     // 캔버스 요소를 얻습니다.
-  //     const canvas = qrRef.current.querySelector('canvas');
-
-  //     if (canvas) {
-  //       // 캔버스를 이미지로 변환합니다.
-  //       const imgURL = canvas.toDataURL('image/png');
-  //       // setQrCodeUrl(imgURL);
-
-  //       // Base64 문자열을 ArrayBuffer로 디코딩합니다.
-  //       const binaryString = atob(imgURL.split(',')[1]);
-  //       const length = binaryString.length;
-  //       const binaryArray = new Uint8Array(length);
-
-  //       for (let i = 0; i < length; i++) {
-  //         binaryArray[i] = binaryString.charCodeAt(i);
-  //       }
-
-  //       // binaryArray에 이진 데이터가 저장됩니다.
-  //       console.log(binaryArray);
-  //       setQrCodeUrl(binaryArray)
-  //     }
-  //   }
-  // }, [qrRef,qrCodeUrl]);
-
   const handleQRcodeResetClick = useCallback(() => {
     alert("큐알코드 리셋 버튼 구현중");
   }, []);
-
-  console.log("qrCodeUrl", qrCodeUrl);
 
   return (
     <S.Wrap>
@@ -339,13 +269,6 @@ function AddFarmModal({
             <div className="qr-inner">
               <div className="qrcode__container">
                 <div ref={qrRef}>{qrcode}</div>
-                {/* <div className="input__group">
-                  <form onSubmit={downloadQRCode}>
-                    <button type="submit" disabled={!url}>
-                      Download QR code
-                    </button>
-                  </form>
-                </div> */}
               </div>
 
               <p>SCAN ME!</p>

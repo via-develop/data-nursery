@@ -70,6 +70,10 @@ function GraphOperateTimeDay() {
   let graphInstance = null;
 
   useEffect(() => {
+    if (!planterOperation) {
+      return;
+    }
+
     const graphCtx = graphRef.current?.getContext("2d");
 
     const textCenter = {
@@ -146,7 +150,7 @@ function GraphOperateTimeDay() {
     return () => {
       destroyChart(); // 컴포넌트가 unmount될 때 차트 파괴
     };
-  }, []);
+  }, [planterOperation]);
 
   return (
     <S.Wrap>

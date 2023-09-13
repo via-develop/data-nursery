@@ -1,12 +1,22 @@
 import React, { useCallback, useEffect, useState, useRef } from "react";
 import styled from "styled-components";
-
+import Image from "next/image";
 import { ChromePicker } from "react-color";
+import { useRecoilState } from "recoil";
+
+import useUpdateCrop from "@src/hooks/queries/crop/useUpdateCrop";
+import useInvalidateQueries from "@src/hooks/queries/common/useInvalidateQueries";
+
+import CropsImgDeleteModal from "./CropsImgDeleteModal";
+import { cropColorArray } from "@components/common/CropListColor";
 
 import XIcon from "@images/common/icon-x.svg";
 import CropsNoIcon from "@images/setting/crops-no-img.svg";
 import RainbowIcon from "@images/setting/rainbow-color.svg";
 import CheckRainbowIcon from "@images/setting/check-rainbow-icon.svg";
+import { ImagePathCheck } from "@src/utils/Formatting";
+import { cropListKey } from "@src/utils/query-keys/CropQueryKeys";
+import { isDefaultAlertShowState } from "@src/states/isDefaultAlertShowState";
 
 const S = {
   Wrap: styled.div`
@@ -62,6 +72,8 @@ const S = {
       display: flex;
       align-items: center;
       justify-content: center;
+      position: relative;
+      overflow: hidden;
     }
 
     .yes-image {
@@ -204,28 +216,23 @@ const S = {
   `,
 };
 
-function EditCropsModal({
-  editCropsModalOpen,
-  setEditCropsModalOpen,
-  deleteCropsImgModalOpen,
-  setDeleteCropsImgModalOpen,
-  editCropsImg,
-  setEditCropsImg,
-}) {
-  const [editCropsName, setEditCropsName] = useState(editCropsModalOpen.data.data.crops_name);
+function EditCropsModal({ editCropsModalOpen, setEditCropsModalOpen }) {
+  const invalidateQueries = useInvalidateQueries();
+  const [isDefaultAlertShow, setIsDefaultAlertShowState] = useRecoilState(isDefaultAlertShowState);
+  const [editCropsName, setEditCropsName] = useState(editCropsModalOpen.data.name);
 
-  useEffect(() => {
-    setEditCropsImg(editCropsModalOpen.data.data.crops_img);
-  }, []);
+  //작물 이미지 수정
+  const [editCropsImg, setEditCropsImg] = useState(editCropsModalOpen.data.image);
+  const [imageView, setImageView] = useState(""); // 메뉴 이미지 보여주기 위해 사용
+
+  //작물 이미지 삭제 모달 오픈
+  const [deleteCropsImgModalOpen, setDeleteCropsImgModalOpen] = useState({
+    open: false,
+    data: undefined,
+  });
 
   const closeModal = useCallback(() => {
     setEditCropsModalOpen(false);
-  }, []);
-
-  // 저장 버튼
-  const handleTraySaveClick = useCallback(() => {
-    // closeModal();
-    // setCropsColor("#929FA6");
   }, []);
 
   const handleImgDeleteClick = useCallback(() => {
@@ -236,33 +243,12 @@ function EditCropsModal({
     fileInputRef.current.click();
   }, []);
 
-  //고정된 색상
-  const colors = [
-    "#EF7E7E",
-    "#F7AD77",
-    "#F9E37A",
-    "#C6E37C",
-    "#71B598",
-    "#79CEC8",
-    "#89B9F5",
-    "#A0A3F6",
-    "#B289ED",
-    "#E994EA",
-    "#E783AD",
-    "#929FA6",
-  ];
-
   //선택한 색상
-  const [selectedColor, setSelectedColor] = useState(editCropsModalOpen.data.data.crops_color);
+  const [selectedColor, setSelectedColor] = useState(editCropsModalOpen.data.color);
 
   const handleColorClick = (color) => {
     setSelectedColor(color);
   };
-
-  //사용자색상 클릭
-  const handleChooseColor = useCallback(() => {
-    alert("색상 선택");
-  }, []);
 
   const fileInputRef = useRef(null);
 
@@ -276,141 +262,197 @@ function EditCropsModal({
     setSelectedColor(newColor.hex);
   };
 
-  // 이미지가 선택되었을 때 호출되는 핸들러 함수
-  const handleImageChange = (e) => {
-    const selectedImage = e.target.files[0];
+  // 등록한 작물 이미지 확인하기 위함
+  const encodeFileToBase64 = useCallback((fileBlob) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(fileBlob);
 
-    // 이미지 미리보기 생성
-    if (selectedImage) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setEditCropsImg(e.target.result);
+    return new Promise((resolve) => {
+      reader.onload = () => {
+        setImageView(reader.result);
+        resolve();
       };
-      reader.readAsDataURL(selectedImage);
-    }
-  };
+    });
+  }, []);
 
-  const isColorInArray = colors.includes(selectedColor);
+  const isColorInArray = cropColorArray.includes(selectedColor);
+
+  // 작물정보 수정 API
+  const { mutate: updateCropMutate } = useUpdateCrop(
+    () => {
+      // 작물목록 정보 다시 불러오기 위해 쿼리키 삭제
+      invalidateQueries([cropListKey]);
+      setIsDefaultAlertShowState({
+        isShow: true,
+        type: "success",
+        text: "정상적으로 저장되었습니다.",
+        okClick: null,
+      });
+      closeModal();
+    },
+    (error) => {
+      setIsDefaultAlertShowState({
+        isShow: true,
+        type: "error",
+        text: "오류가 발생했습니다.",
+        okClick: null,
+      });
+    },
+  );
 
   return (
-    <S.Wrap>
-      <S.WrapInner>
-        <S.TitleWrap>
-          <div className="text-wrap">
-            <p className="title">작물정보수정</p>
-          </div>
-          <div className="x-icon" onClick={closeModal}>
-            <XIcon width={24} height={24} />
-          </div>
-        </S.TitleWrap>
-        <S.InputWrap>
-          <S.TextWrap>
-            <p className="input-title">작물이미지</p>
-          </S.TextWrap>
-          <S.ImgWrap>
+    <>
+      <S.Wrap>
+        <S.WrapInner>
+          <S.TitleWrap>
+            <div className="text-wrap">
+              <p className="title">작물정보수정</p>
+            </div>
+            <div className="x-icon" onClick={closeModal}>
+              <XIcon width={24} height={24} />
+            </div>
+          </S.TitleWrap>
+          <S.InputWrap>
+            <S.TextWrap>
+              <p className="input-title">작물이미지</p>
+            </S.TextWrap>
             <S.ImgWrap>
-              {/* 이미지 미리보기 클릭 시 파일 선택 창 열기 */}
-              <div onClick={handleImagePreviewClick} className="img-inner">
-                {editCropsImg ? (
-                  <img src={editCropsImg} alt="Preview" className="yes-image" />
-                ) : (
-                  <CropsNoIcon width={200} height={200} />
-                )}
-              </div>
-            </S.ImgWrap>
-            <S.ImgEditButton>
-              <S.Button onClick={handleImgDeleteClick}>
-                <p>삭제</p>
-              </S.Button>
-              <S.Button onClick={handleImagePreviewClick}>
-                <p>변경</p>
-              </S.Button>
-            </S.ImgEditButton>
-          </S.ImgWrap>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleImageChange}
-            ref={fileInputRef}
-            style={{ display: "none" }}
-          />
-          <S.TextWrap>
-            <p className="input-title">작물명</p>
-          </S.TextWrap>
-          <div className="input-wrap">
-            <input
-              placeholder="작물명을 입력하세요"
-              value={editCropsName}
-              onChange={(e) => setEditCropsName(e.target.value)}
-            />
-          </div>
-          <S.TextWrap>
-            <p className="input-title">작물 표시 색상</p>
-          </S.TextWrap>
-          <S.Border />
-          <S.ColorWrap>
-            <div
-              style={{
-                display: "flex",
-                flexWrap: "wrap",
-                width: "100%",
-                justifyContent: "space-between",
-              }}>
-              {colors.map((color) => (
-                <div
-                  key={color}
-                  onClick={() => handleColorClick(color)}
-                  className="color-check-wrap"
-                  style={{
-                    backgroundColor: color,
-                    width: "48px",
-                    height: "48px",
-                    margin: "5px",
-                    cursor: "pointer",
-                    position: "relative",
-                    borderRadius: "30px",
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                  }}>
-                  {selectedColor === color && (
-                    <img
-                      src="/images/setting/color-icon-check.svg" // 이미지 파일 경로를 지정합니다.
-                      alt="Checkmark"
-                      style={{
-                        position: "absolute",
-                        width: "24px",
-                        height: "24px",
-                      }}
+              <S.ImgWrap>
+                {/* 이미지 미리보기 클릭 시 파일 선택 창 열기 */}
+                <div onClick={handleImagePreviewClick} className="img-inner">
+                  {!!editCropsImg ? (
+                    <Image
+                      src={typeof editCropsImg === "string" ? ImagePathCheck(editCropsImg) : imageView}
+                      layout="fill"
+                      alt="crop image"
                     />
+                  ) : (
+                    <CropsNoIcon width={200} height={200} />
                   )}
                 </div>
-              ))}
-              <div className="color-check-wrap-rainbow" onClick={handleButtonClick}>
-                {isColorInArray ? <RainbowIcon width={48} height={48} /> : <CheckRainbowIcon width={48} height={48} />}
-              </div>
+              </S.ImgWrap>
+              <S.ImgEditButton>
+                <S.Button onClick={handleImgDeleteClick}>
+                  <p>삭제</p>
+                </S.Button>
+                <S.Button onClick={handleImagePreviewClick}>
+                  <p>변경</p>
+                </S.Button>
+              </S.ImgEditButton>
+            </S.ImgWrap>
+            <input
+              type="file"
+              accept="image/*"
+              onChange={(e) => {
+                encodeFileToBase64(e.target.files[0]);
+                setEditCropsImg(e.target.files[0]);
+              }}
+              ref={fileInputRef}
+              style={{ display: "none" }}
+            />
+            <S.TextWrap>
+              <p className="input-title">작물명</p>
+            </S.TextWrap>
+            <div className="input-wrap">
+              <input
+                placeholder="작물명을 입력하세요"
+                value={editCropsName}
+                onChange={(e) => setEditCropsName(e.target.value)}
+              />
             </div>
-
-            {isOpen && (
-              <S.ColorPalette>
-                <ChromePicker color={selectedColor} onChangeComplete={handleColorChange} />
-              </S.ColorPalette>
-            )}
+            <S.TextWrap>
+              <p className="input-title">작물 표시 색상</p>
+            </S.TextWrap>
             <S.Border />
-          </S.ColorWrap>
-        </S.InputWrap>
+            <S.ColorWrap>
+              <div
+                style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  width: "100%",
+                  justifyContent: "space-between",
+                }}>
+                {cropColorArray.map((color) => (
+                  <div
+                    key={color}
+                    onClick={() => handleColorClick(color)}
+                    className="color-check-wrap"
+                    style={{
+                      backgroundColor: color,
+                      width: "48px",
+                      height: "48px",
+                      margin: "5px",
+                      cursor: "pointer",
+                      position: "relative",
+                      borderRadius: "30px",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    }}>
+                    {selectedColor === color && (
+                      <img
+                        src="/images/setting/color-icon-check.svg" // 이미지 파일 경로를 지정합니다.
+                        alt="Checkmark"
+                        style={{
+                          position: "absolute",
+                          width: "24px",
+                          height: "24px",
+                        }}
+                      />
+                    )}
+                  </div>
+                ))}
+                <div className="color-check-wrap-rainbow" onClick={handleButtonClick}>
+                  {isColorInArray ? (
+                    <RainbowIcon width={48} height={48} />
+                  ) : (
+                    <CheckRainbowIcon width={48} height={48} />
+                  )}
+                </div>
+              </div>
 
-        {editCropsName.length === 0 ? (
-          <S.ButtonWrapOff>
-            <p>저장</p>
-          </S.ButtonWrapOff>
-        ) : (
-          <S.ButtonWrap onClick={handleTraySaveClick}>
-            <p>저장</p>
-          </S.ButtonWrap>
-        )}
-      </S.WrapInner>
-    </S.Wrap>
+              {isOpen && (
+                <S.ColorPalette>
+                  <ChromePicker color={selectedColor} onChangeComplete={handleColorChange} />
+                </S.ColorPalette>
+              )}
+              <S.Border />
+            </S.ColorWrap>
+          </S.InputWrap>
+          {editCropsName.length === 0 ? (
+            <S.ButtonWrapOff>
+              <p>저장</p>
+            </S.ButtonWrapOff>
+          ) : (
+            <S.ButtonWrap
+              onClick={() => {
+                updateCropMutate({
+                  data: {
+                    cropId: editCropsModalOpen.data.id,
+                    name: editCropsName,
+                    image: typeof editCropsImg === "string" ? null : editCropsImg,
+                    image_del: editCropsImg === null ? true : false,
+                    color: selectedColor,
+                  },
+                });
+              }}>
+              <p>저장</p>
+            </S.ButtonWrap>
+          )}
+        </S.WrapInner>
+      </S.Wrap>
+
+      {/* 작물이미지 삭제 모달 */}
+      {deleteCropsImgModalOpen.open && (
+        <div className="modal-wrap">
+          <CropsImgDeleteModal
+            deleteCropsImgModalOpen={deleteCropsImgModalOpen}
+            setDeleteCropsImgModalOpen={setDeleteCropsImgModalOpen}
+            setEditCropsImg={setEditCropsImg}
+          />
+        </div>
+      )}
+    </>
   );
 }
 

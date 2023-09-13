@@ -14,8 +14,8 @@ class AdminUserInfoCreate(AdminUserInfoBase):
 
 
 class AdminUserInfoUpdate(BaseModel):
-    company: Optional[str]
-    department: Optional[str]
-    position: Optional[str]
-    phone: Optional[str]
-    is_del: Optional[bool]
+    company: Optional[str] = None
+    department: Optional[str] = None
+    position: Optional[str] = None
+    phone: Optional[str] = None
+    is_del: Optional[bool] = None

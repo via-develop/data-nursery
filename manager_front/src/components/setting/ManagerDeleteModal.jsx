@@ -1,5 +1,11 @@
 import React, { useCallback } from "react";
 import styled from "styled-components";
+import { useRecoilState } from "recoil";
+
+import { settingManagerListKey } from "@src/utils/query-keys/AuthQueryKeys";
+import useDeleteManager from "@src/hooks/queries/auth/useDeleteManager";
+import { isDefaultAlertShowState } from "@src/states/isDefaultAlertShowState";
+import useInvalidateQueries from "@src/hooks/queries/common/useInvalidateQueries";
 
 const S = {
   Wrap: styled.div`
@@ -77,15 +83,43 @@ const S = {
   `,
 };
 
-function ManagerDeleteModal({ setDeleteManagerModalOpen }) {
+function ManagerDeleteModal({ deleteManagerModalOpen, setDeleteManagerModalOpen }) {
+  const [isDefaultAlertShow, setIsDefaultAlertShowState] = useRecoilState(isDefaultAlertShowState);
+  const invalidateQueries = useInvalidateQueries();
+
   const closeModal = useCallback(() => {
     setDeleteManagerModalOpen({ open: false, data: undefined });
   }, []);
 
+  const { mutate: deleteManagerMutate } = useDeleteManager(
+    () => {
+      closeModal();
+      setIsDefaultAlertShowState({
+        isShow: true,
+        type: "success",
+        text: "정상적으로 삭제되었습니다.",
+        okClick: null,
+      });
+      invalidateQueries([settingManagerListKey]);
+    },
+    (error) => {
+      setIsDefaultAlertShowState({
+        isShow: true,
+        type: "error",
+        text: "오류가 발생했습니다.",
+        okClick: null,
+      });
+    },
+  );
+
   const handleDeleteOkClick = useCallback(() => {
-    alert("확인 클릭");
+    deleteManagerMutate({
+      data: {
+        userIds: deleteManagerModalOpen.data.data.user.id,
+      },
+    });
     closeModal();
-  }, []);
+  }, [deleteManagerModalOpen]);
 
   return (
     <S.Wrap>

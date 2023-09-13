@@ -317,7 +317,10 @@ function WorkEditPage({ workId }) {
         </S.InputWrap>
         <DefaultCalendar calendarOpen={calendarOpen} setCalendarOpen={setCalendarOpen} />
         {isCropSelectOpen && (
-          <DefaultSelectList>
+          <DefaultSelectList
+            onClickEvent={() => {
+              setIsCropSelectOpen(false);
+            }}>
             <p className="select-category-text">작물선택</p>
             <div className="value-list-wrap" id="scroll-wrap">
               {cropList?.crops.map((crop) => {
@@ -339,7 +342,10 @@ function WorkEditPage({ workId }) {
           </DefaultSelectList>
         )}
         {isTraySelectOpen && (
-          <DefaultSelectList>
+          <DefaultSelectList
+            onClickEvent={() => {
+              setIsTraySelectOpen(false);
+            }}>
             <p className="select-category-text">트레이 선택</p>
             <div className="value-list-wrap" id="scroll-wrap">
               {trayList?.planter_trays.map((tray) => {

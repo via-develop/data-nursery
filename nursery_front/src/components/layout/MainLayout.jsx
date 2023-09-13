@@ -26,6 +26,10 @@ const S = {
     background-image: url("/images/common/pc-background-image.svg");
     background-repeat: no-repeat;
     background-size: cover;
+
+    ${({ theme }) => theme.media.max_mobile} {
+      height: 100svh;
+    }
   `,
   Wrap: styled.main`
     display: flex;

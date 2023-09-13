@@ -66,22 +66,16 @@ const S = {
   `,
 };
 
-function TrayOptionModal({
-  optionModalOpen,
-  setOptionModalOpen,
-  setEditTrayModalOpen,
-  deleteTrayModalOpen,
-  setDeleteTrayModalOpen,
-}) {
+function TrayOptionModal({ optionModalOpen, setOptionModalOpen, setEditTrayModalOpen, setDeleteTrayModalOpen }) {
   // 수정
   const handelEditClick = useCallback(() => {
     setOptionModalOpen({ open: false, index: undefined, data: undefined });
-    setEditTrayModalOpen({ open: true, data: optionModalOpen });
+    setEditTrayModalOpen({ open: true, data: optionModalOpen.data });
   }, []);
 
   //삭제
   const handleDeleteClick = useCallback(() => {
-    setDeleteTrayModalOpen({ open: true, data: deleteTrayModalOpen });
+    setDeleteTrayModalOpen({ open: true, deleteId: optionModalOpen.data.id });
     setOptionModalOpen({ open: false, index: undefined, data: undefined });
   });
 

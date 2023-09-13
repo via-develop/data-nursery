@@ -3,7 +3,7 @@ import { useRouter } from "next/router";
 import { styled } from "styled-components";
 import secureLocalStorage from "react-secure-storage";
 
-// import useAllCacheClear from "@src/hooks/queries/common/useAllCacheClear";
+import useAllCacheClear from "@src/hooks/queries/common/useAllCacheClear";
 import { loginAPI } from "@apis/authAPIs";
 
 import MainLayout from "@components/layout/MainLayout";
@@ -75,7 +75,7 @@ const S = {
 
 function LogInPage() {
   const router = useRouter();
-  // const clearQueries = useAllCacheClear();
+  const clearQueries = useAllCacheClear();
 
   const [loginInfo, setLoginInfo] = useState({
     login_id: "",
@@ -94,9 +94,9 @@ function LogInPage() {
     [loginInfo],
   );
 
-  // 이메일 저장했는지 확인
+  // 아이디 저장했는지 확인
   useEffect(() => {
-    // clearQueries();
+    clearQueries();
 
     const saveId = secureLocalStorage.getItem("login_id");
 
@@ -187,7 +187,7 @@ function LogInPage() {
         </S.LoginInputWrap>
         <S.StayLoginWrap onClick={stayLoginCheckBoxClick}>
           {loginInfo.isStayLogin ? <OnCheckBoxIcon /> : <OffCheckBoxIcon />}
-          <p>이메일 저장</p>
+          <p>아이디 저장</p>
         </S.StayLoginWrap>
         <DefaultButton text={"로그인"} onClick={tempLoginCheck} customStyle={defaultButtonColor} />
       </S.Wrap>

@@ -104,3 +104,63 @@ export const getTrayTotalList = async (searchText) => {
     );
   }
 };
+
+// 트레이 목록
+export const getTrayListAPI = async () => {
+  try {
+    const res = await axios.get(process.env.NEXT_PUBLIC_END_POINT + `/api/planter/tray/list`, {
+      withCredentials: true,
+    });
+    return res.data;
+  } catch (error) {
+    throw new Error(error.response?.status || "트레이 목록을 가져오는데 실패하였습니다. 잠시 후 다시 시도해주세요.");
+  }
+};
+
+// 트레이 추가
+export const createTrayAPI = async (data) => {
+  try {
+    const res = await axios.post(process.env.NEXT_PUBLIC_END_POINT + `/api/planter/tray/create`, data, {
+      withCredentials: true,
+    });
+    return res.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || "트레이 등록에 실패하였습니다. 잠시 후 다시 시도해주세요.");
+  }
+};
+
+// 트레이 수정 및 삭제
+export const updateTrayAPI = async (data) => {
+  try {
+    const res = await axios.patch(
+      process.env.NEXT_PUBLIC_END_POINT + `/api/admin/planter/tray/update/${data.trayId}`,
+      data,
+      {
+        withCredentials: true,
+      },
+    );
+    return res.data;
+  } catch (error) {
+    if (data.is_del) {
+      throw new Error(error.response?.status || "트레이 삭제에 실패하였습니다. 잠시 후 다시 시도해주세요.");
+    } else {
+      throw new Error(error.response?.status || "트레이 정보를 수정하는데 실패하였습니다. 잠시 후 다시 시도해주세요.");
+    }
+  }
+};
+
+// 트레이 다중 삭제
+export const deleteMultipleTrayAPI = async (data) => {
+  try {
+    const res = await axios.patch(
+      process.env.NEXT_PUBLIC_END_POINT + `/api/admin/planter/tray/multiple/delete/${data.deleteTray}`,
+      {},
+      {
+        withCredentials: true,
+      },
+    );
+    return res.data;
+  } catch (error) {
+    throw new Error(error.response?.data?.message || "트레이 삭제에 실패하였습니다. 잠시 후 다시 시도해주세요.");
+  }
+};

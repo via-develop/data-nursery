@@ -7,7 +7,7 @@ services:
       POSTGRES_USER: dpbell
       POSTGRES_PASSWORD: mnb30217
       POSTGRES_DB: fastapi_test
-      POSTGRES_HOST: 192.168.2.103
+      POSTGRES_HOST: 192.168.2.100
       POSTGRES_PORT: 5432
     ports:
       - "5120:5432"

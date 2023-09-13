@@ -20,7 +20,10 @@ function DefaultYearMonthList({ isStatistics = false, date, yearMonthOpen, handl
   return (
     <>
       {yearMonthOpen.year && (
-        <DefaultSelectList>
+        <DefaultSelectList
+          onClickEvent={() => {
+            handleYearMonthOpen("year", false);
+          }}>
           <p className="select-category-text">년도</p>
           <div className="value-list-wrap" id="scroll-wrap">
             {yearList.map((year) => {
@@ -43,7 +46,10 @@ function DefaultYearMonthList({ isStatistics = false, date, yearMonthOpen, handl
         </DefaultSelectList>
       )}
       {yearMonthOpen.month && (
-        <DefaultSelectList>
+        <DefaultSelectList
+          onClickEvent={() => {
+            handleYearMonthOpen("month", false);
+          }}>
           <p className="select-category-text">월</p>
           <div className="value-list-wrap" id="scroll-wrap">
             {isStatistics && (

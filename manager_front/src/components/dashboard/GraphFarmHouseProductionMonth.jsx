@@ -59,6 +59,10 @@ function GraphFarmHouseProductionMonth() {
   let graphUnitInstance = null;
 
   useEffect(() => {
+    if (!planterFarm) {
+      return;
+    }
+
     const graphCtx = graphRef.current?.getContext("2d");
     const graphUnitCtx = graphUnitRef.current?.getContext("2d");
 
@@ -219,7 +223,7 @@ function GraphFarmHouseProductionMonth() {
     return () => {
       destroyChart(); // 컴포넌트가 unmount될 때 차트 파괴
     };
-  }, [graphRef, graphUnitRef]);
+  }, [planterFarm, graphRef, graphUnitRef]);
 
   return (
     <S.Wrap>

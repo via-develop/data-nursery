@@ -1,18 +1,22 @@
 import React, { useCallback, useState } from "react";
 import styled from "styled-components";
 
+import useCropList from "@src/hooks/queries/crop/useCropList";
+import useDeleteMultipleCrop from "@src/hooks/queries/crop/useDeleteMultipleCrop";
+import useInvalidateQueries from "@src/hooks/queries/common/useInvalidateQueries";
+
+import AddCropsModal from "./AddCropsModal";
+import CropsOptionModal from "./CropsOptionModal";
+import CropsDeleteModal from "./CropsDeleteModal";
+import EditCropsModal from "./EditCropsModal";
+
 import AddIcon from "@images/management/add-icon.svg";
 import CheckBoxOff from "@images/common/check-icon-off.svg";
 import CheckBoxOn from "@images/common/check-icon-on.svg";
 import OptionDot from "@images/common/option-dot-icon.svg";
 import PlantIcon from "@images/setting/plant-no-data.svg";
-import AddCropsModal from "./AddCropsModal";
-import CropsOptionModal from "./CropsOptionModal";
-import CropsDeleteModal from "./CropsDeleteModal";
-import EditCropsModal from "./EditCropsModal";
-import CropsImgDeleteModal from "./CropsImgDeleteModal";
-
 import DeleteIcon from "@images/setting/icon-delete.svg";
+import { cropListKey } from "@src/utils/query-keys/CropQueryKeys";
 
 const S = {
   Wrap: styled.div`
@@ -86,11 +90,28 @@ const S = {
       p {
         color: ${({ theme }) => theme.basic.gray60};
         ${({ theme }) => theme.textStyle.h7Reguler}
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      svg {
+        cursor: pointer;
       }
 
       .btn-wrap {
         width: 100%;
       }
+    }
+
+    .table-header-first {
+      width: 120px;
+    }
+    .table-header-sec {
+      width: 172px;
+    }
+    .table-header-third {
+      width: 46px;
     }
   `,
   ListBlockWrap: styled.div`
@@ -123,6 +144,13 @@ const S = {
     p {
       color: ${({ theme }) => theme.basic.gray50};
       ${({ theme }) => theme.textStyle.h7Bold}
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    svg {
+      cursor: pointer;
     }
 
     .option-dot {
@@ -133,6 +161,15 @@ const S = {
       width: 32px;
       height: 32px;
       border-radius: 30px;
+    }
+    .table-text-first {
+      width: 100px;
+    }
+    .table-text-fin {
+      width: 40px;
+    }
+    .crop_name {
+      display: block !important;
     }
   `,
   EmptyData: styled.div`
@@ -170,34 +207,21 @@ const S = {
 };
 
 function CropsList() {
+  const invalidateQueries = useInvalidateQueries();
+
   const [optionModalOpen, setOptionModalOpen] = useState({
     open: false,
     index: undefined,
     data: undefined,
   });
 
-  // 선택삭제 클릭
-  const handelSelectDeleteClick = useCallback(() => {
-    alert("선택삭제");
-  }, []);
-
-  //작물 추가 정보
-  const [cropsName, setCropsName] = useState("");
-  const [cropsColor, setCropsColor] = useState("#929FA6");
-
   //작물 추가 모달 오픈
   const [addCropsModalOpen, setAddCropsModalOpen] = useState(false);
-
-  //작물 이미지 추가
-  const [image, setImage] = useState(null);
-
-  //작물 이미지 수정
-  const [editCropsImg, setEditCropsImg] = useState(null);
 
   //작물 삭제 모달 오픈
   const [deleteCropsModalOpen, setDeleteCropsModalOpen] = useState({
     open: false,
-    data: undefined,
+    deleteId: undefined,
   });
 
   //작물 수정 모달 오픈
@@ -206,28 +230,32 @@ function CropsList() {
     data: undefined,
   });
 
-  //작물 이미지 삭제 모달 오픈
-  const [deleteCropsImgModalOpen, setDeleteCropsImgModalOpen] = useState({
-    open: false,
-    data: undefined,
+  // 체크박스 선택 목록
+  const [checkArray, setCheckArray] = useState([]);
+
+  // 작물 목록 API
+  const { data: cropList } = useCropList({
+    successFn: () => {},
+    errorFn: (err) => {
+      alert(err);
+    },
   });
 
-  // 작물목록 : 눌렀을때 나오는 모달
-  const handleOptionModalClick = useCallback(
-    (index, data) => {
-      if (optionModalOpen.open === true) {
-        setOptionModalOpen({ open: false, index: undefined, data: undefined });
-      } else if (optionModalOpen.open === false) {
-        setOptionModalOpen({ open: true, index: index, data: data });
-      }
+  // 작물 다중 삭제 API
+  const { mutate: deleteMultipleCropMutate } = useDeleteMultipleCrop(
+    () => {
+      // 작물목록 정보 다시 불러오기 위해 쿼리키 삭제
+      invalidateQueries([cropListKey]);
+      setCheckArray([]);
     },
-    [optionModalOpen],
+    (error) => {
+      alert(error);
+    },
   );
 
   // 작물목록 : 눌렀을때 나오는 모달
   const handleCropsOptionModalClick = useCallback(
     (index, data) => {
-      // alert("작물목록 옵션");
       if (optionModalOpen.open === true) {
         setOptionModalOpen({ open: false, index: undefined, data: undefined });
       } else if (optionModalOpen.open === false) {
@@ -237,91 +265,38 @@ function CropsList() {
     [optionModalOpen],
   );
 
-  // 작물 추가 모달
-  const handleAddCropsModalClick = useCallback(() => {
-    setAddCropsModalOpen(true);
-  }, [addCropsModalOpen]);
+  // 체크박스 전제 선택 및 전체 해제
+  const toggleAll = useCallback(
+    (isAllCheck) => {
+      if (isAllCheck) {
+        // 전부 체크되어 있는 경우
+        setCheckArray([]);
+      } else {
+        // 전부 체크 안되어 있는 경우
+        const allCheckArray = [];
 
-  const [listData, setListData] = useState([
-    {
-      number: 1,
-      crops_name: "토마토",
-      crops_img: "",
-      crops_color: "#EF7E7E",
+        cropList?.crops.map((crop) => {
+          allCheckArray.push(crop.id);
+        });
+
+        setCheckArray(allCheckArray);
+      }
     },
-    {
-      number: 2,
-      crops_name: "수박",
-      crops_img: "",
-      crops_color: "#F7AD77",
+    [cropList],
+  );
+
+  const toggleItem = useCallback(
+    (isCheck, id) => {
+      if (isCheck) {
+        // 체크된 항목 클릭 시
+        setCheckArray(checkArray.filter((checkId) => checkId !== id));
+      } else {
+        // 미체크된 항목 클릭 시
+        setCheckArray((prev) => [...prev, id]);
+      }
     },
-    {
-      number: 3,
-      crops_name: "오렌지",
-      crops_img: "",
-      crops_color: "#F9E37A",
-    },
-    {
-      number: 4,
-      crops_name: "복숭아",
-      crops_img: "",
-      crops_color: "#C6E37C",
-    },
-    {
-      number: 5,
-      crops_name: "자몽",
-      crops_img: "",
-      crops_color: "#71B598",
-    },
-    {
-      number: 6,
-      crops_name: "딸기",
-      crops_img: "",
-      crops_color: "#79CEC8",
-    },
-  ]);
-
-  const CorpsColorList = ["#EF7E7E", "#F7AD77", "#F9E37A", "#C6E37C", "#71B598", "#79CEC8"];
-  const [selectAll, setSelectAll] = useState(false);
-  const [isChecked, setIsChecked] = useState(listData.map(() => false));
-  const [checkArray, setCheckArray] = useState([]);
-
-  const toggleItem = (index) => {
-    const updatedIsCheckedArray = [...isChecked];
-    updatedIsCheckedArray[index] = !updatedIsCheckedArray[index];
-    setIsChecked(updatedIsCheckedArray);
-
-    // 모든 항목이 체크되었는지 확인
-    const allChecked = updatedIsCheckedArray.every((checked) => checked);
-
-    // 모든 항목이 체크되었다면 전체 선택 체크박스를 true로 설정
-    // 그렇지 않다면 전체 선택 체크박스를 false로 설정
-    setSelectAll(allChecked);
-
-    const selectedItemId = listData[index].number;
-    if (updatedIsCheckedArray[index]) {
-      setCheckArray((prevArray) => [...prevArray, selectedItemId]);
-    } else {
-      setCheckArray((prevArray) => prevArray.filter((number) => number !== selectedItemId));
-    }
-  };
-
-  const toggleAll = () => {
-    const allChecked = !selectAll;
-
-    // 모든 항목을 전부 선택 또는 해제
-    const updatedIsCheckedArray = isChecked.map(() => allChecked);
-
-    setIsChecked(updatedIsCheckedArray);
-    setSelectAll(allChecked);
-
-    const selectedIds = listData.map((item) => item.number);
-    if (allChecked) {
-      setCheckArray(selectedIds);
-    } else {
-      setCheckArray([]);
-    }
-  };
+    [checkArray],
+  );
 
   return (
     <S.Wrap>
@@ -330,13 +305,16 @@ function CropsList() {
           <p className="title">작물목록</p>
           <p className="sub-title">작물목록 추가, 변경</p>
         </S.Title>
-        <S.AddButton onClick={handleAddCropsModalClick}>
+        <S.AddButton
+          onClick={() => {
+            setAddCropsModalOpen(true);
+          }}>
           <AddIcon width={24} height={24} />
           <p>작물 추가</p>
         </S.AddButton>
       </S.TitleWrap>
       <S.ContentList>
-        {listData.length === 0 ? (
+        {cropList?.crops.length === 0 ? (
           <S.EmptyData>
             <PlantIcon width={56} height={56} />
             <p>등록된 작물이 없습니다.</p>
@@ -345,24 +323,42 @@ function CropsList() {
           <>
             <div className="table-header">
               <div>
-                <label>
-                  <input type="checkbox" checked={selectAll} onChange={toggleAll} style={{ display: "none" }} />
-                  <div>
-                    {selectAll ? <CheckBoxOn width={24} height={24} /> : <CheckBoxOff width={24} height={24} />}
-                  </div>
-                </label>
+                {checkArray.length !== 0 && checkArray.length === cropList?.crops.length ? (
+                  <CheckBoxOn
+                    width={24}
+                    height={24}
+                    onClick={() => {
+                      toggleAll(true);
+                    }}
+                  />
+                ) : (
+                  <CheckBoxOff
+                    width={24}
+                    height={24}
+                    onClick={() => {
+                      toggleAll(false);
+                    }}
+                  />
+                )}
               </div>
               {checkArray.length === 0 ? (
                 <>
-                  <p>NO</p>
-                  <p>작물명</p>
-                  <p></p>
-                  <p></p>
+                  <p className="table-header-first">NO</p>
+                  <p className="table-header-sec">작물명</p>
+                  <p className="table-header-third"></p>
+                  <p className="table-header-third"></p>
                 </>
               ) : (
                 <>
                   <div className="btn-wrap">
-                    <S.SelectDeleteBtn onClick={handelSelectDeleteClick}>
+                    <S.SelectDeleteBtn
+                      onClick={() => {
+                        deleteMultipleCropMutate({
+                          data: {
+                            deleteCrop: checkArray.join("||"),
+                          },
+                        });
+                      }}>
                       <DeleteIcon width={12} height={12} />
                       <p>선택삭제</p>
                     </S.SelectDeleteBtn>
@@ -372,34 +368,25 @@ function CropsList() {
             </div>
             <S.ListBlockWrap>
               <div className="list-inner">
-                {listData.map((data, index, item) => {
+                {cropList?.crops.map((crop, index) => {
                   return (
-                    <S.ListBlock key={`map${index}`} className={`table-row ${isChecked[index] ? "selected" : ""}`}>
-                      <label key={item.id} className="table-row">
-                        <input
-                          type="checkbox"
-                          checked={isChecked[index]}
-                          onChange={() => toggleItem(index)}
-                          style={{ display: "none" }}
-                        />
-                        <div>
-                          {isChecked[index] ? (
-                            <CheckBoxOn width={24} height={24} />
-                          ) : (
-                            <CheckBoxOff width={24} height={24} />
-                          )}
-                        </div>
-                        <div>{item.name}</div>
-                      </label>
-                      <p>{data.number}</p>
-                      <div className="crops_color" style={{ backgroundColor: CorpsColorList[index] }} />
-                      <p>{data.crops_name}</p>
+                    <S.ListBlock
+                      key={`crop${crop.id}`}
+                      className={`table-row ${checkArray.includes(crop.id) ? "selected" : ""}`}>
+                      {checkArray.includes(crop.id) ? (
+                        <CheckBoxOn width={24} height={24} onClick={() => toggleItem(true, crop.id)} />
+                      ) : (
+                        <CheckBoxOff width={24} height={24} onClick={() => toggleItem(false, crop.id)} />
+                      )}
+                      <p className="table-text-first">{index + 1}</p>
+                      <div className="crops_color" style={{ backgroundColor: crop.color }} />
+                      <p className="table-text-first crop_name">{crop.name}</p>
 
-                      <div className="option-modal-wrap">
+                      <div className="table-text-fin option-modal-wrap">
                         <div
                           className="option-dot"
                           onClick={() => {
-                            handleCropsOptionModalClick(index, data);
+                            handleCropsOptionModalClick(index, crop);
                           }}>
                           <OptionDot width={32} height={32} />
                         </div>
@@ -407,12 +394,8 @@ function CropsList() {
                           <CropsOptionModal
                             optionModalOpen={optionModalOpen}
                             setOptionModalOpen={setOptionModalOpen}
-                            deleteCropsModalOpen={deleteCropsModalOpen}
                             setDeleteCropsModalOpen={setDeleteCropsModalOpen}
-                            // editCropsModalOpen={editCropsModalOpen}
                             setEditCropsModalOpen={setEditCropsModalOpen}
-                            deleteCropsImgModalOpen={deleteCropsImgModalOpen}
-                            setDeleteCropsImgModalOpen={setDeleteCropsImgModalOpen}
                           />
                         )}
                       </div>
@@ -428,48 +411,24 @@ function CropsList() {
       {/* 작물추가 모달 */}
       {addCropsModalOpen && (
         <div className="modal-wrap">
-          <AddCropsModal
-            addCropsModalOpen={addCropsModalOpen}
-            setAddCropsModalOpen={setAddCropsModalOpen}
-            cropsName={cropsName}
-            setCropsName={setCropsName}
-            cropsColor={cropsColor}
-            setCropsColor={setCropsColor}
-            image={image}
-            setImage={setImage}
-          />
+          <AddCropsModal addCropsModalOpen={addCropsModalOpen} setAddCropsModalOpen={setAddCropsModalOpen} />
         </div>
       )}
 
       {/* 작물삭제 모달 */}
       {deleteCropsModalOpen.open && (
         <div className="modal-wrap">
-          <CropsDeleteModal setDeleteCropsModalOpen={setDeleteCropsModalOpen} />
+          <CropsDeleteModal
+            deleteId={deleteCropsModalOpen.deleteId}
+            setDeleteCropsModalOpen={setDeleteCropsModalOpen}
+          />
         </div>
       )}
 
       {/* 작물수정 모달 */}
       {editCropsModalOpen.open && (
         <div className="modal-wrap">
-          <EditCropsModal
-            editCropsModalOpen={editCropsModalOpen}
-            setEditCropsModalOpen={setEditCropsModalOpen}
-            deleteCropsImgModalOpen={deleteCropsImgModalOpen}
-            setDeleteCropsImgModalOpen={setDeleteCropsImgModalOpen}
-            editCropsImg={editCropsImg}
-            setEditCropsImg={setEditCropsImg}
-          />
-        </div>
-      )}
-
-      {/* 작물이미지 삭제 모달 */}
-      {deleteCropsImgModalOpen.open && (
-        <div className="modal-wrap">
-          <CropsImgDeleteModal
-            deleteCropsImgModalOpen={deleteCropsImgModalOpen}
-            setDeleteCropsImgModalOpen={setDeleteCropsImgModalOpen}
-            setEditCropsImg={setEditCropsImg}
-          />
+          <EditCropsModal editCropsModalOpen={editCropsModalOpen} setEditCropsModalOpen={setEditCropsModalOpen} />
         </div>
       )}
     </S.Wrap>

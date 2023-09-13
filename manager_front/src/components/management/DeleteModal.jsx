@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useRef } from "react";
+import React, { useCallback } from "react";
 import styled from "styled-components";
 import { useRecoilState } from "recoil";
 
@@ -87,9 +87,6 @@ function AddFarmModal({ deleteModalOpen, setDeleteModalOpen, checkArray }) {
   const [isDefaultAlertShow, setIsDefaultAlertShowState] = useRecoilState(isDefaultAlertShowState);
   const invalidateQueries = useInvalidateQueries();
 
-  console.log("checkArray", checkArray);
-  console.log("deleteModalOpen", deleteModalOpen?.data?.data?.id);
-
   const closeModal = useCallback(() => {
     setDeleteModalOpen({ open: false, data: undefined });
   }, []);
@@ -98,19 +95,15 @@ function AddFarmModal({ deleteModalOpen, setDeleteModalOpen, checkArray }) {
   //개별삭제는 딕셔너리로 들어옴 data.id값으로 삭제
 
   const handleDeleteOkClick = useCallback(() => {
-    // alert("확인 클릭");
     deleteFarmhouseMutate({
       data: {
-        farmhouseId: deleteModalOpen.data.data.id,
+        farmhouseIds: deleteModalOpen.data.data.id,
       },
     });
   }, [deleteModalOpen]);
 
-  console.log("deleteModalOpen", deleteModalOpen);
-
   const { mutate: deleteFarmhouseMutate } = useDeleteFarmhouse(
     () => {
-      invalidateQueries([useFarmAllListKey]);
       closeModal();
       setIsDefaultAlertShowState({
         isShow: true,
@@ -118,6 +111,7 @@ function AddFarmModal({ deleteModalOpen, setDeleteModalOpen, checkArray }) {
         text: "정상적으로 삭제되었습니다.",
         okClick: null,
       });
+      invalidateQueries([useFarmAllListKey]);
     },
     (error) => {
       setIsDefaultAlertShowState({
@@ -133,8 +127,8 @@ function AddFarmModal({ deleteModalOpen, setDeleteModalOpen, checkArray }) {
     <S.Wrap>
       <S.WrapInner>
         <S.TitleWrap>
-          <p className="title">작물을 삭제하시겠습니까?</p>
-          <p className="sub-title">삭제된 작물정보는 복원 할 수 없습니다.</p>
+          <p className="title">농가를 삭제하시겠습니까?</p>
+          <p className="sub-title">삭제된 농가정보는 복원 할 수 없습니다.</p>
         </S.TitleWrap>
         <S.ButtonWrap>
           <div className="cancel-button" onClick={closeModal}>

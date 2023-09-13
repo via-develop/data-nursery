@@ -10,7 +10,7 @@ import ErrorIcon from "@images/common/alert-error.svg";
 
 const S = {
   StyledAlert: styled(Alert)`
-    position: absolute !important;
+    position: fixed !important;
     left: 50%;
     bottom: 16px;
     transform: translate(-50%, 0);

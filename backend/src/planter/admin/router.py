@@ -82,6 +82,9 @@ def get_admin_dashboard_realtime_planter(
         .subquery()
     )
 
+    target_timezone = timezone("Asia/Seoul")
+    target_date = datetime.now(tz=target_timezone).date()
+
     planters_data = (
         db.query(
             planterModels.Planter.id,
@@ -112,7 +115,12 @@ def get_admin_dashboard_realtime_planter(
                 planterModels.PlanterOutput.planter_work_id
                 == planterModels.PlanterWork.id
             )
-            & (planterModels.PlanterOutput.updated_at >= date.today()),
+            & (
+                func.Date(
+                    func.timezone("Asia/Seoul", planterModels.PlanterOutput.updated_at)
+                )
+                >= target_date
+            ),
         )
         .filter(
             planterModels.Planter.is_del == False,

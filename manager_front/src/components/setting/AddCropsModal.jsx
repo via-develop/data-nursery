@@ -1,12 +1,19 @@
 import React, { useCallback, useEffect, useState, useRef } from "react";
 import styled from "styled-components";
-
 import { ChromePicker } from "react-color";
+import { useRecoilState } from "recoil";
+
+import useCreateCrop from "@src/hooks/queries/crop/useCreateCrop";
+import useInvalidateQueries from "@src/hooks/queries/common/useInvalidateQueries";
+
+import cropColorArray from "@components/common/CropListColor";
 
 import XIcon from "@images/common/icon-x.svg";
 import CropsNoIcon from "@images/setting/crops-no-img.svg";
 import RainbowIcon from "@images/setting/rainbow-color.svg";
 import CheckRainbowIcon from "@images/setting/check-rainbow-icon.svg";
+import { cropListKey } from "@src/utils/query-keys/CropQueryKeys";
+import { isDefaultAlertShowState } from "@src/states/isDefaultAlertShowState";
 
 const S = {
   Wrap: styled.div`
@@ -181,66 +188,45 @@ const S = {
   `,
 };
 
-function AddCropsModal({
-  addCropsModalOpen,
-  setAddCropsModalOpen,
-  cropsName,
-  setCropsName,
-  cropsColor,
-  setCropsColor,
-  image,
-  setImage,
-}) {
+function AddCropsModal({ addCropsModalOpen, setAddCropsModalOpen }) {
   const fileInputRef = useRef(null);
+  const invalidateQueries = useInvalidateQueries();
+  const [isDefaultAlertShow, setIsDefaultAlertShowState] = useRecoilState(isDefaultAlertShowState);
+
+  //작물 추가 정보
+  const [cropsName, setCropsName] = useState("");
+
+  //작물 이미지 추가
+  const [image, setImage] = useState(null);
+  const [imageView, setImageView] = useState(""); // 메뉴 이미지 보여주기 위해 사용
+
+  //선택한 색상
+  const [selectedColor, setSelectedColor] = useState("#929FA6");
+
+  const [isOpen, setIsOpen] = useState(false);
 
   // 이미지 미리보기 클릭 시 파일 선택 창 열기
   const handleImagePreviewClick = () => {
     fileInputRef.current.click();
   };
 
-  // 이미지가 선택되었을 때 호출되는 핸들러 함수
-  const handleImageChange = (e) => {
-    const selectedImage = e.target.files[0];
+  // 등록한 작물 이미지 확인하기 위함
+  const encodeFileToBase64 = useCallback((fileBlob) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(fileBlob);
 
-    // 이미지 미리보기 생성
-    if (selectedImage) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setImage(e.target.result);
+    return new Promise((resolve) => {
+      reader.onload = () => {
+        setImageView(reader.result);
+        resolve();
       };
-      reader.readAsDataURL(selectedImage);
-    }
-  };
+    });
+  }, []);
 
   const closeModal = useCallback(() => {
     setAddCropsModalOpen(false);
     setImage("");
   }, [addCropsModalOpen, image]);
-
-  const handleTraySaveClick = useCallback(() => {
-    closeModal();
-    // setCropsColor("#929FA6");
-  }, []);
-
-  const colors = [
-    "#EF7E7E",
-    "#F7AD77",
-    "#F9E37A",
-    "#C6E37C",
-    "#71B598",
-    "#79CEC8",
-    "#89B9F5",
-    "#A0A3F6",
-    "#B289ED",
-    "#E994EA",
-    "#E783AD",
-    "#929FA6",
-  ];
-
-  //선택한 색상
-  const [selectedColor, setSelectedColor] = useState("#929FA6");
-
-  const [isOpen, setIsOpen] = useState(false);
 
   const handleColorClick = (color) => {
     setSelectedColor(color);
@@ -259,7 +245,30 @@ function AddCropsModal({
   );
 
   // 선택한 색상이 기본색상인지 판단
-  const isColorInArray = colors.includes(selectedColor);
+  const isColorInArray = cropColorArray.includes(selectedColor);
+
+  // 작물 등록 API
+  const { mutate: createCropMutate } = useCreateCrop(
+    () => {
+      // 작물목록 정보 다시 불러오기 위해 쿼리키 삭제
+      invalidateQueries([cropListKey]);
+      setIsDefaultAlertShowState({
+        isShow: true,
+        type: "success",
+        text: "정상적으로 추가되었습니다.",
+        okClick: null,
+      });
+      closeModal();
+    },
+    (error) => {
+      setIsDefaultAlertShowState({
+        isShow: true,
+        type: "error",
+        text: "오류가 발생했습니다.",
+        okClick: null,
+      });
+    },
+  );
 
   return (
     <S.Wrap>
@@ -280,7 +289,7 @@ function AddCropsModal({
             {/* 이미지 미리보기 클릭 시 파일 선택 창 열기 */}
             <div onClick={handleImagePreviewClick} className="img-inner">
               {image ? (
-                <img src={image} alt="Preview" className="yes-image" />
+                <img src={imageView} alt="Preview" className="yes-image" />
               ) : (
                 <CropsNoIcon width={200} height={200} />
               )}
@@ -290,7 +299,10 @@ function AddCropsModal({
           <input
             type="file"
             accept="image/*"
-            onChange={handleImageChange}
+            onChange={(e) => {
+              encodeFileToBase64(e.target.files[0]);
+              setImage(e.target.files[0]);
+            }}
             ref={fileInputRef}
             style={{ display: "none" }}
           />
@@ -312,9 +324,8 @@ function AddCropsModal({
                 width: "100%",
                 justifyContent: "space-between",
               }}>
-              {colors.map((color, index) => (
+              {cropColorArray?.map((color, index) => (
                 <div
-                  // key={color}
                   key={`map${index}`}
                   onClick={() => handleColorClick(color)}
                   className="color-check-wrap"
@@ -362,7 +373,16 @@ function AddCropsModal({
             <p>저장</p>
           </S.ButtonWrapOff>
         ) : (
-          <S.ButtonWrap onClick={handleTraySaveClick}>
+          <S.ButtonWrap
+            onClick={() => {
+              createCropMutate({
+                data: {
+                  name: cropsName,
+                  color: selectedColor,
+                  image: image,
+                },
+              });
+            }}>
             <p>저장</p>
           </S.ButtonWrap>
         )}

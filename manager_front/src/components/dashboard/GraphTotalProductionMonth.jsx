@@ -22,20 +22,24 @@ function GraphTotalProduction() {
     },
   });
 
-  const dataArray = [];
-  for (let i = 0; i < 12; i++) {
-    const data = null;
-    dataArray.push(data);
-  }
-
-  planterTotal?.map((data) => {
-    dataArray[data?.month - 1] = data?.output;
-  });
-
   const graphRef = useRef(null);
   let graphInstance = null;
 
   useEffect(() => {
+    if (!planterTotal) {
+      return;
+    }
+
+    const dataArray = [];
+    for (let i = 0; i < 12; i++) {
+      const data = null;
+      dataArray.push(data);
+    }
+
+    planterTotal?.map((data) => {
+      dataArray[data?.month - 1] = data?.output;
+    });
+
     const graphCtx = graphRef.current?.getContext("2d");
 
     const backgroundBar = {
@@ -161,7 +165,7 @@ function GraphTotalProduction() {
     return () => {
       destroyChart(); // 컴포넌트가 unmount될 때 차트 파괴
     };
-  }, []);
+  }, [planterTotal]);
 
   return (
     <S.Wrap>
