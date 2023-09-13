@@ -1076,6 +1076,7 @@ def get_farmhouse_month_statics(
             & (models.PlanterWorkStatus.planter_work_id == models.PlanterWork.id),
         )
         .filter(
+            models.PlanterWork.is_del == False,
             extract(
                 "year", func.timezone("Asia/Seoul", models.PlanterWork.updated_at)
             )
@@ -1095,6 +1096,7 @@ def get_farmhouse_month_statics(
             & (models.PlanterWorkStatus.planter_work_id == models.PlanterWork.id),
         )
         .filter(
+            models.PlanterWork.is_del == False,
             extract(
                 "year", func.timezone("Asia/Seoul", models.PlanterWorkStatus.updated_at)
             )
@@ -1136,6 +1138,7 @@ def get_farmhouse_month_statics(
             & (planter.id == models.PlanterWork.planter_id),
         )
         .filter(
+            models.PlanterWork.is_del == False,
             extract(
                 "year", func.timezone("Asia/Seoul", models.PlanterWork.updated_at)
             )
@@ -1172,6 +1175,7 @@ def get_farmhouse_month_statics(
             )
             .filter(
                 models.PlanterWork.planter_id == planter.id,
+                models.PlanterWork.is_del == False,
                 extract(
                     "year", func.timezone("Asia/Seoul", models.PlanterWork.updated_at)
                 )
@@ -1243,6 +1247,7 @@ def get_farmhouse_month_statics(
             )
             .filter(
                 models.PlanterWork.planter_id == planter.id,
+                models.PlanterWork.is_del == False,
                 extract(
                     "year", func.timezone("Asia/Seoul", models.PlanterWork.updated_at)
                 )
