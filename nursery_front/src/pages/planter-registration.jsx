@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 
 import useRegisterPlanter from "@hooks/queries/planter/useRegisterPlanter";
 import useUserInfo from "@hooks/queries/auth/useUserInfo";
+import useAllCacheClear from "@hooks/queries/common/useAllCacheClear";
 
 import MainLayout from "@components/layout/MainLayout";
 import DefaultButton from "@components/common/button/DefaultButton";
@@ -11,6 +12,7 @@ import DefaultModal from "@components/common/modal/DefaultModal";
 
 import { defaultButtonColor } from "@utils/ButtonColor";
 import { requireAuthentication } from "@utils/LoginCheckAuthentication";
+import userLogout from "@utils/userLogout";
 
 const S = {
   Wrap: styled.div`
@@ -56,8 +58,9 @@ const S = {
   `,
 };
 
-function RegistrationPage() {
+function PlanterRegistrationPage() {
   const router = useRouter();
+  const clearQueries = useAllCacheClear();
 
   const [serialNumber, setSerialNumber] = useState("");
   const [modalOpen, setModalOpen] = useState({
@@ -92,7 +95,7 @@ function RegistrationPage() {
   const { data: userInfo } = useUserInfo({
     successFn: () => {},
     errorFn: () => {
-      // userLogout(router, clearQueries);
+      userLogout(router, clearQueries);
     },
   });
 
@@ -158,4 +161,4 @@ export const getServerSideProps = requireAuthentication((context) => {
   return { props: {} };
 });
 
-export default RegistrationPage;
+export default PlanterRegistrationPage;

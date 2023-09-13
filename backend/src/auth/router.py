@@ -113,6 +113,7 @@ def login_user(user_data: schemas.UserLogin, db: Session = Depends(get_db)):
                     "farm_house_id": farm_house.farm_house_id,
                     "producer_name": farm_house.producer_name,
                     "nursery_number": farm_house.nursery_number,
+                     "address": farm_house.address,
                     "phone": farm_house.phone,
                 },
                 "planter": {
@@ -143,7 +144,10 @@ def login_user(user_data: schemas.UserLogin, db: Session = Depends(get_db)):
                 "user": {
                     "id": login_user.id,
                     "name": login_user.name,
-                }
+                },
+                "admin_user_info": {
+                    "is_top_admin": login_user.user__admin_user_info.is_top_admin
+                },
             },
         )
 
@@ -162,9 +166,26 @@ def login_user(user_data: schemas.UserLogin, db: Session = Depends(get_db)):
     return response
 
 
+@router.post(
+    "/logout",
+    description="유저 로그아웃 사용합니다.<br/>일반유저(농가)와 관리자유저의 로그인 구분을 l_type의 값으로 판단합니다.<br/>01: 일반유저, 99: 관리자",
+    status_code=200,
+)
+def login_user(l_type: str, request: Request, db: Session = Depends(get_db)):
+    if l_type == "01":
+        response = JSONResponse(status_code=200, content={"msg": "SUCCESS"})
+        response.delete_cookie(AUTH_COOKIE_COMMON_USER_ACCESS_TOKEN)
+
+    if l_type == "99":
+        response = JSONResponse(status_code=200, content={"msg": "SUCCESS"})
+        response.delete_cookie(AUTH_COOKIE_ADMIN_USER_ACCESS_TOKEN)
+
+    return response
+
+
 @router.get(
     "/common/user",
-    description="일반유저 로그인 시 사용합니다.<br/>로그인 요청 시 _ta 키를 갖고있는 쿠키가 있어야합니다.<br/>로그인 성공 시 유저 정보를 리턴해줍니다.",
+    description="일반유저 정보요청 시 사용합니다.<br/>로그인 요청 시 _ta 키를 갖고있는 쿠키가 있어야합니다.<br/>로그인 성공 시 유저 정보를 리턴해줍니다.",
     status_code=200,
 )
 def get_user(request: Request, db: Session = Depends(get_db)):
@@ -188,6 +209,7 @@ def get_user(request: Request, db: Session = Depends(get_db)):
                 "farm_house_id": farm_house.farm_house_id,
                 "producer_name": farm_house.producer_name,
                 "nursery_number": farm_house.nursery_number,
+                "address": farm_house.address,
                 "phone": farm_house.phone,
             },
             "planter": {
@@ -215,14 +237,11 @@ def get_user(request: Request, db: Session = Depends(get_db)):
 
 @router.get(
     "/admin/user",
-    description="관리자 유저 로그인 시 사용합니다.<br/>로그인 요청 시 _taa 키를 갖고있는 쿠키가 있어야합니다.<br/>로그인 성공 시 유저 정보를 리턴해줍니다.",
+    description="관리자 유저 정보요청 시 사용합니다.<br/>로그인 요청 시 _taa 키를 갖고있는 쿠키가 있어야합니다.<br/>로그인 성공 시 유저 정보를 리턴해줍니다.",
     status_code=200,
-    # openapi_extra="?"
-    # include_in_schema=False,
 )
 def get_user(request: Request, db: Session = Depends(get_db)):
     user = get_current_user("99", request.cookies, db)
-
     access_token = create_access_token(user.login_id)
 
     response = JSONResponse(
@@ -231,7 +250,10 @@ def get_user(request: Request, db: Session = Depends(get_db)):
             "user": {
                 "id": user.id,
                 "name": user.name,
-            }
+            },
+            "admin_user_info": {
+                "is_top_admin": user.user__admin_user_info.is_top_admin
+            },
         },
     )
 
@@ -442,6 +464,7 @@ def get_farm_house_list(
             producer_name=farm_house.producer_name,
             address=farm_house.address,
             phone=farm_house.phone,
+            user_id=farm_house.owner_id,
             planter=planter_response,
             last_planter_status=last_status_response,
         )
@@ -481,46 +504,51 @@ def update_farm_house_info(
     status_code=200,
 )
 def delete_farmhouse(
-    request: Request, farmhouse_id: int, db: Session = Depends(get_db)
+    request: Request, farmhouse_ids: str, db: Session = Depends(get_db)
 ):
     get_current_user("99", request.cookies, db)
 
-    farmhouse = get_(db, models.FarmHouse, id=farmhouse_id)
+    # farmhouse = get_(db, models.FarmHouse, id=farmhouse_id)
+    target_ids = farmhouse_ids.split("||")
+    farmhouses = (
+        db.query(models.FarmHouse).filter(models.FarmHouse.id.in_(target_ids)).all()
+    )
 
-    # Farmhouse User 삭제
-    user = farmhouse.farm_house_user
-    user.is_del = True
+    for farmhouse in farmhouses:
+        # Farmhouse User 삭제
+        user = farmhouse.farm_house_user
+        user.is_del = True
 
-    # Famhouse Planter 삭제
-    planter = farmhouse.farm_house_planter
-    planter.is_del = True
+        # Famhouse Planter 삭제
+        planter = farmhouse.farm_house_planter
+        planter.is_del = True
 
-    # Planter status 삭제
-    planter_status_list = planter.planter__planter_status
-    for planter_status in planter_status_list:
-        planter_status.is_del = True
+        # Planter status 삭제
+        planter_status_list = planter.planter__planter_status
+        for planter_status in planter_status_list:
+            planter_status.is_del = True
 
-    # PlanterWork 목록 가져오기
-    planter_work_list = planter.planter__planter_work
+        # PlanterWork 목록 가져오기
+        planter_work_list = planter.planter__planter_work
 
-    for planter_work in planter_work_list:
-        # PlanterWOrk 삭제
-        planter_work.is_del = True
-        # lanterWorkStatus 가져오기
-        planter_work_status_list = planter_work.planter_work__planter_work_status
-        # PlanterWork별 PlanterWorkStatus 가져오기
-        for planter_work_status in planter_work_status_list:
-            # PlanterWorkStatus 삭제
-            planter_work_status.is_del = True
-        # PlanterOutput 가져오기
-        planter_work_output_list = planter_work.planter_works__planter_output
-        # PlanterWork별 PlanterOutput 가져오기
-        for planter_work_output in planter_work_output_list:
-            # PlanterOutput 삭제
-            planter_work_output.is_del = True
+        for planter_work in planter_work_list:
+            # PlanterWOrk 삭제
+            planter_work.is_del = True
+            # lanterWorkStatus 가져오기
+            planter_work_status_list = planter_work.planter_work__planter_work_status
+            # PlanterWork별 PlanterWorkStatus 가져오기
+            for planter_work_status in planter_work_status_list:
+                # PlanterWorkStatus 삭제
+                planter_work_status.is_del = True
+            # PlanterOutput 가져오기
+            planter_work_output_list = planter_work.planter_works__planter_output
+            # PlanterWork별 PlanterOutput 가져오기
+            for planter_work_output in planter_work_output_list:
+                # PlanterOutput 삭제
+                planter_work_output.is_del = True
 
-    # Farmhouse 삭제
-    farmhouse.is_del = True
+        # Farmhouse 삭제
+        farmhouse.is_del = True
 
     db.commit()
 

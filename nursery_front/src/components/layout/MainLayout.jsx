@@ -9,6 +9,9 @@ import MoreIcon from "@images/common/more-icon.svg";
 import MyInfoIcon from "@images/common/my-info-icon.svg";
 import theme from "@src/styles/theme";
 import DefaultAlert from "@components/common/alert/DefaultAlert";
+import DefaultButton from "@components/common/button/DefaultButton";
+import { defaultButtonColor } from "@utils/ButtonColor";
+import DefaultDropdown from "@components/common/dropdown/DefaultDropdown";
 
 const S = {
   BackgroundWrap: styled.div`
@@ -181,6 +184,24 @@ const S = {
             }
           `}
   `,
+  BottomButtonWrap: styled.div`
+    height: ${(props) => props.height};
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    position: sticky;
+    bottom: 0px;
+    background: #ffffff;
+    box-shadow: 0px -4px 10px 0px rgba(165, 166, 168, 0.16);
+    padding: 8px 24px;
+
+    .work-start-text {
+      ${({ theme }) => theme.textStyle.h6Bold}
+      color: ${({ theme }) => theme.basic.warning};
+    }
+  `,
 };
 
 // pageName : 헤더에서 나타낼 페이지이름, 아무값도 넘겨주지 않으면 헤더 비활성화
@@ -188,6 +209,7 @@ const S = {
 // backIconClickFn : 뒤로가기 아이콘 클릭 시 실행되는 함수
 // isMoreIcon : 헤더에서 ... 표시 유무
 // backgroundColor : 헤더 배경 색상
+// buttonSetting : color은 표시할 버튼의 색(호버, 포커스 등 포함), text는 버튼에 표시될 값, onClickEvent는 버튼 클릭 시 실행될 함수
 function MainLayout({
   children,
   pageName,
@@ -195,8 +217,10 @@ function MainLayout({
   backIconClickFn,
   isMoreIcon = false,
   backgroundColor = "#ffffff",
+  buttonSetting = { color: defaultButtonColor, text: "", onClickEvent: null },
 }) {
   const router = useRouter();
+  const [dropdownOpen, setDropdownOpen] = useState(false);
 
   // 오늘 날짜
   const today = useMemo(() => {
@@ -220,12 +244,18 @@ function MainLayout({
   useEffect(() => {
     if (pageName === "main") {
       setMainContentHeight("calc(100% - 160px)");
+    } else if (pageName === "작업 정보" && !!buttonSetting) {
+      // 작업 정보 페이지의 시작버튼 있을 경우
+      setMainContentHeight("calc(100% - 196px)");
+    } else if (pageName === "작업 등록" || pageName === "작업정보수정") {
+      // 작업 등록, 작업정보수정 페이지
+      setMainContentHeight("calc(100% - 162px)");
     } else if (!!pageName) {
       setMainContentHeight("calc(100% - 72px)");
     } else {
       setMainContentHeight("100%");
     }
-  }, [pageName]);
+  }, [pageName, isMoreIcon, buttonSetting]);
 
   return (
     <S.BackgroundWrap>
@@ -256,14 +286,36 @@ function MainLayout({
                 <MoreIcon
                   className="more-icon-wrap"
                   onClick={() => {
-                    router.push("/");
+                    setDropdownOpen(true);
                   }}
                 />
               </S.PageNameWrap>
             )}
             <div className="content">{children}</div>
+            {pageName === "작업 정보" && !!buttonSetting && (
+              <S.BottomButtonWrap height={"124px"}>
+                {isMoreIcon && <p className="work-start-text">시작을 눌러 작업을 시작하세요!</p>}
+                {!isMoreIcon && <p className="work-start-text">버튼을 눌러 작업을 완료하세요!</p>}
+                <DefaultButton
+                  customStyle={buttonSetting.color}
+                  text={buttonSetting.text}
+                  onClick={buttonSetting.onClickEvent}
+                />
+              </S.BottomButtonWrap>
+            )}
+            {(pageName === "작업 등록" || pageName === "작업정보수정") && (
+              <S.BottomButtonWrap height={"90px"}>
+                {isMoreIcon && <p className="work-start-text">시작을 눌러 작업을 시작하세요!</p>}
+                <DefaultButton
+                  customStyle={buttonSetting.color}
+                  text={buttonSetting.text}
+                  onClick={buttonSetting.onClickEvent}
+                />
+              </S.BottomButtonWrap>
+            )}
             {pageName === "main" && <BottomBar />}
             <DefaultAlert />
+            <DefaultDropdown dropdownOpen={dropdownOpen} setDropdownOpen={setDropdownOpen} />
           </S.MainContent>
         </S.MainLayout>
       </S.Wrap>

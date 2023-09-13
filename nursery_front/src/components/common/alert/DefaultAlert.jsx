@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useRecoilState } from "recoil";
-import styled, { css } from "styled-components";
+import styled from "styled-components";
 import { Button, Alert } from "react-bootstrap";
 
 import { isDefaultAlertShowState } from "@states/isDefaultAlertShowState";
@@ -19,7 +19,7 @@ const S = {
     height: 64px;
     /* max-width: 90%; */
     padding: 20px 24px !important;
-    margin: 0px;
+    margin: 0px !important;
 
     background-color: ${({ theme }) => theme.basic.grey60} !important;
     border-radius: 8px;
@@ -36,9 +36,9 @@ const S = {
     }
 
     p {
-      font-size: 18px;
-      line-height: 24px;
-      font-weight: 300;
+      font-size: 18px !important;
+      line-height: 24px !important;
+      font-weight: 300 !important;
       white-space: pre-line;
       word-break: keep-all;
       color: #fff;
@@ -55,7 +55,7 @@ const S = {
 
     ${({ theme }) => theme.textStyle.h5Regular}
     border-radius: 8px !important;
-    border: none;
+    border: none !important;
 
     color: #ffffff !important;
     background-color: ${({ theme }) => theme.basic.grey50} !important;
@@ -69,7 +69,7 @@ function DefaultAlert() {
     let checkTime = undefined;
 
     if (!!isDefaultAlertShow.text) {
-      if (isDefaultAlertShow.isShow && isDefaultAlertShow.type === "success") {
+      if (isDefaultAlertShow.isShow) {
         checkTime = setTimeout(() => {
           setIsDefaultAlertShowState((prev) => ({
             ...prev,
@@ -104,7 +104,7 @@ function DefaultAlert() {
       <S.StyledAlert show={isDefaultAlertShow.isShow} type={isDefaultAlertShow.type}>
         <div className="text-wrap">
           {isDefaultAlertShow.type === "success" && <SuccessIcon />}
-          {isDefaultAlertShow.type === "error" && <ErrorIcon />}
+          {isDefaultAlertShow.type === "error" && <ErrorIcon width={24} height={24} fill={"#FF7D60"} />}
           <p>{isDefaultAlertShow.text}</p>
         </div>
         {isDefaultAlertShow.type === "error" && <S.OkButton onClick={handleOkClick}>OK</S.OkButton>}

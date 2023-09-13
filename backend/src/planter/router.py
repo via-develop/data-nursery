@@ -1,15 +1,16 @@
 from fastapi import APIRouter, Depends, Request
-from sqlalchemy import func
+from sqlalchemy import func, extract, case, desc
 from sqlalchemy.orm import Session, aliased
 from starlette.responses import JSONResponse
+from typing import Optional
 
 from datetime import datetime
 from pytz import timezone, utc
 
-# import pytz
 
 import src.planter.models as models
 import src.planter.schemas as schemas
+import src.crops.models as cropModels
 from utils.database import get_db
 from utils.db_shortcuts import get_, create_, get_current_user
 
@@ -639,7 +640,10 @@ def planter_work_done_datetime_list(
             {
                 "id": planter_work.id,
                 "crop_name": planter_work.planter_work__crop.name,
-                "crop_kine": planter_work.crop_kind,
+                "crop_image": planter_work.planter_work__crop.image,
+                "crop_kind": planter_work.crop_kind,
+                "sowing_date": planter_work.sowing_date,
+                "deadline": planter_work.deadline,
                 "seed_quantity": planter_work.seed_quantity,
                 "tray_total": planter_work.planter_work__planter_tray.total,
             }
@@ -994,4 +998,179 @@ def get_farmhouse_today_dashboard(request: Request, db: Session = Depends(get_db
             "working_times": today_planter_usage[0],
             "time": planter_status_operating_time,
         },
+    }
+
+
+@router.get(
+    "/month/statics/{year}/{month}", description="월별 농가 통계현황 api", status_code=200
+)
+def get_farmhouse_month_statics(
+    request: Request,
+    year: int,
+    month: int,
+    db: Session = Depends(get_db),
+):
+    user = get_current_user("01", request.cookies, db)
+    planter = user.user_farm_house.farm_house_planter
+
+    total_output = (
+        db.query(func.sum(models.PlanterOutput.output))
+        .join(
+            models.PlanterWork,
+            (models.PlanterWork.planter_id == planter.id)
+            & (models.PlanterOutput.planter_work_id == models.PlanterWork.id),
+        )
+        .filter(
+            extract(
+                "year", func.timezone("Asia/Seoul", models.PlanterOutput.updated_at)
+            )
+            == year,
+        )
+    )
+
+    done_count = (
+        db.query(
+            func.sum(case((models.PlanterWorkStatus.status == "DONE", 1), else_=0))
+        )
+        .join(
+            models.PlanterWork,
+            (models.PlanterWork.planter_id == planter.id)
+            & (models.PlanterWorkStatus.planter_work_id == models.PlanterWork.id),
+        )
+        .filter(
+            extract(
+                "year", func.timezone("Asia/Seoul", models.PlanterWorkStatus.updated_at)
+            )
+            == year,
+        )
+    )
+
+    popular_crop = (
+        db.query(
+            cropModels.Crop.name,
+            cropModels.Crop.image,
+            func.sum(models.PlanterOutput.output).label("total_output"),
+        )
+        .join(
+            models.PlanterWork,
+            (cropModels.Crop.id == models.PlanterWork.crop_id)
+            & (planter.id == models.PlanterWork.planter_id),
+        )
+        .join(
+            models.PlanterOutput,
+            models.PlanterWork.id == models.PlanterOutput.planter_work_id,
+        )
+        .filter(
+            extract(
+                "year", func.timezone("Asia/Seoul", models.PlanterOutput.updated_at)
+            )
+            == year,
+        )
+    )
+
+    if month == 0:
+        total_output = total_output.scalar() or 0
+        done_count = done_count.scalar() or 0
+        daily_output = (
+            db.query(
+                extract("month", models.PlanterOutput.updated_at).label("month"),
+                func.sum(models.PlanterOutput.output).label("total_output"),
+            )
+            .join(
+                models.PlanterWork,
+                (models.PlanterWork.planter_id == planter.id)
+                & (models.PlanterWork.id == models.PlanterOutput.planter_work_id),
+            )
+            .filter(
+                extract(
+                    "year", func.timezone("Asia/Seoul", models.PlanterOutput.updated_at)
+                )
+                == year,
+            )
+            .group_by("month")
+            .all()
+        )
+
+        popular_crop = (
+            popular_crop.group_by(cropModels.Crop.name, cropModels.Crop.image)
+            .order_by(desc("total_output"))
+            .all()
+        )
+
+        daily_output_result = [
+            {"month": month, "output": output} for month, output in daily_output
+        ]
+    else:
+        total_output = (
+            total_output.filter(
+                extract(
+                    "month",
+                    func.timezone("Asia/Seoul", models.PlanterOutput.updated_at),
+                )
+                == month,
+            ).scalar()
+            or 0
+        )
+        done_count = (
+            done_count.filter(
+                extract(
+                    "month",
+                    func.timezone("Asia/Seoul", models.PlanterWorkStatus.updated_at),
+                )
+                == month,
+            ).scalar()
+            or 0
+        )
+        daily_output = (
+            db.query(
+                extract("day", models.PlanterOutput.updated_at).label("day"),
+                func.sum(models.PlanterOutput.output).label("total_output"),
+            )
+            .join(
+                models.PlanterWork,
+                (models.PlanterWork.planter_id == planter.id)
+                & (models.PlanterWork.id == models.PlanterOutput.planter_work_id),
+            )
+            .filter(
+                extract(
+                    "year", func.timezone("Asia/Seoul", models.PlanterOutput.updated_at)
+                )
+                == year,
+                extract(
+                    "month",
+                    func.timezone("Asia/Seoul", models.PlanterOutput.updated_at),
+                )
+                == month,
+            )
+            .group_by("day")
+            .all()
+        )
+
+        popular_crop = (
+            popular_crop.filter(
+                extract(
+                    "month",
+                    func.timezone("Asia/Seoul", models.PlanterOutput.updated_at),
+                )
+                == month,
+            )
+            .group_by(cropModels.Crop.name, cropModels.Crop.image)
+            .order_by(desc("total_output"))
+            .all()
+        )
+
+        daily_output_result = [
+            {"day": day, "output": output} for day, output in daily_output
+        ]
+
+    popular_crop_result = [
+        {"name": name, "image": image, "output": output}
+        for name, image, output in popular_crop
+    ]
+
+    return {
+        "total_output": total_output,
+        "working_times": done_count,
+        "daily_output": daily_output_result,
+        "popular_crop": popular_crop_result,
     }

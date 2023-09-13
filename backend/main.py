@@ -1,4 +1,6 @@
 # FastAPI 앱을 초기화하는 프로젝트의 루트
+from types import FrameType
+from typing import Optional
 from fastapi import FastAPI, Request, Response
 
 # from fastapi.openapi.docs import get_swagger_ui_html
@@ -8,7 +10,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
 import os
-
+from dotenv import load_dotenv, dotenv_values
 from utils.log_config import logger
 from utils.exceptions import AuthenticationException
 
@@ -30,17 +32,14 @@ from constant.cookie_set import (
 # from src.planter import models as PlanterModel, router as PlanterRouter
 
 from settings import BASE_DIR
+from utils.database import SessionLocal
+from schedule.schadule_main import Schedule
 
 # from src.auth import router as AuthRouter
 # from src.crops import router as CropRouter
 # from src.planter import router as PlanterRouter
 
 # from utils.database import AppModelBase
-
-
-from dotenv import load_dotenv, dotenv_values
-
-from utils.database import SessionLocal, engine
 
 
 load_dotenv()
@@ -60,6 +59,7 @@ app = FastAPI(
     # redoc_url=None,
     # openapi_url=None,
 )
+Schedule.start()
 
 
 @app.exception_handler(AuthenticationException)
@@ -132,17 +132,16 @@ async def db_session_middleware(request: Request, call_next):
     return response
 
 
-# @app.get("/docs")
-# async def get_documentation(
-#     username: str, password: str, db: Session = Depends(get_current_user(""))
-# ):
-#     return get_swagger_ui_html(
-#         openapi_url=f"/openapi.json?username={username}&password={password}",
-#         title="docs",
-#     )
-
-
-# @app.get("/openapi.json")
-# async def openapi(request: Request, db: Session = Depends(get_db)):
-#     get_current_user("99", request)
-#     return get_openapi(title="FastAPI", version="0.1.0", routes=app.routes)
+# 예약된 모든 작업 보기
+@app.get("/schedule/show_schedules", tags=["schedule"])
+async def get_scheduled_syncs():
+    schedules = []
+    for job in Schedule.get_jobs():
+        schedules.append(
+            {
+                "Name": str(job.id),
+                "Run Frequency": str(job.trigger),
+                "Next Run": str(job.next_run_time),
+            }
+        )
+    return schedules

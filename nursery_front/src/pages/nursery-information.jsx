@@ -1,13 +1,17 @@
-import React, { useCallback, useState } from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 import { useRouter } from "next/router";
 import { Button } from "react-bootstrap";
 
+import useUserInfo from "@hooks/queries/auth/useUserInfo";
+import useAllCacheClear from "@hooks/queries/common/useAllCacheClear";
+
 import MainLayout from "@components/layout/MainLayout";
 import DefaultModal from "@components/common/modal/DefaultModal";
+import DefaultInput from "@components/common/input/DefaultInput";
 
-import { defaultButtonColor } from "@utils/ButtonColor";
 import { requireAuthentication } from "@utils/LoginCheckAuthentication";
+import userLogout from "@utils/userLogout";
 
 const S = {
   Wrap: styled.div`
@@ -58,22 +62,6 @@ const S = {
     .title-text {
       color: ${({ theme }) => theme.basic.grey50};
     }
-
-    .value-box {
-      border: 1px solid ${({ theme }) => theme.basic.lightSky};
-      border-radius: 8px;
-      padding: 6px 8px 6px 16px;
-      height: 52px;
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      align-items: flex-start;
-      justify-content: center;
-
-      p {
-        color: ${({ theme }) => theme.basic.grey60};
-      }
-    }
   `,
   LogoutButtonWrap: styled.div`
     display: flex;
@@ -86,9 +74,9 @@ const S = {
     height: 44px;
     padding: 12px 24px !important;
 
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
 
     ${({ theme }) => theme.textStyle.h6Bold}
     border-radius: 8px !important;
@@ -99,8 +87,9 @@ const S = {
   `,
 };
 
-function NurseryInfomationPage() {
+function NurseryInformationPage() {
   const router = useRouter();
+  const clearQueries = useAllCacheClear();
 
   const [modalOpen, setModalOpen] = useState({
     open: false,
@@ -109,6 +98,14 @@ function NurseryInfomationPage() {
     description: "",
     btnType: "",
     afterFn: null,
+  });
+
+  // 유저 정보 API
+  const { data: userInfo } = useUserInfo({
+    successFn: () => {},
+    errorFn: () => {
+      userLogout(router, clearQueries);
+    },
   });
 
   return (
@@ -120,44 +117,32 @@ function NurseryInfomationPage() {
       backgroundColor="#5899FB">
       <S.Wrap>
         <S.FarmHouseNameWrap>
-          <p>가야프러그영농조합</p>
+          <p>{userInfo?.farm_house.name}</p>
         </S.FarmHouseNameWrap>
         <S.InfoWrap>
           <S.InfoContent>
             <p className="title-text">파종기 S/N</p>
-            <div className="value-box">
-              <p>KN001DS0976</p>
-            </div>
+            <DefaultInput text={userInfo?.planter.serial_number} readOnly={true} />
           </S.InfoContent>
           <S.InfoContent>
             <p className="title-text">농가 ID</p>
-            <div className="value-box">
-              <p>PF_0021350</p>
-            </div>
+            <DefaultInput text={userInfo?.farm_house.farm_house_id} readOnly={true} />
           </S.InfoContent>
           <S.InfoContent>
             <p className="title-text">육묘업 등록번호</p>
-            <div className="value-box">
-              <p>제 13-부산-2018-60-01</p>
-            </div>
+            <DefaultInput text={userInfo?.farm_house.nursery_number} readOnly={true} />
           </S.InfoContent>
           <S.InfoContent>
             <p className="title-text">주소</p>
-            <div className="value-box">
-              <p>(51010) 경남 김해시 화목동 1605-4</p>
-            </div>
+            <DefaultInput text={userInfo?.farm_house.address} readOnly={true} />
           </S.InfoContent>
           <S.InfoContent>
             <p className="title-text">생산자명</p>
-            <div className="value-box">
-              <p>이형재</p>
-            </div>
+            <DefaultInput text={userInfo?.farm_house.producer_name} readOnly={true} />
           </S.InfoContent>
           <S.InfoContent>
             <p className="title-text">연락처</p>
-            <div className="value-box">
-              <p>055-314-5858</p>
-            </div>
+            <DefaultInput text={userInfo?.farm_house.phone} readOnly={true} />
           </S.InfoContent>
           <S.LogoutButtonWrap>
             <S.LogoutButton
@@ -168,7 +153,7 @@ function NurseryInfomationPage() {
                   title: "로그아웃을\n진행하시겠습니까?",
                   btnType: "two",
                   afterFn: () => {
-                    alert("준비중입니다.");
+                    userLogout(router, clearQueries);
                   },
                 });
               }}>
@@ -187,4 +172,4 @@ export const getServerSideProps = requireAuthentication((context) => {
   return { props: {} };
 });
 
-export default NurseryInfomationPage;
+export default NurseryInformationPage;

@@ -2,13 +2,13 @@
 <mask id="path-1-inside-1_1_571" fill="white">
 <rect x="6.96429" y="8.2041" width="26.0714" height="5.95918" rx="1.4898"/>
 </mask>
-<rect x="6.96429" y="8.2041" width="26.0714" height="5.95918" rx="1.4898" stroke="#6CA7FF" stroke-width="4.46939" stroke-linejoin="round" mask="url(#path-1-inside-1_1_571)"/>
+<rect x="6.96429" y="8.2041" width="26.0714" height="5.95918" rx="1.4898" stroke="current" stroke-width="4.46939" stroke-linejoin="round" mask="url(#path-1-inside-1_1_571)"/>
 <mask id="path-2-inside-2_1_571" fill="white">
 <rect x="6.96429" y="17.0204" width="26.0714" height="5.95918" rx="1.4898"/>
 </mask>
-<rect x="6.96429" y="17.0204" width="26.0714" height="5.95918" rx="1.4898" stroke="#6CA7FF" stroke-width="4.46939" stroke-linejoin="round" mask="url(#path-2-inside-2_1_571)"/>
+<rect x="6.96429" y="17.0204" width="26.0714" height="5.95918" rx="1.4898" stroke="current" stroke-width="4.46939" stroke-linejoin="round" mask="url(#path-2-inside-2_1_571)"/>
 <mask id="path-3-inside-3_1_571" fill="white">
 <rect x="6.96429" y="25.8367" width="26.0714" height="5.95918" rx="1.4898"/>
 </mask>
-<rect x="6.96429" y="25.8367" width="26.0714" height="5.95918" rx="1.4898" stroke="#6CA7FF" stroke-width="4.46939" stroke-linejoin="round" mask="url(#path-3-inside-3_1_571)"/>
+<rect x="6.96429" y="25.8367" width="26.0714" height="5.95918" rx="1.4898" stroke="current" stroke-width="4.46939" stroke-linejoin="round" mask="url(#path-3-inside-3_1_571)"/>
 </svg>

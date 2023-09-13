@@ -11,6 +11,9 @@ const nextConfig = {
 
     return config;
   },
+  images: {
+    domains: ["192.168.2.102", "192.168.1.69"],
+  },
 };
 
 module.exports = nextConfig;

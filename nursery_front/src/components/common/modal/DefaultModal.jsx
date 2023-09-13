@@ -67,11 +67,6 @@ const S = {
     .modal-content-text {
       ${({ theme }) => theme.textStyle.h6Regular}
       color: ${({ theme }) => theme.basic.grey40};
-
-      span {
-        ${({ theme }) => theme.textStyle.h6Bold}
-        color: ${({ theme }) => theme.basic.warning};
-      }
     }
 
     .button-wrap {
@@ -86,6 +81,10 @@ const S = {
 
 function DefaultModal({ modalOpen, setModalOpen }) {
   const closeModal = useCallback(() => {
+    if (!!modalOpen.cancelFn) {
+      modalOpen.cancelFn();
+    }
+
     setModalOpen({
       open: false, // 오픈 여부
       type: "", // success, error, 빈값
@@ -93,6 +92,7 @@ function DefaultModal({ modalOpen, setModalOpen }) {
       description: "", // 추가 설명
       btnType: "", // one, two
       afterFn: null, // 확인 버튼 클릭 시 실행
+      cancelFn: null, // 취소 버튼 클릭 시 실행
     });
   }, []);
 

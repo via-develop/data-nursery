@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import func, case, extract, desc, asc, cast, String
 from starlette.responses import JSONResponse
 from datetime import date, datetime, timedelta
+from pytz import timezone, utc
 from collections import defaultdict
 
 
@@ -111,7 +112,7 @@ def get_admin_dashboard_realtime_planter(
                 planterModels.PlanterOutput.planter_work_id
                 == planterModels.PlanterWork.id
             )
-            & (planterModels.PlanterOutput.created_at >= date.today()),
+            & (planterModels.PlanterOutput.updated_at >= date.today()),
         )
         .filter(
             planterModels.Planter.is_del == False,
@@ -164,35 +165,35 @@ def get_total_output(request: Request, query_type: str, db: Session = Depends(ge
     get_current_user("99", request.cookies, db)
 
     if query_type == "day":
-        hourly_sums = (
+        daily_sum = (
             db.query(
-                extract("hour", planterModels.PlanterOutput.updated_at).label("hour"),
+                extract("day", planterModels.PlanterOutput.updated_at).label("day"),
                 func.sum(planterModels.PlanterOutput.output).label("output_sum"),
             )
             .filter(
-                func.Date(planterModels.PlanterOutput.updated_at)
-                == datetime.utcnow().date()
+                extract("month", planterModels.PlanterOutput.updated_at).label("month")
+                == datetime.utcnow().month
             )
-            .group_by("hour")
+            .group_by("day")
             .all()
         )
 
-        return [{"hour": item[0], "output": item[1]} for item in hourly_sums]
+        return [{"day": item[0], "output": item[1]} for item in daily_sum]
     elif query_type == "month":
-        hourly_sums = (
+        monthly_sum = (
             db.query(
                 extract("month", planterModels.PlanterOutput.updated_at).label("month"),
                 func.sum(planterModels.PlanterOutput.output).label("output_sum"),
             )
             .filter(
-                func.Date(planterModels.PlanterOutput.updated_at)
-                == datetime.utcnow().date()
+                extract("year", planterModels.PlanterOutput.updated_at).label("hour")
+                == datetime.utcnow().year
             )
             .group_by("month")
             .all()
         )
 
-        return [{"month": item[0], "output": item[1]} for item in hourly_sums]
+        return [{"month": item[0], "output": item[1]} for item in monthly_sum]
 
     else:
         return JSONResponse(status_code=433, content=dict(msg="UNPROCESSABLE_ENTITY"))
@@ -214,7 +215,8 @@ def get_crop_total_output(
         houly_crop_sums = (
             db.query(
                 cropModels.Crop.name,
-                extract("hour", planterModels.PlanterOutput.updated_at).label("hour"),
+                cropModels.Crop.color,
+                extract("day", planterModels.PlanterOutput.updated_at).label("day"),
                 func.sum(planterModels.PlanterOutput.output).label("total_output"),
             )
             .join(
@@ -227,22 +229,23 @@ def get_crop_total_output(
                 == planterModels.PlanterOutput.planter_work_id,
             )
             .filter(
-                func.Date(planterModels.PlanterOutput.updated_at)
-                == datetime.utcnow().date()
+                extract("month", planterModels.PlanterOutput.updated_at).label("month")
+                == datetime.utcnow().month
             )
-            .group_by(cropModels.Crop.name, "hour")
+            .group_by(cropModels.Crop.name, cropModels.Crop.color, "day")
             .all()
         )
 
-        for crop_name, hour, total_output in houly_crop_sums:
+        for crop_name, color, day, total_output in houly_crop_sums:
             crop_name = crop_name.lower()
             grouped_data[crop_name].append(
-                {"hour": int(hour), "output": int(total_output)}
+                {"day": int(day), "color": color, "output": int(total_output)}
             )
     elif query_type == "month":
         monthly_crop_sums = (
             db.query(
                 cropModels.Crop.name,
+                cropModels.Crop.color,
                 extract("month", planterModels.PlanterOutput.updated_at).label("month"),
                 func.sum(planterModels.PlanterOutput.output).label("total_output"),
             )
@@ -256,17 +259,17 @@ def get_crop_total_output(
                 == planterModels.PlanterOutput.planter_work_id,
             )
             .filter(
-                func.Date(planterModels.PlanterOutput.updated_at)
-                == datetime.utcnow().date()
+                extract("year", planterModels.PlanterOutput.updated_at).label("year")
+                == datetime.utcnow().year
             )
-            .group_by(cropModels.Crop.name, "month")
+            .group_by(cropModels.Crop.name, cropModels.Crop.color, "month")
             .all()
         )
 
-        for crop_name, month, total_output in monthly_crop_sums:
+        for crop_name, color, month, total_output in monthly_crop_sums:
             crop_name = crop_name.lower()
             grouped_data[crop_name].append(
-                {"month": int(month), "output": int(total_output)}
+                {"month": int(month), "color": color, "output": int(total_output)}
             )
     else:
         return JSONResponse(status_code=433, content=dict(msg="UNPROCESSABLE_ENTITY"))
@@ -505,15 +508,15 @@ def get_planter_work_statics(
     request: Request,
     year: int = None,
     month: int = None,
-    day: int = None,
+    date_range: str = None,
     farm_house_id: str = None,
     farmhouse_name: str = None,
     crop_name: str = None,
-    crop_kind_order_type: int = 0,  # 0: 내림차순, 1: 올림차순
+    crop_kind_order_type: int = None,  # 0: 내림차순, 1: 올림차순
     tray_total: str = None,
-    seed_quantity_order_type: int = 1,  # 0: 내림차순, 1: 올림차순
-    planter_output_order_type: int = 1,  # 0: 내림차순, 1: 올림차순
-    sowing_date_order_type: int = 1,  # 0: 내림차순, 1: 올림차순
+    order_quantity_order_type: int = None,  # 0: 내림차순, 1: 올림차순
+    planter_output_order_type: int = None,  # 0: 내림차순, 1: 올림차순
+    sowing_date_order_type: int = None,  # 0: 내림차순, 1: 올림차순
     is_shipment_completed_order_type: int = 1,  # 0: 내림차순, 1: 올림차순
     page: int = 1,
     size: int = 10,
@@ -561,24 +564,44 @@ def get_planter_work_statics(
 
     delimiter = "||"
 
-    if day:
-        base_query = base_query.filter(
-            extract(
-                "year",
-                func.timezone("Asia/Seoul", planterModels.PlanterWork.updated_at),
+    if date_range:
+        target_timezone = timezone("Asia/Seoul")
+        start_date, end_date = date_range.split(delimiter)
+        start_year, start_month, start_day = start_date.split("-")
+        end_year, end_month, end_day = end_date.split("-")
+
+        target_start_date = datetime(
+            int(start_year), int(start_month), int(start_day), tzinfo=target_timezone
+        ).date()
+        target_end_date = datetime(
+            int(end_year), int(end_month), int(end_day), tzinfo=target_timezone
+        ).date()
+        if target_start_date == target_end_date:
+            base_query = base_query.filter(
+                extract(
+                    "year",
+                    func.timezone("Asia/Seoul", planterModels.PlanterWork.updated_at),
+                )
+                == end_year,
+                extract(
+                    "month",
+                    func.timezone("Asia/Seoul", planterModels.PlanterWork.updated_at),
+                )
+                == end_month,
+                extract(
+                    "day",
+                    func.timezone("Asia/Seoul", planterModels.PlanterWork.updated_at),
+                )
+                == end_day,
             )
-            == year,
-            extract(
-                "month",
-                func.timezone("Asia/Seoul", planterModels.PlanterWork.updated_at),
+        else:
+            base_query = base_query.filter(
+                func.timezone("Asia/Seoul", planterModels.PlanterWork.updated_at)
+                >= target_start_date,
+                func.timezone("Asia/Seoul", planterModels.PlanterWork.updated_at)
+                <= target_end_date,
             )
-            == month,
-            extract(
-                "day",
-                func.timezone("Asia/Seoul", planterModels.PlanterWork.updated_at),
-            )
-            == day,
-        )
+        # return None
     elif month:
         base_query = base_query.filter(
             extract(
@@ -629,28 +652,28 @@ def get_planter_work_statics(
     order_conditions = []
     if crop_kind_order_type == 0:
         order_conditions.append(desc(planterModels.PlanterWork.crop_kind))
-    else:
+    elif crop_kind_order_type == 1:
         order_conditions.append(asc(planterModels.PlanterWork.crop_kind))
-    if seed_quantity_order_type == 0:
-        order_conditions.append(desc(planterModels.PlanterWork.seed_quantity))
-    else:
-        order_conditions.append(asc(planterModels.PlanterWork.seed_quantity))
+    if order_quantity_order_type == 0:
+        order_conditions.append(desc(planterModels.PlanterWork.order_quantity))
+    elif order_quantity_order_type == 1:
+        order_conditions.append(asc(planterModels.PlanterWork.order_quantity))
     if planter_output_order_type == 0:
         order_conditions.append(desc(planterModels.PlanterOutput.output))
-    else:
+    elif planter_output_order_type == 1:
         order_conditions.append(asc(planterModels.PlanterOutput.output))
     if sowing_date_order_type == 0:
         order_conditions.append(desc(planterModels.PlanterWork.sowing_date))
-    else:
+    elif sowing_date_order_type == 1:
         order_conditions.append(asc(planterModels.PlanterWork.sowing_date))
-    if sowing_date_order_type == 0:
-        order_conditions.append(desc(planterModels.PlanterWork.sowing_date))
-    else:
-        order_conditions.append(asc(planterModels.PlanterWork.sowing_date))
+    # if sowing_date_order_type == 0:
+    #     order_conditions.append(desc(planterModels.PlanterWork.sowing_date))
+    # else:
+    #     order_conditions.append(asc(planterModels.PlanterWork.sowing_date))
     if is_shipment_completed_order_type == 0:
-        order_conditions.append(asc(planterModels.PlanterWork.is_shipment_completed))
-    else:
         order_conditions.append(desc(planterModels.PlanterWork.is_shipment_completed))
+    elif is_shipment_completed_order_type == 1:
+        order_conditions.append(asc(planterModels.PlanterWork.is_shipment_completed))
 
     base_query = base_query.order_by(*order_conditions)
 
@@ -705,35 +728,51 @@ def search_planter_tray_total_for_admin(
 
 
 @router.patch(
-    "/tray/update/{tray_id}", description="관리자 파종기 트레이 정보 업데이트 api", status_code=200
+    "/tray/update/{tray_id}",
+    description="관리자 트레이 수정 api",
 )
-async def update_admin_tray_info(
+def update_planter_tray(
     request: Request,
     tray_id: int,
-    width: int = None,
-    height: int = None,
-    total: int = None,
-    is_del: bool = None,
+    tray_data: planterAdminSchemas.PlanterTrayUpdate,
     db: Session = Depends(get_db),
 ):
     get_current_user("99", request.cookies, db)
 
     planter_tray = get_(db, planterModels.PlanterTray, id=tray_id)
 
-    if not planter_tray:
-        return JSONResponse(status_code=404, content=dict(msg="NOT_FOUND_PLANTER_TRAY"))
-
-    if width:
-        planter_tray.width = width
-    if height:
-        planter_tray.height = height
-    if total:
-        planter_tray.total = total
-
-    if is_del is not None:
-        planter_tray.is_del = is_del
+    for field in tray_data.__dict__:
+        if getattr(tray_data, field) is not None:
+            setattr(planter_tray, field, getattr(tray_data, field))
 
     db.commit()
     db.refresh(planter_tray)
+    return JSONResponse(status_code=200, content=dict(msg="SUCCESS"))
+
+
+@router.patch(
+    "/tray/multiple/delete/{tray_ids}",
+    description="트레이 목록 다중 선택 후 삭제 api<br/> tray_ids = '1||2||3||4||5||6' 의 형태로 데이터 보내기",
+    status_code=200,
+)
+def delete_multiple_planter_trays(
+    request: Request, tray_ids: str, db: Session = Depends(get_db)
+):
+    get_current_user("99", request.cookies, db)
+    target_ids = tray_ids.split("||")
+
+    base_query = (
+        db.query(planterModels.PlanterTray)
+        .filter(planterModels.PlanterTray.id.in_(target_ids))
+        .all()
+    )
+
+    tray_updates = []
+
+    for tray in base_query:
+        tray_updates.append({"id": tray.id, "is_del": True})
+
+    db.bulk_update_mappings(planterModels.PlanterTray, tray_updates)
+    db.commit()
 
     return JSONResponse(status_code=200, content=dict(msg="SUCCESS"))

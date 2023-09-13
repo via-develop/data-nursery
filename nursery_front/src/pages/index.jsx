@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import styled from "styled-components";
 import ScrollContainer from "react-indiana-drag-scroll";
 import Image from "next/image";
+
+import useDashBoard from "@hooks/queries/planter/useDashBoard";
 
 import MainLayout from "@components/layout/MainLayout";
 import WorkTab from "@components/dashboard/WorkTab";
@@ -9,9 +11,7 @@ import WorkTab from "@components/dashboard/WorkTab";
 import { requireAuthentication } from "@utils/LoginCheckAuthentication";
 import TodayOutputIcon from "@images/dashboard/icon-output.svg";
 import UseTimeIcon from "@images/dashboard/icon-time.svg";
-import { NumberFormatting } from "@utils/Formatting";
-import NoneIcon from "@images/dashboard/none-icon.svg";
-import theme from "@src/styles/theme";
+import { NumberFormatting, HourFormatting, MinFormatting } from "@utils/Formatting";
 
 const S = {
   Wrap: styled.div`
@@ -59,6 +59,11 @@ const S = {
 
       .row-layout p {
         color: ${({ theme }) => theme.mobile.sky};
+
+        span {
+          color: ${({ theme }) => theme.mobile.sky};
+          ${({ theme }) => theme.textStyle.h7Bold}
+        }
       }
     }
 
@@ -148,6 +153,14 @@ const S = {
 };
 
 function MainPage() {
+  // 대시보드 API (오늘의 생산량, BEST품종, 사용시간)
+  const { data: dashBoardInfo } = useDashBoard({
+    successFn: () => {},
+    errorFn: (err) => {
+      alert(err);
+    },
+  });
+
   return (
     <MainLayout pageName={"main"}>
       <S.Wrap>
@@ -159,32 +172,57 @@ function MainPage() {
                 <p>오늘의 생산량</p>
               </div>
               <div className="data-wrap">
-                <p className="bold-text">{NumberFormatting(485000)}</p>
+                <p className="bold-text">
+                  {NumberFormatting(
+                    !!dashBoardInfo?.today_total_seed_quantity ? dashBoardInfo?.today_total_seed_quantity : 0,
+                  )}
+                </p>
                 <p className="suffix-text">개</p>
               </div>
             </S.CardWrap>
             <S.CardWrap className="best-kind">
               <div className="row-layout">
                 <Image src={"/images/dashboard/icon-best.png"} width={24} height={24} alt="best kind image" />
-                <p>BEST품종</p>
+                <p>
+                  BEST품종 {!!dashBoardInfo?.today_best_crop_kind && "- "}
+                  {!!dashBoardInfo?.today_best_crop_kind && <span>{dashBoardInfo.today_best_crop_kind.crop_kind}</span>}
+                </p>
               </div>
               <div className="data-wrap">
-                <p className="bold-text">{NumberFormatting(485000)}</p>
+                <p className="bold-text">
+                  {NumberFormatting(
+                    !!dashBoardInfo?.today_best_crop_kind ? dashBoardInfo?.today_best_crop_kind.total_seed_quantity : 0,
+                  )}
+                </p>
                 <p className="suffix-text">개</p>
               </div>
             </S.CardWrap>
             <S.CardWrap className="use-time">
               <div className="row-layout">
                 <UseTimeIcon />
-                <p>사용시간 - 3회</p>
+                <p>
+                  사용시간 -{" "}
+                  {!!dashBoardInfo?.today_planter_usage.working_times
+                    ? dashBoardInfo?.today_planter_usage.working_times
+                    : 0}
+                  회
+                </p>
               </div>
               <div className="time-wrap">
                 <div className="data-wrap">
-                  <p className="bold-text">6</p>
+                  <p className="bold-text">
+                    {!!dashBoardInfo?.today_planter_usage.time
+                      ? HourFormatting(dashBoardInfo?.today_planter_usage.time)
+                      : 0}
+                  </p>
                   <p className="suffix-text">시간</p>
                 </div>
                 <div className="data-wrap">
-                  <p className="bold-text">20</p>
+                  <p className="bold-text">
+                    {!!dashBoardInfo?.today_planter_usage.time
+                      ? MinFormatting(dashBoardInfo?.today_planter_usage.time)
+                      : 0}
+                  </p>
                   <p className="suffix-text">분</p>
                 </div>
               </div>
@@ -192,10 +230,6 @@ function MainPage() {
           </ScrollContainer>
         </S.ScrollWrap>
         <S.WorkWrap>
-          {/* <div className="no-work">
-            <NoneIcon width={50} height={50} fill={theme.basic.grey20} />
-            <p>새 작업을 등록하세요!</p>
-          </div> */}
           <WorkTab />
         </S.WorkWrap>
       </S.Wrap>

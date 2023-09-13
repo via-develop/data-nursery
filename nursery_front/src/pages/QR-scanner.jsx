@@ -1,19 +1,21 @@
 import React, { useCallback, useEffect, useState } from "react";
 import styled from "styled-components";
-import { Html5QrcodeScanner, Html5Qrcode } from "html5-qrcode";
+import { Html5Qrcode } from "html5-qrcode";
 import { useRouter } from "next/router";
 
 import useUserInfo from "@hooks/queries/auth/useUserInfo";
 import useRegisterPlanter from "@hooks/queries/planter/useRegisterPlanter";
+import useAllCacheClear from "@hooks/queries/common/useAllCacheClear";
 
 import MainLayout from "@components/layout/MainLayout";
 import DefaultButton from "@components/common/button/DefaultButton";
+import DefaultModal from "@components/common/modal/DefaultModal";
+import FontSmallDefaultButton from "@components/common/button/FontSmallDefaultButton";
 
 import QRCodeImage from "@images/login/img-qrcode.svg";
 import { defaultButtonColor, greyButtonColor } from "@utils/ButtonColor";
-import FontSmallDefaultButton from "@components/common/button/FontSmallDefaultButton";
 import CloseIcon from "@images/common/close-icon.svg";
-import DefaultModal from "@components/common/modal/DefaultModal";
+import userLogout from "@utils/userLogout";
 
 const S = {
   Wrap: styled.div`
@@ -124,6 +126,7 @@ const S = {
 
 function QRScannerPage() {
   const router = useRouter();
+  const clearQueries = useAllCacheClear();
   const [step, setStep] = useState("first");
 
   const [qrCodeScanner, setQRCodeScanner] = useState(null);
@@ -167,6 +170,7 @@ function QRScannerPage() {
         config,
         (result) => {
           if (result === userInfo?.planter.serial_number) {
+            // 시리얼번호 일치 시 성공모달 오픈 및 카메라 종료
             setModalOpen({
               open: true,
               type: "success",
@@ -187,14 +191,14 @@ function QRScannerPage() {
             setModalOpen({
               open: true,
               type: "error",
-              title: "QR코드가 인식불가",
+              title: "QR코드 인식불가",
               description: "다시 시도해주세요.",
               btnType: "one",
               afterFn: null,
             });
           }
-        },
-        () => {},
+        }, // success
+        () => {}, // error
       );
     }
   }, [step]);
@@ -211,7 +215,7 @@ function QRScannerPage() {
   const { data: userInfo } = useUserInfo({
     successFn: () => {},
     errorFn: () => {
-      // userLogout(router, clearQueries);
+      userLogout(router, clearQueries);
     },
   });
 
@@ -232,7 +236,7 @@ function QRScannerPage() {
           <S.Wrap>
             <p className="welcome-text">환영합니다.</p>
             <p className="description-text">
-              {userInfo?.farm_house.name}님의{"\n"}생산량 관리를 시작해볼까요?{"\n"}
+              DataNursery님의{"\n"}생산량 관리를 시작해볼까요?{"\n"}
               {"\n"}먼저 <span>QR코드를 준비해주세요!</span>
             </p>
             <S.QRCodeImageWrap>
@@ -258,7 +262,7 @@ function QRScannerPage() {
                   setStep("first");
                   cameraClose();
                 }}>
-                <CloseIcon />
+                <CloseIcon fill={"#ffffff"} />
               </div>
               <div className="please-scan-text">QR코드를 인식해주세요.</div>
             </S.ScanTopSection>
@@ -269,7 +273,7 @@ function QRScannerPage() {
               <FontSmallDefaultButton
                 text={"직접 등록"}
                 onClick={() => {
-                  router.push("registration");
+                  router.push("planter-registration");
                   cameraClose();
                 }}
                 customStyle={greyButtonColor}

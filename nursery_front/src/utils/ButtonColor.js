@@ -10,6 +10,16 @@ export const defaultButtonColor = {
   fontColor: "#FFFFFF",
 };
 
+export const disableButtonColor = {
+  backgroundColor: "#ffffff",
+  borderColor: theme.basic.recOutline,
+  hoverBackgroundColor: "#ffffff",
+  hoverBorderColor: theme.basic.recOutline,
+  focusBackgroundColor: "#ffffff",
+  focusBorderColor: theme.basic.recOutline,
+  fontColor: theme.basic.grey30,
+};
+
 export const borderButtonColor = {
   backgroundColor: "#FFFFFF",
   borderColor: "#5899FB",

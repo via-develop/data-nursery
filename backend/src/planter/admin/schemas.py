@@ -7,3 +7,10 @@ class DashboardResponse(BaseModel):
     crop_count: int
     planter_count: int
     total_output: int
+
+
+class PlanterTrayUpdate(BaseModel):
+    width: Optional[int]
+    height: Optional[int]
+    total: Optional[int]
+    is_del: Optional[bool]

@@ -47,7 +47,7 @@ function SmallButton({ width = "100%", text, onClick, customStyle }) {
       focusBackgroundColor={customStyle.focusBackgroundColor}
       focusBorderColor={customStyle.focusBorderColor}
       fontColor={customStyle.fontColor}
-      onClick={customStyle.fontColor === "#DEDEDE" ? () => {} : onClick}>
+      onClick={customStyle.fontColor === "#C2D6E1" ? () => {} : onClick}>
       {text}
     </S.ButtonWrap>
   );

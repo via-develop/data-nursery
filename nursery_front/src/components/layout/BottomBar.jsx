@@ -1,5 +1,6 @@
 import React from "react";
 import styled from "styled-components";
+import { useRouter } from "next/router";
 
 import HistoryIcon from "@images/dashboard/icon-history.svg";
 import ChartIcon from "@images/dashboard/icon-chart.svg";
@@ -109,17 +110,19 @@ const S = {
 };
 
 function BottomBar() {
+  const router = useRouter();
+
   return (
     <S.BottomWrap>
       <S.BottomBarContent
         className="right-top-radius"
         onClick={() => {
-          alert("이력조회 클릭");
+          router.push("/work/history");
         }}>
         <div
           className="bottom-box"
           onClick={(e) => {
-            alert("이력조회 클릭");
+            router.push("/work/history");
             e.stopPropagation();
           }}
         />
@@ -128,7 +131,7 @@ function BottomBar() {
       </S.BottomBarContent>
       <S.NewWorkButtonWrap
         onClick={() => {
-          alert("새작업 클릭");
+          router.push("/work/registration");
         }}>
         <S.NewWorkButton>
           <p className="plus-icon">+</p>
@@ -139,12 +142,12 @@ function BottomBar() {
       <S.BottomBarContent
         className="left-top-radius"
         onClick={() => {
-          alert("통계보기 클릭");
+          router.push("/statistics");
         }}>
         <div
           className="bottom-box"
           onClick={(e) => {
-            alert("통계보기 클릭");
+            router.push("/statistics");
             e.stopPropagation();
           }}
         />

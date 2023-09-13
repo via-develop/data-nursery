@@ -1,5 +1,6 @@
 import { createGlobalStyle } from "styled-components";
 import reset from "styled-reset";
+import theme from "./theme";
 
 const GlobalStyle = createGlobalStyle`
   ${reset};
@@ -59,8 +60,15 @@ const GlobalStyle = createGlobalStyle`
   }
 
   em {
-      font-style: italic;
-    }
+    font-style: italic;
+  }
+
+  .essential-category-icon {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background-color: #FB97A3;
+  }
 `;
 
 export default GlobalStyle;

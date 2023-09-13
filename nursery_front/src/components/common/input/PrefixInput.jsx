@@ -33,7 +33,6 @@ const S = {
     outline: none;
     border: none;
     box-shadow: none !important;
-    /* color: ${({ theme }) => theme.neutral.eight}; */
 
     &:focus {
       border: none;
@@ -48,12 +47,11 @@ const S = {
   `,
 };
 
-function PrefixInput({ text, setText, type = "text", maxLength, placeholder, borderRadius = "16px", enterKeyUpFn }) {
+function PrefixInput({ text, setText, type = "text", maxLength, placeholder, enterKeyUpFn }) {
   return (
     <S.InputWrap>
       {type === "text" ? <IdIcon /> : <PasswordIcon />}
       <S.CustomInput
-        borderRadius={borderRadius}
         value={text}
         type={type}
         maxLength={maxLength}

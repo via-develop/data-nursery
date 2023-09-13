@@ -7,7 +7,7 @@ services:
       POSTGRES_USER: dpbell
       POSTGRES_PASSWORD: mnb30217
       POSTGRES_DB: fastapi_test
-      POSTGRES_HOST: 192.168.2.100
+      POSTGRES_HOST: 192.168.2.103
       POSTGRES_PORT: 5432
     ports:
       - "5120:5432"
@@ -15,3 +15,14 @@ services:
       - 5120
     volumes:
       - ./db/postgres/data:/var/lib/postgresql/data/
+
+  # redis:
+  #   container_name: data_nursery_redis
+  #   restart: always
+  #   build:
+  #     context: ./db/redis
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "4120:6379"
+  #   expose:
+  #     - 4120

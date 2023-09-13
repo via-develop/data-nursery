@@ -49,7 +49,7 @@ function SuffixButton({ text, onClick, customStyle }) {
       focusBackgroundColor={customStyle.focusBackgroundColor}
       focusBorderColor={customStyle.focusBorderColor}
       fontColor={customStyle.fontColor}
-      onClick={customStyle.fontColor === "#DEDEDE" ? () => {} : onClick}>
+      onClick={customStyle.fontColor === "#C2D6E1" ? () => {} : onClick}>
       <p className="button-text">{text}</p>
       <ArrowRightIcon />
     </S.ButtonWrap>

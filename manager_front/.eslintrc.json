@@ -16,8 +16,8 @@
     "eslint:recommended",
     "plugin:@next/next/recommended",
     "next/core-web-vitals",
-    "prettier",
-    "plugin:prettier/recommended"
+    "prettier"
+    // "plugin:prettier/recommended"
   ],
   "plugins": ["react", "react-hooks", "prettier"],
   "rules": {
@@ -30,6 +30,7 @@
     "react/prop-types": "off",
     "react/display-name": "off",
     "no-unused-vars": "off",
-    "no-extra-boolean-cast": "off"
+    "no-extra-boolean-cast": "off",
+    "no-useless-escape": "off"
   }
 }
