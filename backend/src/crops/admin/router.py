@@ -6,7 +6,6 @@ from utils.database import get_db
 from utils.db_shortcuts import get_current_user, get_
 from utils.file_upload import single_file_uploader, delete_file
 import src.crops.models as cropModels
-from settings import BASE_DIR
 
 
 router = APIRouter()
@@ -32,8 +31,12 @@ def search_crop_name_for_admin(
     return crop_name_response
 
 
-@router.patch("/update/{crop_id}", description="관리자 작물 정보 업데이트 api", status_code=200)
-async def update_admin_crop_info(
+@router.patch(
+    "/update/{crop_id}",
+    description="관리자 작물 수정 api",
+    status_code=200,
+)
+async def update_crop_info(
     request: Request,
     crop_id: int,
     name: str = Form(None),
@@ -46,9 +49,6 @@ async def update_admin_crop_info(
 
     crop = get_(db, cropModels.Crop, id=crop_id)
 
-    if not crop:
-        return JSONResponse(status_code=404, content=dict(msg="NOT_FOUND_CROP"))
-
     if name:
         crop.name = name
     if color:
@@ -60,8 +60,6 @@ async def update_admin_crop_info(
 
         if not saved_file["is_success"]:
             return JSONResponse(status_code=400, content=dict(msg="FAIL_SAVE_DATA"))
-
-        crop.image = saved_file["url"]
 
     if is_del is not None:
         crop.is_del = is_del
