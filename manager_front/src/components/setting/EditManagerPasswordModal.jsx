@@ -168,29 +168,28 @@ function EditManagerPasswordModal({ editManagerModalOpen, setEditManagerPWChange
     setNewPw("");
     setNewPwCheck("");
   }, []);
-  console.log("editManagerModalOpen",editManagerModalOpen)
+  console.log("editManagerModalOpen", editManagerModalOpen);
 
   const handleSaveClick = useCallback(() => {
-    
     // setManagerPassword(newPw);
     // closeModal();
     updateManagerPassword({
-    data:{
-      userId:editManagerModalOpen.data.data.user.id,
-      user_data: {
-        password: newPw,
-        name: null,
-        is_del: false
+      data: {
+        userId: editManagerModalOpen.data.data.user.id,
+        user_data: {
+          password: newPw,
+          name: null,
+          is_del: false,
+        },
+        admin_user_info_data: {
+          company: null,
+          department: null,
+          position: null,
+          phone: null,
+          is_del: false,
+        },
       },
-      admin_user_info_data: {
-        company: null,
-        department: null,
-        position: null,
-        phone: null,
-        is_del: false
-      }
-    }
-    })
+    });
   }, [newPw]);
 
   //기존 비밀번호와 입력 비밀번호 동일한지 체크
@@ -211,8 +210,8 @@ function EditManagerPasswordModal({ editManagerModalOpen, setEditManagerPWChange
     }
   }, [newPw, newPwCheck]);
 
-  const {mutate : updateManagerPassword} = useUpdateManager(
-    ()=>{
+  const { mutate: updateManagerPassword } = useUpdateManager(
+    () => {
       setIsDefaultAlertShowState({
         isShow: true,
         type: "success",
@@ -230,7 +229,7 @@ function EditManagerPasswordModal({ editManagerModalOpen, setEditManagerPWChange
         okClick: null,
       });
     },
-  )
+  );
 
   return (
     <S.Wrap>
@@ -305,19 +304,19 @@ function EditManagerPasswordModal({ editManagerModalOpen, setEditManagerPWChange
         </S.InputWrap>
 
         {
-        // originInputPwCheck === false ||
-        // newPwSameCheck === false ||
-        // inputPw.length === 0 ||
-        newPw.length === 0 ||
-        newPwCheck.length === 0 ? (
-          <S.ButtonWrapOff>
-            <p>저장</p>
-          </S.ButtonWrapOff>
-        ) : (
-          <S.ButtonWrap onClick={handleSaveClick}>
-            <p>저장</p>
-          </S.ButtonWrap>
-        )}
+          // originInputPwCheck === false ||
+          // newPwSameCheck === false ||
+          // inputPw.length === 0 ||
+          newPw.length === 0 || newPwCheck.length === 0 ? (
+            <S.ButtonWrapOff>
+              <p>저장</p>
+            </S.ButtonWrapOff>
+          ) : (
+            <S.ButtonWrap onClick={handleSaveClick}>
+              <p>저장</p>
+            </S.ButtonWrap>
+          )
+        }
       </S.WrapInner>
     </S.Wrap>
   );
