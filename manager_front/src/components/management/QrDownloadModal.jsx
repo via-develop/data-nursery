@@ -144,7 +144,7 @@ function QrDownloadModal({ qrDownloadModalOpen, setQrDownloadModalOpen }) {
     setQrDownloadModalOpen({ open: false, data: undefined });
   }, []);
 
-  const qrImage = "http://localhost:8000" + qrDownloadModalOpen?.data?.data?.planter?.qrcode;
+  const qrImage = "https://b.datanursery.kr" + qrDownloadModalOpen?.data?.data?.planter?.qrcode;
 
   const qrCodeDownloadClick = useCallback(() => {
     let url = qrImage;
