@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useMemo } from "react";
 import styled from "styled-components";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -185,6 +185,11 @@ const S = {
     .react-datepicker__day:hover {
       border-radius: 50%;
     }
+
+    // 선택 불가 날짜
+    .react-datepicker__day--disabled {
+      color: #cccccc;
+    }
   `,
   Divider: styled.div`
     width: 100%;
@@ -194,7 +199,7 @@ const S = {
   `,
 };
 
-function DefaultCalendar({ calendarOpen, setCalendarOpen }) {
+function DefaultCalendar({ calendarOpen, setCalendarOpen, sowingDate }) {
   const [selectDate, setSelectDate] = useState("");
 
   const closeModal = useCallback(() => {
@@ -230,6 +235,7 @@ function DefaultCalendar({ calendarOpen, setCalendarOpen }) {
           <S.CustomCalendar>
             <DatePicker
               selected={selectDate === "" ? calendarOpen.date : selectDate}
+              minDate={calendarOpen.type === "출하일" ? sowingDate : null}
               onChange={(date) => setSelectDate(date)}
               locale={ko}
               inline

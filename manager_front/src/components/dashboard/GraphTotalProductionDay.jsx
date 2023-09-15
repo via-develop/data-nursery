@@ -18,7 +18,7 @@ function GraphTotalProduction() {
     queryType: "day",
     successFn: () => {},
     errorFn: (err) => {
-      console.log("!!err", err);
+      alert(err);
     },
   });
 
@@ -35,9 +35,6 @@ function GraphTotalProduction() {
     const currentDate = new Date(); // 현재 날짜와 시간을 얻습니다.
     const currentMonth = currentDate.getMonth() + 1; // 현재 월을 가져옵니다. (0부터 시작하므로 +1 해줍니다.)
     const currentYear = currentDate.getFullYear(); // 현재 연도를 가져옵니다.
-
-    console.log("planterTotal", planterTotal);
-    console.log("dataArray", dataArray);
 
     // 해당 월의 마지막 날짜를 구합니다.
     const lastDayOfMonth = new Date(currentYear, currentMonth, 0).getDate();
@@ -147,11 +144,11 @@ function GraphTotalProduction() {
                 drawOnChartArea: false,
               },
               position: "left",
-              title: {
-                display: true,
-                align: "end",
-                text: "개 (단위 : 만)",
-              },
+              // title: {
+              //   display: true,
+              //   align: "end",
+              //   text: "개 (단위 : 만)",
+              // },
               // ticks: {
               //   stepSize: 10,
               // },

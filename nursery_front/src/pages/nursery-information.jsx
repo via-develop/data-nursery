@@ -85,6 +85,31 @@ const S = {
     background-color: #ffffff !important;
     border: 1px solid ${({ theme }) => theme.basic.recOutline} !important;
   `,
+  AddressBox: styled.div`
+    width: 100%;
+    flex: 1;
+    min-height: 52px;
+    height: 52px;
+    max-height: fit-content;
+    border-radius: 8px;
+    padding: 13px 8px 13px 16px;
+    background-color: #ffffff;
+    border: 1px solid ${({ theme }) => theme.basic.lightSky};
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+
+    .address-text {
+      ${({ theme }) => theme.textStyle.h6Bold}
+      color: ${({ theme }) => theme.basic.grey60};
+      overflow: visible;
+      word-break: break-word;
+      word-wrap: break-word;
+      white-space: normal;
+      text-align: left;
+      line-height: 24px !important;
+    }
+  `,
 };
 
 function NurseryInformationPage() {
@@ -134,7 +159,13 @@ function NurseryInformationPage() {
           </S.InfoContent>
           <S.InfoContent>
             <p className="title-text">주소</p>
-            <DefaultInput text={userInfo?.farm_house.address} readOnly={true} />
+            <S.AddressBox>
+              <p className="address-text">
+                ({userInfo?.farm_house.address.split("||")[0]}) {userInfo?.farm_house.address.split("||")[1]}
+                {!!userInfo?.farm_house.address.split("||")[2] && ", "}
+                {userInfo?.farm_house.address.split("||")[2]}
+              </p>
+            </S.AddressBox>
           </S.InfoContent>
           <S.InfoContent>
             <p className="title-text">생산자명</p>

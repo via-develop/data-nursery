@@ -1,5 +1,6 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import styled from "styled-components";
+import { useInView } from "react-intersection-observer";
 
 import useManagerList from "@src/hooks/queries/auth/useManagerList";
 
@@ -93,6 +94,10 @@ const S = {
         justify-content: center;
       }
 
+      svg {
+        cursor: pointer;
+      }
+
       .btn-wrap {
         width: 100%;
       }
@@ -106,6 +111,10 @@ const S = {
     }
     .header-table-fin {
       width: 100px;
+    }
+    .check-img {
+      width: 24px;
+      height: 24px;
     }
   `,
   ListBlockWrap: styled.div`
@@ -139,6 +148,10 @@ const S = {
     .table-sec {
       width: 110px;
     }
+    .check-img {
+      width: 24px;
+      height: 24px;
+    }
   `,
   ListBlock: styled.div`
     align-items: center;
@@ -148,6 +161,7 @@ const S = {
     border: 1px solid ${({ theme }) => theme.basic.recOutline};
     background-color: ${({ theme }) => theme.blackWhite.white};
     border-radius: 8px;
+    height: 64px;
 
     p {
       color: ${({ theme }) => theme.basic.gray50};
@@ -155,6 +169,10 @@ const S = {
       display: flex;
       justify-content: center;
       align-items: center;
+    }
+
+    svg {
+      cursor: pointer;
     }
 
     .option-dot {
@@ -180,17 +198,27 @@ const S = {
   `,
 };
 
-function ManagementList() {
-  const { data: managerList } = useManagerList({
-    page: 1,
-    size: 8,
-    successFn: () => {},
-    errorFn: (err) => {
-      console.log("!!err", err);
-    },
+function ManagementList({ userInfo }) {
+  // inView : 요소가 뷰포트에 진입했는지 여부
+  const { ref, inView, entry } = useInView({
+    threshold: 0, // 요소가 얼마나 노출되었을때 inView를 true로 변경할지 (0~1 사이의 값)
   });
 
-  console.log("managerList", managerList?.data);
+  const [checkArray, setCheckArray] = useState([]);
+
+  const [managerList, setManagerList] = useState([]);
+  const [managerListPage, setManagerListPage] = useState(1);
+
+  const { data: managerListInfo } = useManagerList({
+    page: managerListPage,
+    size: 8,
+    successFn: (res) => {
+      setManagerList((prev) => [...prev, ...res.data]);
+    },
+    errorFn: (err) => {
+      alert(err);
+    },
+  });
 
   const [optionModalOpen, setOptionModalOpen] = useState({
     open: false,
@@ -213,17 +241,21 @@ function ManagementList() {
   //관리자 삭제모달 오픈
   const [deleteManagerModalOpen, setDeleteManagerModalOpen] = useState({
     open: false,
-    data: undefined,
+    deleteId: undefined,
   });
 
-  //관리자 모달 정보
-  const [managerId, setManagerId] = useState("");
-  const [managerCompany, setManagerCompany] = useState("");
-  const [managerDepartment, setManagerDepartment] = useState("");
-  const [managerPosition, setManagerPosition] = useState("");
-  const [managerName, setManagerName] = useState("");
-  const [managerPhone, setManagerPhone] = useState("");
-  const [managerPassword, setManagerPassword] = useState("");
+  useEffect(() => {
+    if (inView) {
+      pageChange();
+    }
+  }, [inView]);
+
+  // 페이지 변경
+  const pageChange = useCallback(() => {
+    if (managerList.length !== 0 && managerListInfo?.total > managerList.length) {
+      setManagerListPage(managerListPage + 1);
+    }
+  }, [managerListInfo, managerListPage, managerList]);
 
   //관리자 추가 모달
   const handelAddManagerModalClick = useCallback(() => {
@@ -244,151 +276,44 @@ function ManagementList() {
 
   // 선택삭제 클릭
   const handelSelectDeleteClick = useCallback(() => {
-    alert("선택삭제");
-  }, []);
+    setDeleteManagerModalOpen({ open: true, deleteId: checkArray.join("||") });
+  }, [checkArray]);
 
-  const [listData, setListData] = useState([
-    {
-      id: 0,
-      member_type: "top",
-      accountId: "helperrobotec",
-      company: "(주)헬퍼로보텍",
-      department: "해외마케팅",
-      position: "팀장",
-      name: "박희진",
-      phone: "010-0000-0000",
-      password: "1234",
+  // 체크박스 전제 선택 및 전체 해제
+  const toggleAll = useCallback(
+    (isAllCheck) => {
+      if (isAllCheck) {
+        // 전부 체크되어 있는 경우
+        setCheckArray([]);
+      } else {
+        // 전부 체크 안되어 있는 경우
+        const allCheckArray = [];
+
+        // 개별 항목 중 'member_type'이 'top'이 아닌 항목만 업데이트
+        managerList.map((manager) => {
+          if (!manager.admin_user_info.is_top_admin) {
+            allCheckArray.push(manager.user.id);
+          }
+        });
+
+        setCheckArray(allCheckArray);
+      }
     },
-    {
-      id: 1,
-      member_type: "second",
-      accountId: "hanvia",
-      company: "(주)헬퍼로보텍",
-      department: "IT기획팀기획팀기획팀",
-      position: "연구원연구원연구원",
-      name: "홍길동",
-      phone: "010-1111-1111",
-      password: "5678",
+    [managerList],
+  );
+
+  const toggleItem = useCallback(
+    (isCheck, id) => {
+      if (isCheck) {
+        // 체크된 항목 클릭 시
+        setCheckArray(checkArray.filter((checkId) => checkId !== id));
+      } else {
+        // 미체크된 항목 클릭 시
+        setCheckArray((prev) => [...prev, id]);
+      }
     },
-    {
-      id: 2,
-      member_type: "second",
-      accountId: "hanvia",
-      company: "(주)헬퍼로보텍",
-      department: "IT기획팀기획팀기획팀",
-      position: "연구원연구원연구원",
-      name: "홍길동",
-      phone: "010-1111-1111",
-      password: "5678",
-    },
-    {
-      id: 3,
-      member_type: "second",
-      accountId: "hanvia",
-      company: "(주)헬퍼로보텍",
-      department: "IT기획팀기획팀기획팀",
-      position: "연구원연구원연구원",
-      name: "홍길동",
-      phone: "010-1111-1111",
-      password: "5678",
-    },
-    {
-      id: 4,
-      member_type: "second",
-      accountId: "hanvia",
-      company: "(주)헬퍼로보텍",
-      department: "IT기획팀기획팀기획팀",
-      position: "연구원연구원연구원",
-      name: "홍길동",
-      phone: "010-1111-1111",
-      password: "5678",
-    },
-    {
-      id: 5,
-      member_type: "second",
-      accountId: "hanvia",
-      company: "(주)헬퍼로보텍",
-      department: "IT기획팀기획팀기획팀",
-      position: "연구원연구원연구원",
-      name: "홍길동",
-      phone: "010-1111-1111",
-      password: "5678",
-    },
-    {
-      id: 6,
-      member_type: "second",
-      accountId: "hanvia",
-      company: "(주)헬퍼로보텍",
-      department: "IT기획팀기획팀기획팀",
-      position: "연구원연구원연구원",
-      name: "홍길동",
-      phone: "010-1111-1111",
-      password: "5678",
-    },
-    {
-      id: 7,
-      member_type: "second",
-      accountId: "hanvia",
-      company: "(주)헬퍼로보텍",
-      department: "IT기획팀기획팀기획팀",
-      position: "연구원연구원연구원",
-      name: "홍길동",
-      phone: "010-1111-1111",
-      password: "5678",
-    },
-  ]);
-
-  const [selectAll, setSelectAll] = useState(false);
-  const [isChecked, setIsChecked] = useState(listData.map(() => false));
-  const [checkArray, setCheckArray] = useState([]);
-
-  const toggleItem = (index) => {
-    const updatedIsCheckedArray = [...isChecked];
-    updatedIsCheckedArray[index] = !updatedIsCheckedArray[index];
-    setIsChecked(updatedIsCheckedArray);
-
-    if (listData[index].member_type === "top") {
-      // 'top' 항목은 개별적으로 선택해도 전체 선택에 영향을 주지 않음
-      return;
-    }
-
-    // 모든 항목이 체크되었는지 확인
-    const allChecked = updatedIsCheckedArray.every(
-      (checked, index) => listData[index].member_type === "top" || checked,
-    );
-
-    // 모든 항목이 체크되었다면 전체 선택 체크박스를 true로 설정
-    // 그렇지 않다면 전체 선택 체크박스를 false로 설정
-    setSelectAll(allChecked);
-
-    const selectedItemId = listData[index].id;
-    if (updatedIsCheckedArray[index]) {
-      setCheckArray((prevArray) => [...prevArray, selectedItemId]);
-    } else {
-      setCheckArray((prevArray) => prevArray.filter((id) => id !== selectedItemId));
-    }
-  };
-
-  const toggleAll = () => {
-    const allChecked = !selectAll;
-
-    // 개별 항목 중 'member_type'이 'top'이 아닌 항목만 업데이트
-    const updatedIsCheckedArray = isChecked.map((checked, index) =>
-      listData[index].member_type === "top" ? checked : allChecked,
-    );
-
-    setIsChecked(updatedIsCheckedArray);
-    setSelectAll(allChecked);
-
-    const selectedIds = listData.map((item) => item.id);
-    if (allChecked) {
-      setCheckArray(selectedIds);
-    } else {
-      setCheckArray([]);
-    }
-  };
-
-  console.log("checkArray", checkArray);
+    [checkArray],
+  );
 
   return (
     <S.Wrap>
@@ -397,18 +322,43 @@ function ManagementList() {
           <p className="title">관리자목록</p>
           <p className="sub-title">관리자 추가 및 변경</p>
         </S.Title>
-        <S.AddButton onClick={handelAddManagerModalClick}>
-          <AddIcon width={24} height={24} />
-          <p>관리자 추가</p>
-        </S.AddButton>
+        {userInfo?.admin_user_info?.is_top_admin === true && (
+          <S.AddButton onClick={handelAddManagerModalClick}>
+            <AddIcon width={24} height={24} />
+            <p>관리자 추가</p>
+          </S.AddButton>
+        )}
       </S.TitleWrap>
       <S.ContentList>
         <div className="table-header">
           <div>
-            <label>
-              <input type="checkbox" checked={selectAll} onChange={toggleAll} style={{ display: "none" }} />
-              <div>{selectAll ? <CheckBoxOn width={24} height={24} /> : <CheckBoxOff width={24} height={24} />}</div>
-            </label>
+            {checkArray.length !== 0 &&
+            checkArray.length ===
+              managerList.filter((manager) => manager.admin_user_info.is_top_admin === false).length ? (
+              <div className="check-img">
+                {userInfo?.admin_user_info?.is_top_admin === true && (
+                  <CheckBoxOn
+                    width={24}
+                    height={24}
+                    onClick={() => {
+                      toggleAll(true);
+                    }}
+                  />
+                )}
+              </div>
+            ) : (
+              <div className="check-img">
+                {userInfo?.admin_user_info?.is_top_admin === true && (
+                  <CheckBoxOff
+                    width={24}
+                    height={24}
+                    onClick={() => {
+                      toggleAll(false);
+                    }}
+                  />
+                )}
+              </div>
+            )}
           </div>
           {checkArray.length === 0 ? (
             <>
@@ -434,28 +384,33 @@ function ManagementList() {
         </div>
         <S.ListBlockWrap>
           <div className="list-inner">
-            {managerList?.data?.map((data, index, item) => {
+            {managerList.map((data, index) => {
               return (
-                <S.ListBlock key={item.id} className={`table-row ${isChecked[index] ? "selected" : ""}`}>
+                <S.ListBlock
+                  key={data.user.id}
+                  className={`table-row ${checkArray.includes(data.user.id) ? "selected" : ""}`}>
                   {data.admin_user_info.is_top_admin === true ? (
-                    <CheckBoxNone width={24} height={24} />
+                    <div className="check-img">
+                      {userInfo?.admin_user_info?.is_top_admin === true && (
+                        <CheckBoxNone width={24} height={24} style={{ cursor: "auto" }} />
+                      )}
+                    </div>
                   ) : (
-                    <label key={item.id} className="table-row">
-                      <input
-                        type="checkbox"
-                        checked={isChecked[index]}
-                        onChange={() => toggleItem(index)}
-                        style={{ display: "none" }}
-                      />
-                      <div>
-                        {isChecked[index] ? (
-                          <CheckBoxOn width={24} height={24} />
-                        ) : (
-                          <CheckBoxOff width={24} height={24} />
-                        )}
-                      </div>
-                      <div>{item.name}</div>
-                    </label>
+                    <>
+                      {checkArray.includes(data.user.id) ? (
+                        <div className="check-img">
+                          {userInfo?.admin_user_info?.is_top_admin === true && (
+                            <CheckBoxOn width={24} height={24} onClick={() => toggleItem(true, data.user.id)} />
+                          )}
+                        </div>
+                      ) : (
+                        <div className="check-img">
+                          {userInfo?.admin_user_info?.is_top_admin === true && (
+                            <CheckBoxOff width={24} height={24} onClick={() => toggleItem(false, data.user.id)} />
+                          )}
+                        </div>
+                      )}
+                    </>
                   )}
 
                   {data.admin_user_info.is_top_admin === true ? (
@@ -470,20 +425,21 @@ function ManagementList() {
                   <p className="table-text">{data.user.name}</p>
                   <p className="table-text">{data.admin_user_info.phone}</p>
                   <div className="option-modal-wrap table-thir">
-                    <div
-                      className="option-dot"
-                      onClick={() => {
-                        handleOptionModalClick(index, data);
-                        setDeleteManagerModalOpen({ open: false, data: data });
-                      }}>
-                      <OptionDot width={32} height={32} />
-                    </div>
+                    {userInfo?.admin_user_info?.is_top_admin === true && (
+                      <div
+                        className="option-dot"
+                        onClick={() => {
+                          handleOptionModalClick(index, data);
+                        }}>
+                        <OptionDot width={32} height={32} />
+                      </div>
+                    )}
+
                     {index === optionModalOpen.index && (
                       <OptionModal
                         optionModalOpen={optionModalOpen}
                         setOptionModalOpen={setOptionModalOpen}
                         setEditManagerModalOpen={setEditManagerModalOpen}
-                        deleteManagerModalOpen={deleteManagerModalOpen}
                         setDeleteManagerModalOpen={setDeleteManagerModalOpen}
                       />
                     )}
@@ -491,6 +447,7 @@ function ManagementList() {
                 </S.ListBlock>
               );
             })}
+            <div ref={ref} />
           </div>
         </S.ListBlockWrap>
       </S.ContentList>
@@ -498,23 +455,7 @@ function ManagementList() {
       {/* 관리자추가 모달 */}
       {addManagerModalOpen && (
         <div className="modal-wrap">
-          <AddManagerModal
-            setAddManagerModalOpen={setAddManagerModalOpen}
-            managerId={managerId}
-            setManagerId={setManagerId}
-            managerCompany={managerCompany}
-            setManagerCompany={setManagerCompany}
-            managerDepartment={managerDepartment}
-            setManagerDepartment={setManagerDepartment}
-            managerPosition={managerPosition}
-            setManagerPosition={setManagerPosition}
-            managerName={managerName}
-            setManagerName={setManagerName}
-            managerPhone={managerPhone}
-            setManagerPhone={setManagerPhone}
-            managerPassword={managerPassword}
-            setManagerPassword={setManagerPassword}
-          />
+          <AddManagerModal setAddManagerModalOpen={setAddManagerModalOpen} />
         </div>
       )}
 
@@ -535,7 +476,6 @@ function ManagementList() {
           <EditManagerPasswordModal
             editManagerModalOpen={editManagerModalOpen}
             setEditManagerPWChangeModalOpen={setEditManagerPWChangeModalOpen}
-            setManagerPassword={setManagerPassword}
           />
         </div>
       )}
@@ -544,6 +484,7 @@ function ManagementList() {
       {deleteManagerModalOpen.open && (
         <div className="modal-wrap">
           <ManagerDeleteModal
+            setManagerList={setManagerList}
             deleteManagerModalOpen={deleteManagerModalOpen}
             setDeleteManagerModalOpen={setDeleteManagerModalOpen}
           />

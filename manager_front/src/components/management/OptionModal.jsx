@@ -68,35 +68,27 @@ const S = {
 function OptionModal({
   optionModalOpen,
   setOptionModalOpen,
-  qrDownloadModalOpen,
   setQrDownloadModalOpen,
-  deleteModalOpen,
   setDeleteModalOpen,
   setEditModalOpen,
 }) {
-  console.log("optionModalOpen", optionModalOpen);
-
   // QR 다운로드 모달
   const handleQrDownloadModalClick = useCallback(() => {
-    // if (qrDownloadModalOpen.open === true) {
-    //   setQrDownloadModalOpen({ open: false, data: undefined });
-    // } else if (qrDownloadModalOpen.open === false) {
-    setQrDownloadModalOpen({ open: true, data: qrDownloadModalOpen });
+    setQrDownloadModalOpen({ open: true, data: optionModalOpen.data });
     setOptionModalOpen({ open: false, index: undefined, data: undefined });
-    // }
-  }, [qrDownloadModalOpen]);
+  }, [optionModalOpen]);
 
   // 농가수정
   const handelEditClick = useCallback(() => {
-    setEditModalOpen({ open: true, data: optionModalOpen });
+    setEditModalOpen({ open: true, data: optionModalOpen.data });
     setOptionModalOpen({ open: false, index: undefined, data: undefined });
-  }, []);
+  }, [optionModalOpen]);
 
   //삭제
   const handleDeleteClick = useCallback(() => {
-    setDeleteModalOpen({ open: true, data: deleteModalOpen });
+    setDeleteModalOpen({ open: true, deleteId: optionModalOpen.data.id });
     setOptionModalOpen({ open: false, index: undefined, data: undefined });
-  });
+  }, [optionModalOpen]);
 
   return (
     <S.Wrap>

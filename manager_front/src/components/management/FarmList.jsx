@@ -1,12 +1,13 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useState } from "react";
 import styled from "styled-components";
 import { Tooltip } from "react-tooltip";
 
 import useFarmAllList from "@src/hooks/queries/auth/useFarmAllList";
+import { farmAllListKey } from "@src/utils/query-keys/AuthQueryKeys";
+import useInvalidateQueries from "@src/hooks/queries/common/useInvalidateQueries";
 
 import colorArray from "@components/common/ListColor";
 
-// import DaumPostcode from "react-daum-postcode";
 import OptionModal from "./OptionModal";
 import AddFarmModal from "./AddFarmModal";
 import AddFarmSaveModal from "./AddFarmSaveModal";
@@ -136,6 +137,10 @@ const S = {
       align-items: center;
       padding: 6px 32px 6px 24px;
       height: 52px;
+
+      svg {
+        cursor: pointer;
+      }
     }
     p {
       ${({ theme }) => theme.textStyle.h7Reguler};
@@ -219,6 +224,11 @@ const S = {
       ${({ theme }) => theme.textStyle.h7Bold};
       color: ${({ theme }) => theme.basic.gray50};
     }
+
+    svg {
+      cursor: pointer;
+    }
+
     .farm_number {
       width: 132px;
       overflow: hidden;
@@ -346,6 +356,7 @@ const S = {
 };
 
 function FarmList() {
+  const invalidateQueries = useInvalidateQueries();
   const [isNameOrderBy, setIsNameOrderBy] = useState(0);
   const [isStateOrderBy, setIsStateOrderBy] = useState(0);
 
@@ -362,7 +373,10 @@ function FarmList() {
     } else {
       setIsNameOrderBy(0);
     }
-  }, [isNameOrderBy]);
+    setFarmList([]);
+    setPage(1);
+    invalidateQueries([farmAllListKey]);
+  }, [isNameOrderBy, farmAllListKey]);
 
   // 상태 정렬
   const sortByStatus = useCallback(() => {
@@ -371,6 +385,9 @@ function FarmList() {
     } else {
       setIsStateOrderBy(0);
     }
+    setFarmList([]);
+    setPage(1);
+    invalidateQueries([farmAllListKey]);
   }, [isStateOrderBy]);
 
   const [isAddDataClick, setIsAddDataClick] = useState(false); // 더보기 클릭 여부
@@ -389,11 +406,9 @@ function FarmList() {
       }
     },
     errorFn: (err) => {
-      console.log("!!err", err);
+      alert(err);
     },
   });
-
-  console.log("farmList", farmList);
 
   // 농가추가시 작성하는 시리얼넘버
   const [addFarmSerialNumber, setAddFarmSerialNumber] = useState("");
@@ -433,7 +448,7 @@ function FarmList() {
   // 삭제 모달
   const [deleteModalOpen, setDeleteModalOpen] = useState({
     open: false,
-    data: undefined,
+    deleteId: undefined,
   });
 
   // 수정 모달
@@ -459,101 +474,50 @@ function FarmList() {
     setAddFarmModalOpen(true);
   }, [addFarmModalOpen]);
 
-  // 농가목록 데이터
-  // const listData = useMemo(() => {
-  //   const array = [];
-  //   farmhouseList?.farm_houses?.map((data) => {
-  //     array.push({
-  //       id: data?.id,
-  //       serial_number: data?.planter?.serial_number,
-  //       farm_id: data?.farm_house_id,
-  //       farm_name: data?.name,
-  //       name: data?.producer_name,
-  //       farm_number: data?.nursery_number,
-  //       address_code: data?.address.split("||")[0],
-  //       address: data?.address.split("||")[1],
-  //       address_detail: data?.address.split("||")[2],
-  //       phone: data?.phone,
-  //       status: data?.last_planter_status?.status,
-  //       qr_image: data?.planter?.qrcode,
-  //     });
-  //   });
-  //   return array;
-  // }, []);
-
-  // console.log("farmhouseList", farmhouseList);
-  // console.log("listData", listData);
-
-  //정렬 토글
-  const [isFarmNameAscending, setIsFarmNameAscending] = useState(true);
-  const [isStatusAscending, setIsStatusAscending] = useState(true);
-
   // // 엑셀 다운로드 버튼
   // const handleExcelClick = useCallback(() => {
   //   alert("엑셀 다운로드 클릭");
   // }, []);
 
-  const [selectAll, setSelectAll] = useState(false);
-  // const [isChecked, setIsChecked] = useState([]);
-  // const [isChecked, setIsChecked] = useState(farmhouseList?.farm_houses?.map(() => false));
   const [checkArray, setCheckArray] = useState([]);
-
-  // useEffect(() => {
-  //   if (!!listData) {
-  //     const dateArr = [];
-  //     listData.map(() => {
-  //       return dateArr.push(false);
-  //     });
-  //     setIsChecked(dateArr);
-  //   }
-  // }, [farmhouseList]);
-
-  // const toggleItem = (index) => {
-  //   const updatedIsCheckedArray = [...isChecked];
-  //   updatedIsCheckedArray[index] = !updatedIsCheckedArray[index];
-  //   setIsChecked(updatedIsCheckedArray);
-
-  //   // 모든 항목이 체크되었는지 확인
-  //   const allChecked = updatedIsCheckedArray.every((checked) => checked);
-
-  //   // 모든 항목이 체크되었다면 전체 선택 체크박스를 true로 설정
-  //   // 그렇지 않다면 전체 선택 체크박스를 false로 설정
-  //   setSelectAll(allChecked);
-
-  //   // const selectedItemId = listData[index].id;
-
-  //   if (updatedIsCheckedArray[index]) {
-  //     setCheckArray((prevArray) => [...prevArray, selectedItemId]);
-  //   } else {
-  //     setCheckArray((prevArray) => prevArray.filter((id) => id !== selectedItemId));
-  //   }
-  // };
-
-  // const toggleAll = () => {
-  //   const allChecked = !selectAll;
-
-  //   // 모든 항목을 전부 선택 또는 해제
-  //   const updatedIsCheckedArray = isChecked.map(() => allChecked);
-
-  //   setIsChecked(updatedIsCheckedArray);
-  //   setSelectAll(allChecked);
-
-  //   // const selectedIds = listData.map((item) => item.id);
-
-  //   if (allChecked) {
-  //     setCheckArray(selectedIds);
-  //   } else {
-  //     setCheckArray([]);
-  //   }
-  // };
 
   // 선택삭제 클릭
   const handelSelectDeleteClick = useCallback(() => {
-    alert(checkArray);
-    setDeleteModalOpen({ open: true, data: { data: { id: checkArray } } });
+    setDeleteModalOpen({ open: true, deleteId: checkArray.join("||") });
   }, [checkArray]);
 
-  console.log("farmList", farmList);
+  // 체크박스 전제 선택 및 전체 해제
+  const toggleAll = useCallback(
+    (isAllCheck) => {
+      if (isAllCheck) {
+        // 전부 체크되어 있는 경우
+        setCheckArray([]);
+      } else {
+        // 전부 체크 안되어 있는 경우
+        const allCheckArray = [];
+
+        farmList.map((farmHouse) => {
+          allCheckArray.push(farmHouse.id);
+        });
+
+        setCheckArray(allCheckArray);
+      }
+    },
+    [farmList],
+  );
+
+  const toggleItem = useCallback(
+    (isCheck, id) => {
+      if (isCheck) {
+        // 체크된 항목 클릭 시
+        setCheckArray(checkArray.filter((checkId) => checkId !== id));
+      } else {
+        // 미체크된 항목 클릭 시
+        setCheckArray((prev) => [...prev, id]);
+      }
+    },
+    [checkArray],
+  );
 
   return (
     <S.Wrap>
@@ -578,11 +542,23 @@ function FarmList() {
       <S.ContentList>
         <div className="list-table-head">
           <div>
-            <CheckBoxOff width={24} height={24} />
-            {/* <label>
-              <input type="checkbox" checked={selectAll} onChange={toggleAll} style={{ display: "none" }} />
-              <div>{selectAll ? <CheckBoxOn width={24} height={24} /> : <CheckBoxOff width={24} height={24} />}</div>
-            </label> */}
+            {checkArray.length !== 0 && checkArray.length === farmList.length ? (
+              <CheckBoxOn
+                width={24}
+                height={24}
+                onClick={() => {
+                  toggleAll(true);
+                }}
+              />
+            ) : (
+              <CheckBoxOff
+                width={24}
+                height={24}
+                onClick={() => {
+                  toggleAll(false);
+                }}
+              />
+            )}
           </div>
           {checkArray.length === 0 ? (
             <>
@@ -623,23 +599,16 @@ function FarmList() {
             <p>등록된 농가가 없습니다.</p>
           </S.EmptyData>
         ) : (
-          farmList.map((data, index, item) => {
+          farmList.map((data, index) => {
             return (
-              // <S.ListBlock key={`map${index}`} className={`table-row ${isChecked[index] ? "selected" : ""}`}>
-              <S.ListBlock key={`map${index}`} className={`table-row}`}>
-                {/* <label key={item.id} className="table-row">
-                  <input
-                    type="checkbox"
-                    checked={isChecked[index]}
-                    onChange={() => toggleItem(index)}
-                    style={{ display: "none" }}
-                  />
-                  <div>
-                    {isChecked[index] ? <CheckBoxOn width={24} height={24} /> : <CheckBoxOff width={24} height={24} />}
-                  </div>
-                  <div>{item.name}</div>
-                </label> */}
-                <CheckBoxOff width={24} height={24} />
+              <S.ListBlock
+                key={`farmHouse${data.id}`}
+                className={`table-row ${checkArray.includes(data.id) ? "selected" : ""}`}>
+                {checkArray.includes(data.id) ? (
+                  <CheckBoxOn width={24} height={24} onClick={() => toggleItem(true, data.id)} />
+                ) : (
+                  <CheckBoxOff width={24} height={24} onClick={() => toggleItem(false, data.id)} />
+                )}
                 <p className="table-first serial_number">{data.planter.serial_number}</p>
                 <p className="table-second farm_id">{data.farm_house_id}</p>
                 <div className="table-third farm_name_wrap">
@@ -665,14 +634,6 @@ function FarmList() {
                     className="option-dot"
                     onClick={() => {
                       handleOptionModalClick(index, data);
-                      setQrDownloadModalOpen({
-                        open: false,
-                        data: data,
-                      });
-                      setDeleteModalOpen({
-                        open: false,
-                        data: data,
-                      });
                     }}>
                     <OptionDot width={40} height={32} />
                   </div>
@@ -680,9 +641,7 @@ function FarmList() {
                     <OptionModal
                       optionModalOpen={optionModalOpen}
                       setOptionModalOpen={setOptionModalOpen}
-                      qrDownloadModalOpen={qrDownloadModalOpen}
                       setQrDownloadModalOpen={setQrDownloadModalOpen}
-                      deleteModalOpen={deleteModalOpen}
                       setDeleteModalOpen={setDeleteModalOpen}
                       setEditModalOpen={setEditModalOpen}
                     />
@@ -772,11 +731,7 @@ function FarmList() {
       {/* QR 다운로드 모달 */}
       {qrDownloadModalOpen.open && (
         <div className="modal-wrap">
-          <QrDownloadModal
-            qrDownloadModalOpen={qrDownloadModalOpen}
-            setQrDownloadModalOpen={setQrDownloadModalOpen}
-            optionModalOpen={optionModalOpen}
-          />
+          <QrDownloadModal qrDownloadModalOpen={qrDownloadModalOpen} setQrDownloadModalOpen={setQrDownloadModalOpen} />
         </div>
       )}
 
@@ -787,6 +742,9 @@ function FarmList() {
             setDeleteModalOpen={setDeleteModalOpen}
             deleteModalOpen={deleteModalOpen}
             checkArray={checkArray}
+            setPage={setPage}
+            farmList={farmList}
+            setFarmList={setFarmList}
           />
         </div>
       )}
@@ -794,7 +752,13 @@ function FarmList() {
       {/* 수정모달 */}
       {editModalOpen.open && (
         <div className="modal-wrap">
-          <EditFarmModal editModalOpen={editModalOpen} setEditModalOpen={setEditModalOpen} />
+          <EditFarmModal
+            editModalOpen={editModalOpen}
+            setEditModalOpen={setEditModalOpen}
+            setPage={setPage}
+            farmList={farmList}
+            setFarmList={setFarmList}
+          />
         </div>
       )}
     </S.Wrap>

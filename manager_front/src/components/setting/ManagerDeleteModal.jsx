@@ -83,24 +83,25 @@ const S = {
   `,
 };
 
-function ManagerDeleteModal({ deleteManagerModalOpen, setDeleteManagerModalOpen }) {
+function ManagerDeleteModal({ setManagerList, deleteManagerModalOpen, setDeleteManagerModalOpen }) {
   const [isDefaultAlertShow, setIsDefaultAlertShowState] = useRecoilState(isDefaultAlertShowState);
   const invalidateQueries = useInvalidateQueries();
 
   const closeModal = useCallback(() => {
-    setDeleteManagerModalOpen({ open: false, data: undefined });
+    setDeleteManagerModalOpen({ open: false, deleteId: undefined });
   }, []);
 
   const { mutate: deleteManagerMutate } = useDeleteManager(
     () => {
-      closeModal();
+      setManagerList([]);
+      invalidateQueries([settingManagerListKey]);
       setIsDefaultAlertShowState({
         isShow: true,
         type: "success",
         text: "정상적으로 삭제되었습니다.",
         okClick: null,
       });
-      invalidateQueries([settingManagerListKey]);
+      closeModal();
     },
     (error) => {
       setIsDefaultAlertShowState({
@@ -115,7 +116,7 @@ function ManagerDeleteModal({ deleteManagerModalOpen, setDeleteManagerModalOpen 
   const handleDeleteOkClick = useCallback(() => {
     deleteManagerMutate({
       data: {
-        userIds: deleteManagerModalOpen.data.data.user.id,
+        userIds: deleteManagerModalOpen.deleteId,
       },
     });
     closeModal();

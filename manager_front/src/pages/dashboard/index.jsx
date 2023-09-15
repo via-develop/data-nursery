@@ -27,18 +27,6 @@ const S = {
   `,
 };
 
-// 현재날짜 + 시간
-function getCurrentDateTime() {
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  const day = String(now.getDate()).padStart(2, "0");
-  const hours = String(now.getHours()).padStart(2, "0");
-  const minutes = String(now.getMinutes()).padStart(2, "0");
-
-  return `${year}.${month}.${day} ${hours}:${minutes}`;
-}
-
 // 현재날짜
 function getCurrentDate() {
   const now = new Date();
@@ -51,17 +39,12 @@ function getCurrentDate() {
 
 function Dashboard() {
   // 현재시간
-  const [currentDateTime, setCurrentDateTime] = useState(null);
   const [currentDate, setCurrentDate] = useState(null);
-  // const [currentDateTime, setCurrentDateTime] = useState(getCurrentDateTime());
-  // const [currentDate, setCurrentDate] = useState(getCurrentDate());
 
   useEffect(() => {
-    setCurrentDateTime(getCurrentDateTime());
     setCurrentDate(getCurrentDate());
 
     const intervalId = setInterval(() => {
-      setCurrentDateTime(getCurrentDateTime());
       setCurrentDate(getCurrentDate());
     }, 60000); // 1분마다 업데이트
 
@@ -70,7 +53,7 @@ function Dashboard() {
 
   return (
     <MainLayout>
-      <MainHeader currentDateTime={currentDateTime} />
+      <MainHeader />
       <S.Wrap>
         <OutlineBlock />
         <OperationStatus currentDate={currentDate} />

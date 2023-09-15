@@ -299,38 +299,6 @@ function WorkHistoryPage() {
     month: false,
   });
 
-  // 날짜 변경
-  const handleDateChange = useCallback(
-    (name, value) => {
-      setDate((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
-      setWorkHistoryList([]);
-      invalidateQueries([workHistoryKey]);
-      setWorkHistoryListPage(1);
-    },
-    [date],
-  );
-
-  // 년도, 월 오픈 변경
-  const handleYearMonthOpen = useCallback(
-    (name, value) => {
-      setYearMontOpen((prev) => ({
-        ...prev,
-        [name]: value,
-      }));
-    },
-    [yearMonthOpen],
-  );
-
-  // 페이지 변경
-  const pageChange = useCallback(() => {
-    if (workHistoryListData?.total > workHistoryList.length) {
-      setWorkHistoryListPage(workHistoryListPage + 1);
-    }
-  }, [workHistoryListPage, workHistoryList]);
-
   useEffect(() => {
     setKoreanDate(new Date(date.year, date.month - 1, date.day));
   }, []);
@@ -363,6 +331,38 @@ function WorkHistoryPage() {
       alert(err);
     },
   });
+
+  // 페이지 변경
+  const pageChange = useCallback(() => {
+    if (workHistoryList.length !== 0 && workHistoryListData?.total > workHistoryList.length) {
+      setWorkHistoryListPage(workHistoryListPage + 1);
+    }
+  }, [workHistoryListData, workHistoryListPage, workHistoryList]);
+
+  // 년도, 월 오픈 변경
+  const handleYearMonthOpen = useCallback(
+    (name, value) => {
+      setYearMontOpen((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    },
+    [yearMonthOpen],
+  );
+
+  // 날짜 변경
+  const handleDateChange = useCallback(
+    (name, value) => {
+      setDate((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+      setWorkHistoryList([]);
+      invalidateQueries([workHistoryKey]);
+      setWorkHistoryListPage(1);
+    },
+    [date],
+  );
 
   return (
     <MainLayout

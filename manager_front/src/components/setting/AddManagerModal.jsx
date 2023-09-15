@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import styled from "styled-components";
 import { useRecoilState } from "recoil";
 
@@ -120,25 +120,18 @@ const S = {
   `,
 };
 
-function AddManagerModal({
-  setAddManagerModalOpen,
-  managerId,
-  setManagerId,
-  managerCompany,
-  setManagerCompany,
-  managerDepartment,
-  setManagerDepartment,
-  managerPosition,
-  setManagerPosition,
-  managerName,
-  setManagerName,
-  managerPhone,
-  setManagerPhone,
-  managerPassword,
-  setManagerPassword,
-}) {
+function AddManagerModal({ setAddManagerModalOpen }) {
   const [isDefaultAlertShow, setIsDefaultAlertShowState] = useRecoilState(isDefaultAlertShowState);
   const invalidateQueries = useInvalidateQueries();
+
+  //관리자 모달 정보
+  const [managerId, setManagerId] = useState("");
+  const [managerCompany, setManagerCompany] = useState("");
+  const [managerDepartment, setManagerDepartment] = useState("");
+  const [managerPosition, setManagerPosition] = useState("");
+  const [managerName, setManagerName] = useState("");
+  const [managerPhone, setManagerPhone] = useState("");
+  const [managerPassword, setManagerPassword] = useState("");
 
   const closeModal = useCallback(() => {
     setAddManagerModalOpen(false);

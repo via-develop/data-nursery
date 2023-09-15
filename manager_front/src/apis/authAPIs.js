@@ -6,7 +6,7 @@ export const loginAPI = (data) => {
 
 export const getUserInfo = async () => {
   try {
-    const res = await axios.get(process.env.NEXT_PUBLIC_END_POINT + `/api/auth/common/user`, {
+    const res = await axios.get(process.env.NEXT_PUBLIC_END_POINT + `/api/auth/admin/user`, {
       withCredentials: true,
     });
     return res.data;

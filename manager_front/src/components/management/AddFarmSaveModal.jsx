@@ -3,9 +3,8 @@ import styled from "styled-components";
 import { useRecoilState } from "recoil";
 
 import { useDaumPostcodePopup } from "react-daum-postcode";
-
 import { isDefaultAlertShowState } from "@src/states/isDefaultAlertShowState";
-import { useFarmAllListKey } from "@src/utils/query-keys/AuthQueryKeys";
+import { farmAllListKey } from "@src/utils/query-keys/AuthQueryKeys";
 import useInvalidateQueries from "@src/hooks/queries/common/useInvalidateQueries";
 import useCreateFarmhouse from "@src/hooks/queries/auth/useCreateFarmhouse";
 
@@ -211,7 +210,7 @@ function AddFarmSaveModal({
         text: "정상적으로 저장되었습니다.",
         okClick: null,
       });
-      invalidateQueries([useFarmAllListKey]);
+      invalidateQueries([farmAllListKey]);
     },
     (error) => {
       setIsDefaultAlertShowState({

@@ -24,50 +24,53 @@ const S = {
       line-height: 16px;
       color: "#737F8F";
     }
+    .legend-inner {
+      display: flex;
+      justify-content: end;
+      align-items: center;
+      gap: 8px;
+    }
+    .legend-color {
+      width: 18px;
+      height: 4px;
+      display: flex;
+      align-items: center;
+      border-radius: 3px;
+    }
+    .inner {
+      display: flex;
+      justify-content: end;
+      align-items: center;
+      gap: 8px;
+    }
   `,
 };
 
 function GraphCropProductionMonth() {
   const { data: planterCrops } = usePlanterCrop({
-    queryType: "day",
+    queryType: "month",
     successFn: () => {},
     errorFn: (err) => {
-      console.log("!!err", err);
+      alert(err);
     },
   });
 
-  console.log("작물별 생산량 월별", planterCrops);
+  //범례에서 사용할 배열
+  const nameColorArray =
+    !!planterCrops &&
+    Object.keys(planterCrops).map((key) => ({
+      name: key,
+      color: planterCrops[key][0].color,
+    }));
 
   const graphRef = useRef(null);
   let graphInstance = null;
 
-  const data1 = [];
-  for (let i = 0; i < 12; i++) {
-    const randomNumber = Math.floor(Math.random() * 50) + 1;
-    data1.push(randomNumber);
-  }
-  const data2 = [];
-  for (let i = 0; i < 12; i++) {
-    const randomNumber = Math.floor(Math.random() * 50) + 1;
-    data2.push(randomNumber);
-  }
-  const data3 = [];
-  for (let i = 0; i < 12; i++) {
-    const randomNumber = Math.floor(Math.random() * 50) + 1;
-    data3.push(randomNumber);
-  }
-  const data4 = [];
-  for (let i = 0; i < 12; i++) {
-    const randomNumber = Math.floor(Math.random() * 50) + 1;
-    data4.push(randomNumber);
-  }
-  const data5 = [];
-  for (let i = 0; i < 12; i++) {
-    const randomNumber = Math.floor(Math.random() * 50) + 1;
-    data5.push(randomNumber);
-  }
-
   useEffect(() => {
+    if (!planterCrops) {
+      return;
+    }
+
     const graphCtx = graphRef.current?.getContext("2d");
 
     const annotationline = {
@@ -94,79 +97,25 @@ function GraphCropProductionMonth() {
       graphInstance = new Chart(graphCtx, {
         type: "line",
         data: {
-          labels: ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"],
-          datasets: [
-            {
-              data: data1,
-              label: "토마토",
-              fill: false,
-              lineTension: 0.6,
-              pointHoverRadius: 6,
-              borderWidth: 3,
-              borderColor: "#FB97A3",
-              pointBackgroundColor: "#FB97A3",
-              pointBorderColor: "#4F5B6C",
-              pointRadius: 0,
-              pointHoverBorderWidth: 5,
-              pointHoverBackgroundColor: "#fff",
-            },
-            {
-              data: data2,
-              label: "수박",
-              fill: false,
-              lineTension: 0.6,
-              pointHoverRadius: 6,
-              borderWidth: 3,
-              borderColor: "#9993FC",
-              pointBackgroundColor: "#9993FC",
-              pointBorderColor: "#4F5B6C",
-              pointRadius: 0,
-              pointHoverBorderWidth: 5,
-              pointHoverBackgroundColor: "#fff",
-            },
-            {
-              data: data3,
-              label: "고추",
-              fill: false,
-              lineTension: 0.6,
-              pointHoverRadius: 6,
-              borderWidth: 3,
-              borderColor: "#1FC9C1",
-              pointBackgroundColor: "#1FC9C1",
-              pointBorderColor: "#4F5B6C",
-              pointRadius: 0,
-              pointHoverBorderWidth: 5,
-              pointHoverBackgroundColor: "#fff",
-            },
-            {
-              data: data4,
-              label: "오이",
-              fill: false,
-              lineTension: 0.6,
-              pointHoverRadius: 6,
-              borderWidth: 3,
-              borderColor: "#FBE367",
-              pointBackgroundColor: "#FBE367",
-              pointBorderColor: "#4F5B6C",
-              pointRadius: 0,
-              pointHoverBorderWidth: 5,
-              pointHoverBackgroundColor: "#fff",
-            },
-            {
-              data: data5,
-              label: "상추",
-              fill: false,
-              lineTension: 0.6,
-              pointHoverRadius: 6,
-              borderWidth: 3,
-              borderColor: "#67FB90",
-              pointBackgroundColor: "#67FB90",
-              pointBorderColor: "#4F5B6C",
-              pointRadius: 0,
-              pointHoverBorderWidth: 5,
-              pointHoverBackgroundColor: "#fff",
-            },
-          ],
+          labels: Array.from({ length: 12 }, (_, i) => i + 1),
+          datasets: Object.keys(planterCrops).map((key) => ({
+            label: key,
+            data: Array.from({ length: 12 }, (_, i) => {
+              // key에 해당하는 데이터를 라벨과 매칭
+              const dayData = planterCrops[key].find((item) => item.day === i + 1);
+              return dayData ? dayData.output : 0;
+            }),
+            borderColor: planterCrops[key][0].color, // key에 해당하는 첫 번째 데이터의 color를 사용
+            pointBackgroundColor: planterCrops[key][0].color, // key에 해당하는 첫 번째 데이터의 color를 사용
+            pointBorderColor: "#4F5B6C",
+            borderWidth: 3,
+            fill: false,
+            lineTension: 0.6,
+            pointHoverRadius: 6,
+            pointRadius: 0,
+            pointHoverBorderWidth: 5,
+            pointHoverBackgroundColor: "#fff",
+          })),
         },
         plugins: [annotationline],
         options: {
@@ -193,11 +142,11 @@ function GraphCropProductionMonth() {
                 drawOnChartArea: false,
               },
               position: "left",
-              title: {
-                display: true,
-                align: "end",
-                text: "개 (단위 : 만)",
-              },
+              // title: {
+              //   display: true,
+              //   align: "end",
+              //   text: "개 (단위 : 만)",
+              // },
               ticks: {
                 stepSize: 10,
               },
@@ -252,12 +201,22 @@ function GraphCropProductionMonth() {
     return () => {
       destroyChart(); // 컴포넌트가 unmount될 때 차트 파괴
     };
-  }, []);
+  }, [planterCrops]);
 
   return (
     <S.Wrap>
       <S.Legend>
-        <p>범례</p>
+        <div className="legend-inner">
+          {!!nameColorArray &&
+            nameColorArray?.map((data, index) => {
+              return (
+                <div className="inner" key={`map${index}`}>
+                  <p>{data.name}</p>
+                  <div className="legend-color" style={{ backgroundColor: data.color }}></div>
+                </div>
+              );
+            })}
+        </div>
       </S.Legend>
       <canvas ref={graphRef} />
     </S.Wrap>

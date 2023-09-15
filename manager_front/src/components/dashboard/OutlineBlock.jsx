@@ -41,7 +41,7 @@ const S = {
 
   FarmhouseBlock: styled.div`
     box-shadow: 4px 4px 16px 0px rgba(89, 93, 107, 0.1);
-    background-color: #ffb78e;
+    background-color: ${({ theme }) => theme.infobox.color1};
     padding: 23px 32px;
     width: 100%;
     height: 112px;
@@ -54,7 +54,7 @@ const S = {
 
   CropsBlock: styled.div`
     box-shadow: 4px 4px 16px 0px rgba(89, 93, 107, 0.1);
-    background-color: #967ae4;
+    background-color: ${({ theme }) => theme.infobox.color2};
     padding: 23px 32px;
     width: 100%;
     height: 112px;
@@ -66,7 +66,7 @@ const S = {
   `,
   PlanterBlock: styled.div`
     box-shadow: 4px 4px 16px 0px rgba(89, 93, 107, 0.1);
-    background-color: #4b64ba;
+    background-color: ${({ theme }) => theme.infobox.color3};
     padding: 23px 32px;
     width: 100%;
     height: 112px;
@@ -78,7 +78,7 @@ const S = {
   `,
   AmountBlock: styled.div`
     box-shadow: 4px 4px 16px 0px rgba(89, 93, 107, 0.1);
-    background-color: #ffb78e;
+    background-color: ${({ theme }) => theme.infobox.color4};
     padding: 23px 32px;
     width: 100%;
     height: 112px;
@@ -139,7 +139,7 @@ function OutlineBlock() {
   const { data: planterStatus } = usePlanterStatus({
     successFn: () => {},
     errorFn: (err) => {
-      console.log("!!err", err);
+      alert(err);
     },
   });
 

@@ -70,18 +70,17 @@ function ManagerOptionModal({
   optionModalOpen,
   setOptionModalOpen,
   setEditManagerModalOpen,
-  deleteManagerModalOpen,
   setDeleteManagerModalOpen,
 }) {
   // 관리자 수정
   const handelEditClick = useCallback(() => {
-    setEditManagerModalOpen({ open: true, data: optionModalOpen });
+    setEditManagerModalOpen({ open: true, data: optionModalOpen.data });
     setOptionModalOpen({ open: false, index: undefined, data: undefined });
   }, []);
 
   //삭제
   const handleDeleteClick = useCallback(() => {
-    setDeleteManagerModalOpen({ open: true, data: deleteManagerModalOpen });
+    setDeleteManagerModalOpen({ open: true, deleteId: optionModalOpen.data.user.id });
     setOptionModalOpen({ open: false, index: undefined, data: undefined });
   });
 

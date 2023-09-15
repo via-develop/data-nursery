@@ -113,7 +113,7 @@ def login_user(user_data: schemas.UserLogin, db: Session = Depends(get_db)):
                     "farm_house_id": farm_house.farm_house_id,
                     "producer_name": farm_house.producer_name,
                     "nursery_number": farm_house.nursery_number,
-                     "address": farm_house.address,
+                    "address": farm_house.address,
                     "phone": farm_house.phone,
                 },
                 "planter": {
@@ -318,7 +318,9 @@ async def create_farm_house(
             status_code=404, content=dict(msg="DUPLICATED_PLANTER_SERIAL_NUMBER")
         )
 
-    hash_pw = bcrypt.hashpw(phone.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+    hash_pw = bcrypt.hashpw(
+        phone.replace("-").encode("utf-8"), bcrypt.gensalt()
+    ).decode("utf-8")
 
     new_user = create_(
         db,

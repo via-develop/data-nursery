@@ -111,13 +111,6 @@ function WorkTab() {
     threshold: 0, // 요소가 얼마나 노출되었을때 inView를 true로 변경할지 (0~1 사이의 값)
   });
 
-  // 페이지 변경
-  const pageChange = useCallback(() => {
-    if (waitWorkListData?.total > waitWorkList.length) {
-      setWaitWorkListPage(waitWorkListPage + 1);
-    }
-  }, [waitWorkListPage, waitWorkList]);
-
   useEffect(() => {
     if (inView) {
       pageChange();
@@ -156,6 +149,13 @@ function WorkTab() {
       alert(err);
     },
   });
+
+  // 페이지 변경
+  const pageChange = useCallback(() => {
+    if (waitWorkList.length !== 0 && waitWorkListData?.total > waitWorkList.length) {
+      setWaitWorkListPage(waitWorkListPage + 1);
+    }
+  }, [waitWorkListData, waitWorkListPage, waitWorkList]);
 
   return !!workingWorkInfo || waitWorkListData?.total !== 0 ? (
     <S.Wrap>

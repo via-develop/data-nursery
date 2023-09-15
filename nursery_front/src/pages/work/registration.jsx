@@ -299,7 +299,7 @@ function WorkRegistrationPage() {
             <p className="seed-quantity-description-text">자동계산되며, 실제파종량과 다를 수 있습니다.</p>
           </div>
         </S.InputWrap>
-        <DefaultCalendar calendarOpen={calendarOpen} setCalendarOpen={setCalendarOpen} />
+        <DefaultCalendar calendarOpen={calendarOpen} setCalendarOpen={setCalendarOpen} sowingDate={new Date()} />
         {isCropSelectOpen && (
           <DefaultSelectList
             onClickEvent={() => {

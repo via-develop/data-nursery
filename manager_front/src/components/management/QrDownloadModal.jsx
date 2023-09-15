@@ -144,11 +144,12 @@ function QrDownloadModal({ qrDownloadModalOpen, setQrDownloadModalOpen }) {
     setQrDownloadModalOpen({ open: false, data: undefined });
   }, []);
 
-  const qrImage = "https://b.datanursery.kr" + qrDownloadModalOpen?.data?.data?.planter?.qrcode;
+  const qrImage = process.env.NEXT_PUBLIC_END_POINT + qrDownloadModalOpen?.data?.planter?.qrcode;
+  // const qrImage = "https://b.datanursery.kr" + qrDownloadModalOpen?.data?.planter?.qrcode;
 
   const qrCodeDownloadClick = useCallback(() => {
     let url = qrImage;
-    saveAs(url, qrDownloadModalOpen?.data?.data?.planter?.serial_number + "-qrcode");
+    saveAs(url, qrDownloadModalOpen?.data?.planter?.serial_number + "-qrcode");
   }, [qrImage]);
 
   return (
@@ -166,15 +167,7 @@ function QrDownloadModal({ qrDownloadModalOpen, setQrDownloadModalOpen }) {
           <div className="input-inner">
             <p className="title-info">농가명</p>
             <div className="input-wrap">
-              <input value={qrDownloadModalOpen.data.data.name} />
-            </div>
-          </div>
-          <div className="input-inner">
-            <p className="title-info">
-              파종기 시리얼번호를 입력하여 <b>QR 코드를 생성하세요</b>
-            </p>
-            <div className="input-wrap">
-              <input value={qrDownloadModalOpen.data.data.serial_number} />
+              <input value={qrDownloadModalOpen.data.name} />
             </div>
           </div>
         </S.InputWrap>

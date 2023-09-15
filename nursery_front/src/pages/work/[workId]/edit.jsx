@@ -74,7 +74,7 @@ function WorkEditPage({ workId }) {
   // 입력값 정보
   const [inputData, setInputData] = useState({
     cropKind: "", // 품종
-    sowingDate: "", // 파종일
+    sowingDate: new Date(), // 파종일
     deadline: "", // 출하일
     orderQuantity: "", // 주문수량
     seedQuantity: 0, // 파종량
@@ -115,6 +115,12 @@ function WorkEditPage({ workId }) {
       handleInputChange("seedQuantity", 0);
     }
   }, [inputData.planterTray, inputData.orderQuantity]);
+
+  // 출하일 계산
+  useEffect(() => {
+    const changeDate = new Date(inputData.sowingDate);
+    handleInputChange("deadline", changeDate.setDate(changeDate.getDate() + 45));
+  }, [inputData.sowingDate]);
 
   // BottomButton 활성화 여부
   useEffect(() => {
@@ -315,7 +321,11 @@ function WorkEditPage({ workId }) {
             <p className="seed-quantity-description-text">자동계산되며, 실제파종량과 다를 수 있습니다.</p>
           </div>
         </S.InputWrap>
-        <DefaultCalendar calendarOpen={calendarOpen} setCalendarOpen={setCalendarOpen} />
+        <DefaultCalendar
+          calendarOpen={calendarOpen}
+          setCalendarOpen={setCalendarOpen}
+          sowingDate={inputData.sowingDate}
+        />
         {isCropSelectOpen && (
           <DefaultSelectList
             onClickEvent={() => {

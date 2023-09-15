@@ -25,32 +25,25 @@ function GraphFarmHouseProductionMonth() {
     queryType: "month",
     successFn: () => {},
     errorFn: (err) => {
-      console.log("!!err", err);
+      alert(err);
     },
   });
 
-  console.log("planterFarm", planterFarm);
-  // const dataArray = planterTotal?.map((item) => item.output);
-
   //육묘장 이름
   const nameArray = planterFarm?.map((item) => item.farmhouse_name);
-  // nameArray.push(' ')
-  // nameArray.push(' ')
-  // nameArray.push(' ')
-  // nameArray.push(' ')
-  // nameArray.push(' ')
-  // nameArray.push(' ')
-  // nameArray.push(' ')
+
+  // if (nameArray?.length < 5) {
+  //   nameArray.push(" ");
+  //   nameArray.push(" ");
+  //   nameArray.push(" ");
+  //   nameArray.push(" ");
+  //   nameArray.push(" ");
+  //   nameArray.push(" ");
+  //   nameArray.push(" ");
+  // }
 
   //육묘장 데이터
   const dataArray = planterFarm?.map((item) => item.total_output);
-  // dataArray.push('null')
-  // dataArray.push('null')
-  // dataArray.push('null')
-  // dataArray.push('null')
-  // dataArray.push('null')
-  // dataArray.push('null')
-  // dataArray.push('null')
 
   const graphRef = useRef(null);
   const graphUnitRef = useRef(null);
@@ -95,28 +88,15 @@ function GraphFarmHouseProductionMonth() {
         type: "bar",
         data: {
           labels: nameArray,
-          // [
-          //   "보천육묘장",
-          //   "보천육묘장",
-          //   "보천육묘장",
-          //   "보천육묘장",
-          //   "보천육묘장",
-          //   "보천육묘장",
-          //   "보천육묘장",
-          //   "보천육묘장",
-          //   "보천육묘장",
-          //   "보천육묘장",
-          //   "보천육묘장",
-          //   "보천육묘장",
-          // ],
           datasets: [
             {
               data: dataArray,
-              // data: [12, 20, 3, 10, 2, 3, 9, 1, 3, 3, 9, 10],
               backgroundColor: "#FFB78E",
               hoverBackgroundColor: "#FFB78E",
               borderRadius: 4,
               borderWidth: 1,
+              // barPercentage: 0.5,
+              // categoryPercentage: 0.8,
               barPercentage: 0.9,
               categoryPercentage: 0.8,
             },
@@ -139,6 +119,7 @@ function GraphFarmHouseProductionMonth() {
               },
               ticks: {
                 display: false,
+                // color:"#fff"
               },
               display: false,
             },
@@ -153,7 +134,27 @@ function GraphFarmHouseProductionMonth() {
               display: false,
             },
             tooltip: {
-              enabled: false,
+              backgroundColor: "#4F5B6C",
+              borderRadius: 8,
+              padding: 16,
+              xAlign: "center",
+              yAlign: "bottom",
+              displayColors: false,
+              titleAlign: "center",
+              bodyAlign: "center",
+              titleColor: "#C2D6E1",
+              bodyColor: "#fff",
+              callbacks: {
+                title: function (context) {
+                  return "";
+                },
+                beforeBody: function (context) {
+                  return context[0].formattedValue;
+                },
+                label: function (context) {
+                  return "";
+                },
+              },
             },
           },
         },
@@ -180,11 +181,11 @@ function GraphFarmHouseProductionMonth() {
               afterFit: (context) => {
                 context.height += 23;
               },
-              title: {
-                display: true,
-                align: "end",
-                text: "개 (단위 : 만)",
-              },
+              // title: {
+              //   display: true,
+              //   align: "end",
+              //   text: "개 (단위 : 만)",
+              // },
             },
             y: {
               afterFit: (context) => {
