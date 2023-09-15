@@ -335,7 +335,7 @@ async def create_farm_house(
         )
 
     hash_pw = bcrypt.hashpw(
-        phone.replace("-").encode("utf-8"), bcrypt.gensalt()
+        phone.replace("-", "").encode("utf-8"), bcrypt.gensalt()
     ).decode("utf-8")
 
     new_user = create_(
