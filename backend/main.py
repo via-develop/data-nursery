@@ -11,6 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
 import os
 from dotenv import load_dotenv, dotenv_values
+from datetime import datetime
 
 # from utils.log_config import logger
 from utils.exceptions import AuthenticationException
@@ -26,6 +27,8 @@ from src.planter.admin import router as PlanterAdminRouter
 from constant.cookie_set import (
     AUTH_COOKIE_COMMON_USER_ACCESS_TOKEN,
     AUTH_COOKIE_ADMIN_USER_ACCESS_TOKEN,
+    AUTH_COOKIE_DOMAIN,
+    AUTH_COOKIE_SECURE,
 )
 
 # from src.auth import models as AuthModel, router as AuthRouter
@@ -68,8 +71,25 @@ async def api_authentication_exception_handler(
     request: Request, exc: AuthenticationException
 ):
     response = JSONResponse(status_code=401, content=dict(msg=exc.name))
-    response.delete_cookie(AUTH_COOKIE_COMMON_USER_ACCESS_TOKEN)
-    response.delete_cookie(AUTH_COOKIE_ADMIN_USER_ACCESS_TOKEN)
+    # response.delete_cookie(AUTH_COOKIE_COMMON_USER_ACCESS_TOKEN)
+    # response.delete_cookie(AUTH_COOKIE_ADMIN_USER_ACCESS_TOKEN)
+    response.set_cookie(
+        key=AUTH_COOKIE_COMMON_USER_ACCESS_TOKEN,
+        httponly=True,
+        expires=datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S GMT"),
+        domain=AUTH_COOKIE_DOMAIN if AUTH_COOKIE_DOMAIN != "None" else None,
+        secure=True if AUTH_COOKIE_SECURE != "False" else False,
+        samesite="lax",
+    )
+
+    response.set_cookie(
+        key=AUTH_COOKIE_ADMIN_USER_ACCESS_TOKEN,
+        httponly=True,
+        expires=datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S GMT"),
+        domain=AUTH_COOKIE_DOMAIN if AUTH_COOKIE_DOMAIN != "None" else None,
+        secure=True if AUTH_COOKIE_SECURE != "False" else False,
+        samesite="lax",
+    )
     # response.delete_cookie("_tr")
     return response
 

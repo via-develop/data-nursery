@@ -174,11 +174,27 @@ def login_user(user_data: schemas.UserLogin, db: Session = Depends(get_db)):
 def login_user(l_type: str, request: Request, db: Session = Depends(get_db)):
     if l_type == "01":
         response = JSONResponse(status_code=200, content={"msg": "SUCCESS"})
-        response.delete_cookie(AUTH_COOKIE_COMMON_USER_ACCESS_TOKEN)
+        # response.delete_cookie(AUTH_COOKIE_COMMON_USER_ACCESS_TOKEN)
+        response.set_cookie(
+            key=AUTH_COOKIE_COMMON_USER_ACCESS_TOKEN,
+            httponly=True,
+            expires=datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S GMT"),
+            domain=AUTH_COOKIE_DOMAIN if AUTH_COOKIE_DOMAIN != "None" else None,
+            secure=True if AUTH_COOKIE_SECURE != "False" else False,
+            samesite="lax",
+        )
 
     if l_type == "99":
         response = JSONResponse(status_code=200, content={"msg": "SUCCESS"})
-        response.delete_cookie(AUTH_COOKIE_ADMIN_USER_ACCESS_TOKEN)
+        # response.delete_cookie(AUTH_COOKIE_ADMIN_USER_ACCESS_TOKEN)
+        response.set_cookie(
+            key=AUTH_COOKIE_ADMIN_USER_ACCESS_TOKEN,
+            httponly=True,
+            expires=datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S GMT"),
+            domain=AUTH_COOKIE_DOMAIN if AUTH_COOKIE_DOMAIN != "None" else None,
+            secure=True if AUTH_COOKIE_SECURE != "False" else False,
+            samesite="lax",
+        )
 
     return response
 
