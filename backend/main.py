@@ -11,7 +11,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
 import os
 from dotenv import load_dotenv, dotenv_values
-from utils.log_config import logger
+
+# from utils.log_config import logger
 from utils.exceptions import AuthenticationException
 
 # from utils.database import get_db
@@ -123,9 +124,9 @@ async def db_session_middleware(request: Request, call_next):
         request.state.db = SessionLocal()
         response = await call_next(request)
 
-        logger.info(
-            f"Request: {request.method} - {request.url} / {response.status_code}"
-        )
+        # logger.info(
+        #     f"Request: {request.method} - {request.url} / {response.status_code}"
+        # )
 
     finally:
         request.state.db.close()
