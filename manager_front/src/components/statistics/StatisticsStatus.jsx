@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import styled from "styled-components";
 
 import colorArray from "@components/common/ListColor";
@@ -491,6 +491,12 @@ function StatisticsStatus() {
   const [searchCropName, setSearchCropName] = useState("");
   const [searchTrayTotal, setSearchTrayTotal] = useState("");
 
+  //Dropdown 나타내는 글씨
+  const [farmIdSelectText, setFarmIdSelectText] = useState("");
+  const [farmNameSelectText, setFarmNameSelectText] = useState("");
+  const [cropNameSelectText, setCropNameSelectText] = useState("");
+  const [traySelectText, setTraySelectText] = useState("");
+
   // 농가목록 데이터
   const [staticsList, setStaticsList] = useState([]);
 
@@ -707,7 +713,7 @@ function StatisticsStatus() {
         }
       } else {
         // dropdown으로 선택하는 값
-        const preValue = selectData[name];
+        const preValue = selectData[name].toString();
         let changeValue = "";
 
         if (isSelect) {
@@ -805,6 +811,60 @@ function StatisticsStatus() {
     },
   });
 
+  //농가 ID select box 글씨
+  useEffect(() => {
+    if (selectData.farmHouseId === "") {
+      setFarmIdSelectText("농가ID");
+    } else if (selectData?.farmHouseId?.includes("||")) {
+      setFarmIdSelectText(
+        selectData?.farmHouseId.split("||")[0] + "외 " + (selectData?.farmHouseId.split("||").length - 1) + "개",
+      );
+    } else {
+      setFarmIdSelectText(selectData?.farmHouseId);
+    }
+  }, [selectData, farmIdSelectText]);
+
+  //농가면 select box 글씨
+  useEffect(() => {
+    if (selectData.farmHouseName === "") {
+      setFarmNameSelectText("농가명");
+    } else if (selectData?.farmHouseName?.includes("||")) {
+      setFarmNameSelectText(
+        selectData?.farmHouseName.split("||")[0] + "외 " + (selectData?.farmHouseName.split("||").length - 1) + "개",
+      );
+    } else {
+      setFarmNameSelectText(selectData?.farmHouseName);
+    }
+  }, [selectData, farmNameSelectText]);
+
+  //작물명 select box 글씨
+  useEffect(() => {
+    if (selectData.cropName === "") {
+      setCropNameSelectText("작물명");
+    } else if (selectData?.cropName?.includes("||")) {
+      setCropNameSelectText(
+        selectData?.cropName.split("||")[0] + "외 " + (selectData?.cropName.split("||").length - 1) + "개",
+      );
+    } else {
+      setCropNameSelectText(selectData?.cropName);
+    }
+  }, [cropNameSelectText, selectData]);
+
+  //트레이 select box 글씨
+  useEffect(() => {
+    if (selectData?.trayTotal === "") {
+      setTraySelectText("트레이");
+    }
+    // 두개 이상선택시
+    else if (selectData?.trayTotal?.includes("||")) {
+      setTraySelectText(
+        selectData?.trayTotal.split("||")[0] + "외 " + (selectData?.trayTotal.split("||").length - 1) + "개",
+      );
+    } else {
+      setTraySelectText(selectData?.trayTotal);
+    }
+  }, [traySelectText, selectData]);
+
   return (
     <S.Wrap>
       <S.InfoBlock>
@@ -885,7 +945,7 @@ function StatisticsStatus() {
 
           <div className="search-select-modal-wrap">
             <S.HeaderDropDown style={{ width: "168px" }} onClick={handleFarmIdClick}>
-              <p>농가 ID</p>
+              <p>{farmIdSelectText}</p>
               <HeaderSelectArrowIcon width={20} height={20} />
             </S.HeaderDropDown>
             {isFarmId && (
@@ -903,7 +963,7 @@ function StatisticsStatus() {
 
           <div className="search-select-modal-wrap">
             <S.HeaderDropDown style={{ width: "224px" }} onClick={handleFarmNameClick}>
-              <p>농가명</p>
+              <p>{farmNameSelectText}</p>
               <HeaderSelectArrowIcon width={20} height={20} />
             </S.HeaderDropDown>
             {isFarmName && (
@@ -921,7 +981,7 @@ function StatisticsStatus() {
 
           <div className="search-select-modal-wrap">
             <S.HeaderDropDown style={{ width: "154px" }} onClick={handleCropsNameClick}>
-              <p>작물명</p>
+              <p>{cropNameSelectText}</p>
               <HeaderSelectArrowIcon width={20} height={20} />
             </S.HeaderDropDown>
             {isCropsName && (
@@ -971,7 +1031,7 @@ function StatisticsStatus() {
 
           <div className="search-select-modal-wrap">
             <S.HeaderDropDown style={{ width: "154px" }} onClick={handleTrayCountClick}>
-              <p>트레이</p>
+              <p>{traySelectText}</p>
               <HeaderSelectArrowIcon width={20} height={20} />
             </S.HeaderDropDown>
             {isTrayCount && (

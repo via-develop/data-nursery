@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import styled from "styled-components";
 import { useRouter } from "next/router";
 import Image from "next/image";
@@ -65,6 +65,9 @@ function WorkInfoPage({ workId }) {
   const clearQueries = useAllCacheClear();
   const invalidateQueries = useInvalidateQueries();
 
+  // 스크롤 유무 판단하기 위함
+  const [isScroll, setIsScroll] = useState(false);
+
   // BottomButton 정보
   const [buttonSetting, setButtonSetting] = useState({
     color: defaultButtonColor,
@@ -78,6 +81,15 @@ function WorkInfoPage({ workId }) {
       });
     },
   });
+
+  // 스크롤 감지
+  const contentScroll = useCallback((e) => {
+    if (e.target.scrollTop > 0) {
+      setIsScroll(true);
+    } else {
+      setIsScroll(false);
+    }
+  }, []);
 
   // 유저 정보 API
   const { data: userInfo, isLoading: userInfoLoading } = useUserInfo({
@@ -151,6 +163,7 @@ function WorkInfoPage({ workId }) {
     <MainLayout
       pageName={"작업 정보"}
       isLoading={userInfoLoading || workingWorkInfoLoading || workInfoLoading}
+      isScroll={isScroll}
       backIconClickFn={() => {
         router.push("/");
       }}
@@ -163,7 +176,7 @@ function WorkInfoPage({ workId }) {
           ? null
           : buttonSetting
       }>
-      <S.Wrap>
+      <S.Wrap onScroll={contentScroll}>
         <S.InputWrap>
           <p className="category-text">작업상태</p>
           <S.WorkStatusWrap>

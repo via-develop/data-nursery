@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import styled from "styled-components";
 import ScrollContainer from "react-indiana-drag-scroll";
 import Image from "next/image";
@@ -157,6 +157,18 @@ const S = {
 function MainPage() {
   const [loading, setLoading] = useState(false);
 
+  // 스크롤 유무 판단하기 위함
+  const [isScroll, setIsScroll] = useState(false);
+
+  // 스크롤 감지
+  const contentScroll = useCallback((e) => {
+    if (e.target.scrollTop > 0) {
+      setIsScroll(true);
+    } else {
+      setIsScroll(false);
+    }
+  }, []);
+
   // 대시보드 API (오늘의 생산량, BEST품종, 사용시간)
   const { data: dashBoardInfo, isLoading: dashBoardLoading } = useDashBoard({
     successFn: () => {},
@@ -166,8 +178,8 @@ function MainPage() {
   });
 
   return (
-    <MainLayout pageName={"main"} isLoading={dashBoardLoading || loading}>
-      <S.Wrap>
+    <MainLayout pageName={"main"} isLoading={dashBoardLoading || loading} isScroll={isScroll}>
+      <S.Wrap onScroll={contentScroll}>
         <S.ScrollWrap>
           <ScrollContainer className="scroll-container" horizontal={true}>
             <S.CardWrap className="today-output">

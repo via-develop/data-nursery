@@ -2,8 +2,9 @@ import React, { useCallback, useEffect, useState } from "react";
 import styled from "styled-components";
 import { useRecoilState } from "recoil";
 
+import useUpdateFarmhousePassword from "@src/hooks/queries/auth/useUpdateFarmhousePassword";
+
 import { isDefaultAlertShowState } from "@src/states/isDefaultAlertShowState";
-import useUpdateManager from "@src/hooks/queries/auth/useUpdateManager";
 import useInvalidateQueries from "@src/hooks/queries/common/useInvalidateQueries";
 import { settingManagerListKey } from "@src/utils/query-keys/AuthQueryKeys";
 
@@ -143,64 +144,32 @@ const S = {
   `,
 };
 
-function EditManagerPasswordModal({ editManagerModalOpen, setEditManagerPWChangeModalOpen }) {
+function EditPasswordModal({ editModalOpen, setEditPWChangeModalOpen }) {
   const invalidateQueries = useInvalidateQueries();
   const [isDefaultAlertShow, setIsDefaultAlertShowState] = useRecoilState(isDefaultAlertShowState);
 
-  const [managerPassword, setManagerPassword] = useState("");
-
-  // //기존 비밀번호
-  // const [originPw, setOriginPw] = useState(editManagerModalOpen.data.password);
-  //현재 입력하는 비밀번호
-  const [inputPw, setInputPw] = useState("");
   //새 비밀번호
   const [newPw, setNewPw] = useState("");
   //새 비밀번호 확인
   const [newPwCheck, setNewPwCheck] = useState("");
 
-  //기준비밀번호와 입력비밀번호가 동일한지 체크
-  // const [originInputPwCheck, setOriginInputPwCheck] = useState(false);
-
   //새 비밀번호와 확인비밀번호가 동일한지 체크
   const [newPwSameCheck, setNewPwSameCheck] = useState(false);
 
   const closeModal = useCallback(() => {
-    setEditManagerPWChangeModalOpen({ open: false, data: undefined });
-    setInputPw("");
+    setEditPWChangeModalOpen({ open: false, data: undefined });
     setNewPw("");
     setNewPwCheck("");
   }, []);
 
   const handleSaveClick = useCallback(() => {
-    // setManagerPassword(newPw);
-    // closeModal();
-    updateManagerPassword({
+    updatePasswordMutate({
       data: {
-        userId: editManagerModalOpen.data.user.id,
-        user_data: {
-          password: newPw,
-          name: null,
-          is_del: false,
-        },
-        admin_user_info_data: {
-          company: null,
-          department: null,
-          position: null,
-          phone: null,
-          is_del: false,
-        },
+        farmhouseId: editModalOpen.data.id,
+        newPassword: newPw,
       },
     });
-  }, [newPw]);
-
-  //기존 비밀번호와 입력 비밀번호 동일한지 체크
-  // useEffect(() => {
-  //   if (originPw === inputPw) {
-  //     setOriginInputPwCheck(true);
-  //   } else {
-  //     setOriginInputPwCheck(false);
-  //   }
-  // }, [originPw, inputPw]);
+  }, [newPw, editModalOpen]);
 
   //새 비밀번호와 확인이 동일한지 체크
   useEffect(() => {
@@ -211,7 +180,7 @@ function EditManagerPasswordModal({ editManagerModalOpen, setEditManagerPWChange
     }
   }, [newPw, newPwCheck]);
 
-  const { mutate: updateManagerPassword } = useUpdateManager(
+  const { mutate: updatePasswordMutate } = useUpdateFarmhousePassword(
     () => {
       setIsDefaultAlertShowState({
         isShow: true,
@@ -244,27 +213,6 @@ function EditManagerPasswordModal({ editManagerModalOpen, setEditManagerPWChange
           </div>
         </S.TitleWrap>
         <S.InputWrap>
-          {/* <S.TextWrap>
-            <p className="input-title">현재비밀번호</p>
-          </S.TextWrap>
-          <div className="input-wrap">
-            <input
-              placeholder="현재 비밀번호를 입력해주세요"
-              value={inputPw}
-              type="password"
-              onChange={(e) => setInputPw(e.target.value)}
-            />
-          </div>
-          {originInputPwCheck === false ? (
-            <>
-              <p className="password-false">* 현재 비밀번호와 일치하지 않습니다.</p>
-            </>
-          ) : (
-            <>
-              <p className="password-true">* 현재 비밀번호와 일치합니다.</p>
-            </>
-          )} */}
-
           <S.TextWrap>
             <p className="input-title">새 비밀번호</p>
           </S.TextWrap>
@@ -304,23 +252,18 @@ function EditManagerPasswordModal({ editManagerModalOpen, setEditManagerPWChange
           )}
         </S.InputWrap>
 
-        {
-          // originInputPwCheck === false ||
-          // newPwSameCheck === false ||
-          // inputPw.length === 0 ||
-          newPw.length === 0 || newPwCheck.length === 0 ? (
-            <S.ButtonWrapOff>
-              <p>저장</p>
-            </S.ButtonWrapOff>
-          ) : (
-            <S.ButtonWrap onClick={handleSaveClick}>
-              <p>저장</p>
-            </S.ButtonWrap>
-          )
-        }
+        {newPw.length === 0 || newPwCheck.length === 0 ? (
+          <S.ButtonWrapOff>
+            <p>저장</p>
+          </S.ButtonWrapOff>
+        ) : (
+          <S.ButtonWrap onClick={handleSaveClick}>
+            <p>저장</p>
+          </S.ButtonWrap>
+        )}
       </S.WrapInner>
     </S.Wrap>
   );
 }
 
-export default EditManagerPasswordModal;
+export default EditPasswordModal;

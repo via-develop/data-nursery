@@ -53,10 +53,15 @@ const S = {
     gap: 8px;
   `,
   StayLoginWrap: styled.div`
+    margin: 12px 0px 32px 0px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  `,
+  StayLoginContent: styled.div`
     display: flex;
     align-items: center;
     gap: 11px;
-    margin: 12px 0px 32px 0px;
     width: fit-content;
     cursor: pointer;
 
@@ -80,7 +85,8 @@ function LogInPage() {
   const [loginInfo, setLoginInfo] = useState({
     login_id: "",
     password: "",
-    isStayLogin: false,
+    isStayId: false,
+    isStayPassword: false,
     l_type: "01",
   });
 
@@ -99,31 +105,63 @@ function LogInPage() {
     clearQueries();
 
     const saveId = secureLocalStorage.getItem("login_id");
+    const savePassword = secureLocalStorage.getItem("login_password");
 
-    if (saveId) {
+    if (saveId && savePassword) {
+      setLoginInfo({
+        login_id: saveId,
+        password: savePassword,
+        isStayId: true,
+        isStayPassword: true,
+        l_type: "01",
+      });
+    } else if (saveId && !savePassword) {
       setLoginInfo({
         login_id: saveId,
         password: "",
-        isStayLogin: true,
+        isStayId: true,
+        isStayPassword: false,
+        l_type: "01",
+      });
+    } else if (!saveId && savePassword) {
+      setLoginInfo({
+        login_id: "",
+        password: savePassword,
+        isStayId: false,
+        isStayPassword: true,
+        l_type: "01",
+      });
+    } else {
+      setLoginInfo({
+        login_id: "",
+        password: "",
+        isStayId: false,
+        isStayPassword: false,
+        l_type: "01",
       });
     }
   }, []);
-
-  const stayLoginCheckBoxClick = useCallback(() => {
-    handleInputChange("isStayLogin", !loginInfo.isStayLogin);
-  }, [loginInfo.isStayLogin]);
 
   const tempLoginCheck = useCallback(async () => {
     try {
       const res = await loginAPI(loginInfo);
 
       // 아이디 저장 시 실행
-      if (loginInfo.isStayLogin) {
+      if (loginInfo.isStayId) {
         // 아이디 로컬스토리지에 저장
         secureLocalStorage.setItem("login_id", loginInfo.login_id);
       } else {
         // 아이디 로컬스토리지에서 삭제
         secureLocalStorage.removeItem("login_id");
+      }
+
+      // 비밀번호 저장 시 실행
+      if (loginInfo.isStayPassword) {
+        // 비밀번호 로컬스토리지에 저장
+        secureLocalStorage.setItem("login_password", loginInfo.password);
+      } else {
+        // 비밀번호 로컬스토리지에서 삭제
+        secureLocalStorage.removeItem("login_password");
       }
 
       if (res.data.planter.is_register) {
@@ -166,7 +204,7 @@ function LogInPage() {
             placeholder="아이디를 입력해주세요"
             text={loginInfo.login_id}
             setText={(e) => {
-              handleInputChange("login_id", e.target.value);
+              handleInputChange("login_id", e.target.value.toUpperCase());
             }}
             enterKeyUpFn={() => {
               enterKeyUp();
@@ -175,6 +213,7 @@ function LogInPage() {
           <PrefixInput
             placeholder="비밀번호를 입력해주세요"
             type="password"
+            inputmode="numeric"
             text={loginInfo.password}
             maxLength={20}
             setText={(e) => {
@@ -185,9 +224,21 @@ function LogInPage() {
             }}
           />
         </S.LoginInputWrap>
-        <S.StayLoginWrap onClick={stayLoginCheckBoxClick}>
-          {loginInfo.isStayLogin ? <OnCheckBoxIcon /> : <OffCheckBoxIcon />}
-          <p>아이디 저장</p>
+        <S.StayLoginWrap>
+          <S.StayLoginContent
+            onClick={() => {
+              handleInputChange("isStayId", !loginInfo.isStayId);
+            }}>
+            {loginInfo.isStayId ? <OnCheckBoxIcon /> : <OffCheckBoxIcon />}
+            <p>아이디 저장</p>
+          </S.StayLoginContent>
+          <S.StayLoginContent
+            onClick={() => {
+              handleInputChange("isStayPassword", !loginInfo.isStayPassword);
+            }}>
+            {loginInfo.isStayPassword ? <OnCheckBoxIcon /> : <OffCheckBoxIcon />}
+            <p>비밀번호 저장</p>
+          </S.StayLoginContent>
         </S.StayLoginWrap>
         <DefaultButton text={"로그인"} onClick={tempLoginCheck} customStyle={defaultButtonColor} />
       </S.Wrap>

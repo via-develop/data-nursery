@@ -189,6 +189,12 @@ const S = {
               visibility: hidden;
             }
           `}
+
+    ${(props) =>
+      props.isScroll &&
+      css`
+        filter: drop-shadow(0px 4px 10px rgba(165, 166, 168, 0.16));
+      `}
   `,
   BottomButtonWrap: styled.div`
     height: ${(props) => props.height};
@@ -221,6 +227,7 @@ function MainLayout({
   children,
   pageName,
   isLoading = false,
+  isScroll = false,
   isBackIcon = true,
   backIconClickFn,
   isMoreIcon = false,
@@ -275,7 +282,7 @@ function MainLayout({
         <S.MainLayout>
           <S.MainContent height={mainContentHeight} backgroundColor={backgroundColor}>
             {pageName === "main" && (
-              <S.PageNameWrap className="main-page-name" backgroundColor={backgroundColor}>
+              <S.PageNameWrap className="main-page-name" backgroundColor={backgroundColor} isScroll={isScroll}>
                 <div className="text-wrap">
                   <p className="date-text">{today[0] + today[1] + today[2].replace(".", " ") + today[3]}</p>
                   <p className="logo-text">Data Nursery</p>
@@ -288,7 +295,11 @@ function MainLayout({
               </S.PageNameWrap>
             )}
             {!!pageName && pageName !== "main" && (
-              <S.PageNameWrap isBackIcon={isBackIcon} isMoreIcon={isMoreIcon} backgroundColor={backgroundColor}>
+              <S.PageNameWrap
+                isBackIcon={isBackIcon}
+                isMoreIcon={isMoreIcon}
+                backgroundColor={backgroundColor}
+                isScroll={isScroll}>
                 <BackIcon className="back-icon-wrap" onClick={backIconClickFn} />
                 <p>{pageName}</p>
                 <MoreIcon

@@ -53,6 +53,12 @@ const S = {
     .select-wrap-padding {
       padding: 16px 0px;
     }
+
+    ${(props) =>
+      props.isScroll &&
+      css`
+        filter: drop-shadow(0px 4px 10px rgba(165, 166, 168, 0.16));
+      `}
   `,
   ContentWrap: styled.div`
     padding: 32px 24px;
@@ -282,6 +288,9 @@ function WorkHistoryPage() {
   const clearQueries = useAllCacheClear();
   const invalidateQueries = useInvalidateQueries();
 
+  // 스크롤 유무 판단하기 위함
+  const [isScroll, setIsScroll] = useState(false);
+
   // inView : 요소가 뷰포트에 진입했는지 여부
   const { ref, inView, entry } = useInView({
     threshold: 0, // 요소가 얼마나 노출되었을때 inView를 true로 변경할지 (0~1 사이의 값)
@@ -337,6 +346,15 @@ function WorkHistoryPage() {
     },
   });
 
+  // 스크롤 감지
+  const contentScroll = useCallback((e) => {
+    if (e.target.scrollTop > 0) {
+      setIsScroll(true);
+    } else {
+      setIsScroll(false);
+    }
+  }, []);
+
   // 페이지 변경
   const pageChange = useCallback(() => {
     if (workHistoryList.length !== 0 && workHistoryListData?.total > workHistoryList.length) {
@@ -378,7 +396,7 @@ function WorkHistoryPage() {
       backgroundColor={theme.basic.deepBlue}
       buttonSetting={null}>
       <S.Wrap>
-        <S.DateSelectWrap>
+        <S.DateSelectWrap isScroll={isScroll}>
           <div className="select-wrap-padding">
             <DefaultYearMonthSelect
               date={date}
@@ -388,7 +406,7 @@ function WorkHistoryPage() {
           </div>
           <DefaultHorizontalCalendar date={date} handleDateChange={handleDateChange} />
         </S.DateSelectWrap>
-        <S.ContentWrap>
+        <S.ContentWrap onScroll={contentScroll}>
           {workingHistoryListLoading ? (
             <div className="loading-wrap">
               <LottieView

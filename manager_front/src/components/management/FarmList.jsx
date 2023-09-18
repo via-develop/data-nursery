@@ -14,6 +14,7 @@ import AddFarmSaveModal from "./AddFarmSaveModal";
 import QrDownloadModal from "./QrDownloadModal";
 import DeleteModal from "./DeleteModal";
 import EditFarmModal from "./EditFarmModal";
+import EditPasswordModal from "./EditPasswordModal";
 
 // import ExcelIcon from "@images/management/excel-icon.svg";
 import AddIcon from "@images/management/add-icon.svg";
@@ -457,6 +458,9 @@ function FarmList() {
     data: undefined,
   });
 
+  //비밀번호 변경 모달
+  const [editPwChangeModalOpen, setEditPWChangeModalOpen] = useState({ open: false, data: undefined });
+
   // : 눌렀을때 나오는 모달
   const handleOptionModalClick = useCallback(
     (index, data) => {
@@ -655,7 +659,6 @@ function FarmList() {
                   content={
                     <div className="text-wrap">
                       <p>
-                        {/* ({data?.address_code}) */}
                         {"(" +
                           data?.address.split("||")[0] +
                           ") " +
@@ -722,7 +725,6 @@ function FarmList() {
             setCreateQrcode={setCreateQrcode}
             setAddFarmSerialNumber={setAddFarmSerialNumber}
             qrCodeUrl={qrCodeUrl}
-            setQrCodeUrl={setQrCodeUrl}
             addressCode={addressCode}
             setAddressCode={setAddressCode}
           />
@@ -758,7 +760,14 @@ function FarmList() {
             setPage={setPage}
             farmList={farmList}
             setFarmList={setFarmList}
+            setEditPWChangeModalOpen={setEditPWChangeModalOpen}
           />
+        </div>
+      )}
+
+      {editPwChangeModalOpen.open && (
+        <div className="modal-wrap">
+          <EditPasswordModal editModalOpen={editModalOpen} setEditPWChangeModalOpen={setEditPWChangeModalOpen} />
         </div>
       )}
     </S.Wrap>

@@ -66,6 +66,9 @@ function WorkEditPage({ workId }) {
   const invalidateQueries = useInvalidateQueries();
   const [isDefaultAlertShow, setIsDefaultAlertShowState] = useRecoilState(isDefaultAlertShowState);
 
+  // 스크롤 유무 판단하기 위함
+  const [isScroll, setIsScroll] = useState(false);
+
   // BottomButton 정보
   const [buttonSetting, setButtonSetting] = useState({
     color: disableButtonColor,
@@ -97,6 +100,15 @@ function WorkEditPage({ workId }) {
 
   // 트레이 선택
   const [isTraySelectOpen, setIsTraySelectOpen] = useState(false);
+
+  // 스크롤 감지
+  const contentScroll = useCallback((e) => {
+    if (e.target.scrollTop > 0) {
+      setIsScroll(true);
+    } else {
+      setIsScroll(false);
+    }
+  }, []);
 
   // 입력값 변경
   const handleInputChange = useCallback(
@@ -221,11 +233,12 @@ function WorkEditPage({ workId }) {
     <MainLayout
       pageName={"작업정보수정"}
       isLoading={workInfoLoading || cropListLoading || trayListLoading}
+      isScroll={isScroll}
       backIconClickFn={() => {
         router.push(`/work/${workId}`);
       }}
       buttonSetting={buttonSetting}>
-      <S.Wrap>
+      <S.Wrap onScroll={contentScroll}>
         <S.InputWrap>
           <p className="category-text">파종일</p>
           <CalendarButton

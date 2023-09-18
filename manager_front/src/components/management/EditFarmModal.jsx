@@ -46,6 +46,11 @@ const S = {
       height: 100%;
       width: 100%;
     }
+
+    .input-btn-wrap {
+      display: flex;
+      gap: 16px;
+    }
   `,
   TitleWrap: styled.div`
     display: flex;
@@ -156,9 +161,35 @@ const S = {
       ${({ theme }) => theme.textStyle.h5Bold}
     }
   `,
+  PasswordChangeBtn: styled.div`
+    cursor: pointer;
+    height: 52px;
+    width: 156px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 12px 24px;
+    border: 1px solid #5899fb;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 4px 4px 16px 0px rgba(89, 93, 107, 0.1);
+
+    p {
+      color: #5899fb;
+      ${({ theme }) => theme.textStyle.h7Bold}
+    }
+
+    &:hover {
+      border: 1px solid ${({ theme }) => theme.basic.btnAction};
+    }
+    &:active {
+      border: 1px solid ${({ theme }) => theme.basic.btnAction};
+      background-color: ${({ theme }) => theme.basic.lightSky};
+    }
+  `,
 };
 
-function EditFarmModal({ editModalOpen, setEditModalOpen, setPage, farmList, setFarmList }) {
+function EditFarmModal({ editModalOpen, setEditModalOpen, setPage, farmList, setFarmList, setEditPWChangeModalOpen }) {
   const invalidateQueries = useInvalidateQueries();
   const [isDefaultAlertShow, setIsDefaultAlertShowState] = useRecoilState(isDefaultAlertShowState);
 
@@ -235,6 +266,11 @@ function EditFarmModal({ editModalOpen, setEditModalOpen, setPage, farmList, set
     },
   );
 
+  //비밀번호 변경버튼 클릭
+  const handlePasswordChangeClick = useCallback(() => {
+    setEditPWChangeModalOpen({ open: true, data: editModalOpen });
+  }, [editModalOpen]);
+
   return (
     <S.Wrap>
       <S.WrapInner>
@@ -247,7 +283,7 @@ function EditFarmModal({ editModalOpen, setEditModalOpen, setPage, farmList, set
           </div>
         </S.TitleWrap>
         <S.InputWrap>
-          <p className="title-info">파종기 시러얼번호</p>
+          <p className="title-info">파종기 시리얼번호</p>
           <div className="input-wrap-off">
             <input value={editModalOpen.data.planter.serial_number} disabled />
           </div>
@@ -297,6 +333,15 @@ function EditFarmModal({ editModalOpen, setEditModalOpen, setPage, farmList, set
                 onChange={(e) => setEditAddressData(e.target.value)}
               />
             </div>
+          </div>
+          <p className="title-info">비밀번호</p>
+          <div className="input-btn-wrap">
+            <div className="input-wrap">
+              <input value={"***********"} disabled />
+            </div>
+            <S.PasswordChangeBtn onClick={handlePasswordChangeClick}>
+              <p>비밀번호 변경</p>
+            </S.PasswordChangeBtn>
           </div>
         </S.InputWrap>
 

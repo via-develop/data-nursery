@@ -45,6 +45,12 @@ const S = {
     height: 76px;
     background-color: ${({ theme }) => theme.basic.deepBlue};
     position: sticky;
+
+    ${(props) =>
+      props.isScroll &&
+      css`
+        filter: drop-shadow(0px 4px 10px rgba(165, 166, 168, 0.16));
+      `}
   `,
   ContentWrap: styled.div`
     padding: 32px 24px;
@@ -241,6 +247,9 @@ function StatisticsPage() {
   const router = useRouter();
   const invalidateQueries = useInvalidateQueries();
 
+  // 스크롤 유무 판단하기 위함
+  const [isScroll, setIsScroll] = useState(false);
+
   // 선택한 년도, 월
   const [date, setDate] = useState({
     year: new Date().getFullYear(),
@@ -252,6 +261,15 @@ function StatisticsPage() {
     year: false,
     month: false,
   });
+
+  // 스크롤 감지
+  const contentScroll = useCallback((e) => {
+    if (e.target.scrollTop > 0) {
+      setIsScroll(true);
+    } else {
+      setIsScroll(false);
+    }
+  }, []);
 
   // 날짜 변경
   const handleDateChange = useCallback(
@@ -294,10 +312,10 @@ function StatisticsPage() {
       }}
       backgroundColor={theme.basic.deepBlue}>
       <S.Wrap>
-        <S.DateSelectWrap>
+        <S.DateSelectWrap isScroll={isScroll}>
           <DefaultYearMonthSelect date={date} yearMonthOpen={yearMonthOpen} handleYearMonthOpen={handleYearMonthOpen} />
         </S.DateSelectWrap>
-        <S.ContentWrap>
+        <S.ContentWrap onScroll={contentScroll}>
           {statisticsInfoLoading ? (
             <div className="loading-wrap">
               <LottieView

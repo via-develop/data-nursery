@@ -64,6 +64,9 @@ function PlanterRegistrationPage() {
   const router = useRouter();
   const clearQueries = useAllCacheClear();
 
+  // 스크롤 유무 판단하기 위함
+  const [isScroll, setIsScroll] = useState(false);
+
   const [serialNumber, setSerialNumber] = useState("");
   const [modalOpen, setModalOpen] = useState({
     open: false,
@@ -73,6 +76,15 @@ function PlanterRegistrationPage() {
     btnType: "",
     afterFn: null,
   });
+
+  // 스크롤 감지
+  const contentScroll = useCallback((e) => {
+    if (e.target.scrollTop > 0) {
+      setIsScroll(true);
+    } else {
+      setIsScroll(false);
+    }
+  }, []);
 
   const checkPlanterSerial = useCallback(() => {
     if (serialNumber === userInfo.planter.serial_number) {
@@ -124,6 +136,7 @@ function PlanterRegistrationPage() {
     <MainLayout
       pageName={"파종기 등록"}
       isLoading={userInfoLoading}
+      isScroll={isScroll}
       backIconClickFn={() => {
         router.push(
           {
@@ -133,16 +146,15 @@ function PlanterRegistrationPage() {
           "/QR-scanner",
         );
       }}>
-      <S.Wrap>
+      <S.Wrap onScroll={contentScroll}>
         <p className="description-text">파종기 시리얼 번호를{"\n"}입력해주세요</p>
         <S.InputWrap>
           <S.CustomInput
             value={serialNumber}
             type={"text"}
-            // maxLength={maxLength}
             placeholder={"예) KN001DS958"}
             onChange={(e) => {
-              setSerialNumber(e.target.value);
+              setSerialNumber(e.target.value.toUpperCase());
             }}
           />
         </S.InputWrap>

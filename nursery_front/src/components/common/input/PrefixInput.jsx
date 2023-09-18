@@ -47,13 +47,14 @@ const S = {
   `,
 };
 
-function PrefixInput({ text, setText, type = "text", maxLength, placeholder, enterKeyUpFn }) {
+function PrefixInput({ text, setText, type = "text", inputmode = "text", maxLength, placeholder, enterKeyUpFn }) {
   return (
     <S.InputWrap>
       {type === "text" ? <IdIcon /> : <PasswordIcon />}
       <S.CustomInput
         value={text}
         type={type}
+        inputmode={inputmode}
         maxLength={maxLength}
         placeholder={placeholder}
         onChange={setText}
