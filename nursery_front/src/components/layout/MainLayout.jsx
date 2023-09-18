@@ -3,15 +3,17 @@ import { useRouter } from "next/router";
 import styled, { css } from "styled-components";
 
 import BottomBar from "@components/layout/BottomBar";
+import DefaultAlert from "@components/common/alert/DefaultAlert";
+import DefaultButton from "@components/common/button/DefaultButton";
+import DefaultDropdown from "@components/common/dropdown/DefaultDropdown";
+import LottieView from "@components/common/LottiePlayer";
 
+import theme from "@src/styles/theme";
+import { defaultButtonColor } from "@utils/ButtonColor";
 import BackIcon from "@images/common/arrow-left.svg";
 import MoreIcon from "@images/common/more-icon.svg";
 import MyInfoIcon from "@images/common/my-info-icon.svg";
-import theme from "@src/styles/theme";
-import DefaultAlert from "@components/common/alert/DefaultAlert";
-import DefaultButton from "@components/common/button/DefaultButton";
-import { defaultButtonColor } from "@utils/ButtonColor";
-import DefaultDropdown from "@components/common/dropdown/DefaultDropdown";
+import LottieLoading from "@images/common/loading.json";
 
 const S = {
   BackgroundWrap: styled.div`
@@ -23,7 +25,7 @@ const S = {
     justify-content: center;
     height: 100vh;
 
-    background-image: url("/images/common/pc-background-image.svg");
+    background-image: url("/images/common/pc-background-image.png");
     background-repeat: no-repeat;
     background-size: cover;
 
@@ -209,6 +211,7 @@ const S = {
 };
 
 // pageName : 헤더에서 나타낼 페이지이름, 아무값도 넘겨주지 않으면 헤더 비활성화
+// isLoading : 데이터 로딩 유무
 // isBackIcon : 헤더에서 뒤로가기 아이콘 표시 유무
 // backIconClickFn : 뒤로가기 아이콘 클릭 시 실행되는 함수
 // isMoreIcon : 헤더에서 ... 표시 유무
@@ -217,6 +220,7 @@ const S = {
 function MainLayout({
   children,
   pageName,
+  isLoading = false,
   isBackIcon = true,
   backIconClickFn,
   isMoreIcon = false,
@@ -295,29 +299,45 @@ function MainLayout({
                 />
               </S.PageNameWrap>
             )}
-            <div className="content">{children}</div>
-            {pageName === "작업 정보" && !!buttonSetting && (
-              <S.BottomButtonWrap height={"124px"}>
-                {isMoreIcon && <p className="work-start-text">시작을 눌러 작업을 시작하세요!</p>}
-                {!isMoreIcon && <p className="work-start-text">버튼을 눌러 작업을 완료하세요!</p>}
-                <DefaultButton
-                  customStyle={buttonSetting.color}
-                  text={buttonSetting.text}
-                  onClick={buttonSetting.onClickEvent}
+            {isLoading ? (
+              <div className="loading-wrap">
+                <LottieView
+                  options={{
+                    animationData: LottieLoading,
+                  }}
+                  style={{
+                    width: "80%",
+                  }}
                 />
-              </S.BottomButtonWrap>
+              </div>
+            ) : (
+              <>
+                <div className="content">{children}</div>
+                {pageName === "작업 정보" && !!buttonSetting && (
+                  <S.BottomButtonWrap height={"124px"}>
+                    {isMoreIcon && <p className="work-start-text">시작을 눌러 작업을 시작하세요!</p>}
+                    {!isMoreIcon && <p className="work-start-text">버튼을 눌러 작업을 완료하세요!</p>}
+                    <DefaultButton
+                      customStyle={buttonSetting.color}
+                      text={buttonSetting.text}
+                      onClick={buttonSetting.onClickEvent}
+                    />
+                  </S.BottomButtonWrap>
+                )}
+                {(pageName === "작업 등록" || pageName === "작업정보수정") && (
+                  <S.BottomButtonWrap height={"90px"}>
+                    {isMoreIcon && <p className="work-start-text">시작을 눌러 작업을 시작하세요!</p>}
+                    <DefaultButton
+                      customStyle={buttonSetting.color}
+                      text={buttonSetting.text}
+                      onClick={buttonSetting.onClickEvent}
+                    />
+                  </S.BottomButtonWrap>
+                )}
+                {pageName === "main" && <BottomBar />}
+              </>
             )}
-            {(pageName === "작업 등록" || pageName === "작업정보수정") && (
-              <S.BottomButtonWrap height={"90px"}>
-                {isMoreIcon && <p className="work-start-text">시작을 눌러 작업을 시작하세요!</p>}
-                <DefaultButton
-                  customStyle={buttonSetting.color}
-                  text={buttonSetting.text}
-                  onClick={buttonSetting.onClickEvent}
-                />
-              </S.BottomButtonWrap>
-            )}
-            {pageName === "main" && <BottomBar />}
+
             <DefaultAlert />
             <DefaultDropdown dropdownOpen={dropdownOpen} setDropdownOpen={setDropdownOpen} />
           </S.MainContent>

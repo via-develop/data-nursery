@@ -4,6 +4,12 @@ export const loginAPI = (data) => {
   return axios.post(process.env.NEXT_PUBLIC_END_POINT + "/api/auth/login", data, { withCredentials: true });
 };
 
+export const logoutAPI = (data) => {
+  return axios.post(process.env.NEXT_PUBLIC_END_POINT + `/api/auth/logout?l_type=${data.lType}`, data, {
+    withCredentials: true,
+  });
+};
+
 export const getUserInfo = async () => {
   try {
     const res = await axios.get(process.env.NEXT_PUBLIC_END_POINT + `/api/auth/admin/user`, {

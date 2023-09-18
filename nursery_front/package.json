@@ -23,6 +23,7 @@
     "eslint-config-next": "13.4.19",
     "eslint-plugin-prettier": "^5.0.0",
     "html5-qrcode": "^2.3.8",
+    "lottie-react": "^2.4.0",
     "next": "13.4.19",
     "react": "18.2.0",
     "react-bootstrap": "^2.8.0",

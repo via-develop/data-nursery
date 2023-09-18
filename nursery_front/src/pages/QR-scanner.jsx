@@ -2,10 +2,13 @@ import React, { useCallback, useEffect, useState } from "react";
 import styled from "styled-components";
 import { Html5Qrcode } from "html5-qrcode";
 import { useRouter } from "next/router";
+import axios from "axios";
 
 import useUserInfo from "@hooks/queries/auth/useUserInfo";
 import useRegisterPlanter from "@hooks/queries/planter/useRegisterPlanter";
 import useAllCacheClear from "@hooks/queries/common/useAllCacheClear";
+import { getUserInfoUrl } from "@apis/authAPIs";
+import userLogout from "@utils/userLogout";
 
 import MainLayout from "@components/layout/MainLayout";
 import DefaultButton from "@components/common/button/DefaultButton";
@@ -15,7 +18,7 @@ import FontSmallDefaultButton from "@components/common/button/FontSmallDefaultBu
 import QRCodeImage from "@images/login/img-qrcode.svg";
 import { defaultButtonColor, greyButtonColor } from "@utils/ButtonColor";
 import CloseIcon from "@images/common/close-icon.svg";
-import userLogout from "@utils/userLogout";
+import { requireAuthentication } from "@utils/LoginCheckAuthentication";
 
 const S = {
   Wrap: styled.div`
@@ -212,7 +215,7 @@ function QRScannerPage() {
   }, [qrCodeScanner]);
 
   // 유저 정보 API
-  const { data: userInfo } = useUserInfo({
+  const { data: userInfo, isLoading: userInfoLoading } = useUserInfo({
     successFn: () => {},
     errorFn: () => {
       userLogout(router, clearQueries);
@@ -253,7 +256,7 @@ function QRScannerPage() {
         </MainLayout>
       )}
       {step === "qrCode" && (
-        <MainLayout backgroundColor="#272727">
+        <MainLayout isLoading={userInfoLoading} backgroundColor="#272727">
           <S.QrScanWrap>
             <S.ScanTopSection>
               <div
@@ -286,5 +289,24 @@ function QRScannerPage() {
     </>
   );
 }
+
+// 로그인 안되어 있을 경우 로그인 페이지로 이동
+export const getServerSideProps = requireAuthentication(async (context) => {
+  const userInfoRes = await axios.get(getUserInfoUrl(true), {
+    headers: { Cookie: context.req.headers.cookie },
+  });
+
+  // 파종기 등록완료 상태에서 접근 시 dashboard 페이지로 이동
+  if (userInfoRes.data.planter.is_register) {
+    return {
+      redirect: {
+        destination: "/",
+        statusCode: 302,
+      },
+    };
+  } else {
+    return { props: {} };
+  }
+});
 
 export default QRScannerPage;

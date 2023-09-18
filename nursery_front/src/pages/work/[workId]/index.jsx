@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import { useRouter } from "next/router";
 import Image from "next/image";
+import axios from "axios";
 
 import useUserInfo from "@hooks/queries/auth/useUserInfo";
 import useWorkingWorkInfo from "@hooks/queries/planter/useWorkingWorkInfo";
@@ -9,6 +10,8 @@ import useWorkInfo from "@hooks/queries/planter/useWorkInfo";
 import useUpdateWorkStatus from "@hooks/queries/planter/useWorkStatusUpdate";
 import useInvalidateQueries from "@src/hooks/queries/common/useInvalidateQueries";
 import useAllCacheClear from "@hooks/queries/common/useAllCacheClear";
+import userLogout from "@utils/userLogout";
+import { getUserInfoUrl } from "@apis/authAPIs";
 
 import MainLayout from "@components/layout/MainLayout";
 import DefaultInput from "@components/common/input/DefaultInput";
@@ -18,7 +21,6 @@ import { defaultButtonColor } from "@utils/ButtonColor";
 import { DateFormatting } from "@utils/Formatting";
 import CheckIcon from "@images/work/icon-check.svg";
 import { waitWorkListKey, workingWorkInfoKey } from "@utils/query-keys/PlanterQueryKeys";
-import userLogout from "@utils/userLogout";
 
 const S = {
   Wrap: styled.div`
@@ -78,7 +80,7 @@ function WorkInfoPage({ workId }) {
   });
 
   // 유저 정보 API
-  const { data: userInfo } = useUserInfo({
+  const { data: userInfo, isLoading: userInfoLoading } = useUserInfo({
     successFn: () => {},
     errorFn: () => {
       userLogout(router, clearQueries);
@@ -86,7 +88,7 @@ function WorkInfoPage({ workId }) {
   });
 
   // 진행중인 주문 목록 API
-  const { data: workingWorkInfo } = useWorkingWorkInfo({
+  const { data: workingWorkInfo, isLoading: workingWorkInfoLoading } = useWorkingWorkInfo({
     serialNumber: userInfo?.planter.serial_number,
     successFn: () => {},
     errorFn: (err) => {
@@ -95,7 +97,7 @@ function WorkInfoPage({ workId }) {
   });
 
   // 작업 정보 API
-  const { data: workInfo } = useWorkInfo({
+  const { data: workInfo, isLoading: workInfoLoading } = useWorkInfo({
     workId: workId,
     successFn: (res) => {
       if (res.planter_work_status.status === "WAIT") {
@@ -148,6 +150,7 @@ function WorkInfoPage({ workId }) {
   return (
     <MainLayout
       pageName={"작업 정보"}
+      isLoading={userInfoLoading || workingWorkInfoLoading || workInfoLoading}
       backIconClickFn={() => {
         router.push("/");
       }}
@@ -210,6 +213,20 @@ function WorkInfoPage({ workId }) {
 
 // 로그인 안되어 있을 경우 로그인 페이지로 이동
 export const getServerSideProps = requireAuthentication(async (context) => {
+  const userInfoRes = await axios.get(getUserInfoUrl(true), {
+    headers: { Cookie: context.req.headers.cookie },
+  });
+
+  // 파종기 미등록 시 파종기 등록페이지로 이동
+  if (!userInfoRes.data.planter.is_register) {
+    return {
+      redirect: {
+        destination: "/QR-scanner",
+        statusCode: 302,
+      },
+    };
+  }
+
   if (!context.query.workId) {
     return {
       redirect: {

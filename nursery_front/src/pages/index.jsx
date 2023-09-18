@@ -2,8 +2,10 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import ScrollContainer from "react-indiana-drag-scroll";
 import Image from "next/image";
+import axios from "axios";
 
 import useDashBoard from "@hooks/queries/planter/useDashBoard";
+import { getUserInfoUrl } from "@apis/authAPIs";
 
 import MainLayout from "@components/layout/MainLayout";
 import WorkTab from "@components/dashboard/WorkTab";
@@ -153,8 +155,10 @@ const S = {
 };
 
 function MainPage() {
+  const [loading, setLoading] = useState(false);
+
   // 대시보드 API (오늘의 생산량, BEST품종, 사용시간)
-  const { data: dashBoardInfo } = useDashBoard({
+  const { data: dashBoardInfo, isLoading: dashBoardLoading } = useDashBoard({
     successFn: () => {},
     errorFn: (err) => {
       alert(err);
@@ -162,7 +166,7 @@ function MainPage() {
   });
 
   return (
-    <MainLayout pageName={"main"}>
+    <MainLayout pageName={"main"} isLoading={dashBoardLoading || loading}>
       <S.Wrap>
         <S.ScrollWrap>
           <ScrollContainer className="scroll-container" horizontal={true}>
@@ -230,7 +234,7 @@ function MainPage() {
           </ScrollContainer>
         </S.ScrollWrap>
         <S.WorkWrap>
-          <WorkTab />
+          <WorkTab setLoading={setLoading} />
         </S.WorkWrap>
       </S.Wrap>
     </MainLayout>
@@ -238,8 +242,22 @@ function MainPage() {
 }
 
 // 로그인 안되어 있을 경우 로그인 페이지로 이동
-export const getServerSideProps = requireAuthentication((context) => {
-  return { props: {} };
+export const getServerSideProps = requireAuthentication(async (context) => {
+  const userInfoRes = await axios.get(getUserInfoUrl(true), {
+    headers: { Cookie: context.req.headers.cookie },
+  });
+
+  // 파종기 미등록 시 파종기 등록페이지로 이동
+  if (!userInfoRes.data.planter.is_register) {
+    return {
+      redirect: {
+        destination: "/QR-scanner",
+        statusCode: 302,
+      },
+    };
+  } else {
+    return { props: {} };
+  }
 });
 
 export default MainPage;

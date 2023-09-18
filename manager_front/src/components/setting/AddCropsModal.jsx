@@ -52,6 +52,7 @@ const S = {
   TextWrap: styled.div`
     display: flex;
     justify-content: space-between;
+    align-items: center;
   `,
 
   ImgWrap: styled.div`
@@ -113,6 +114,10 @@ const S = {
     .input-title {
       color: ${({ theme }) => theme.basic.gray60};
       ${({ theme }) => theme.textStyle.h6Bold};
+      margin-bottom: 8px;
+    }
+    .input-info {
+      color: ${({ theme }) => theme.basic.gray50};
       margin-bottom: 8px;
     }
 
@@ -314,6 +319,7 @@ function AddCropsModal({ addCropsModalOpen, setAddCropsModalOpen }) {
           </div>
           <S.TextWrap>
             <p className="input-title">작물 표시 색상</p>
+            <p className="input-info">※ 선택된 색상으로 차트에 표시됩니다.</p>
           </S.TextWrap>
           <S.Border />
           <S.ColorWrap>

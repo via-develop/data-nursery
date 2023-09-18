@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect } from "react";
 import styled from "styled-components";
 import { useRouter } from "next/router";
 import { useRecoilState } from "recoil";
+import axios from "axios";
 
 import useUserInfo from "@hooks/queries/auth/useUserInfo";
 import useCropList from "@hooks/queries/crop/useCropList";
@@ -9,6 +10,8 @@ import useTrayList from "@hooks/queries/planter/useTrayList";
 import useRegisterWork from "@hooks/queries/planter/useRegisterWork";
 import useInvalidateQueries from "@src/hooks/queries/common/useInvalidateQueries";
 import useAllCacheClear from "@hooks/queries/common/useAllCacheClear";
+import { getUserInfoUrl } from "@apis/authAPIs";
+import userLogout from "@utils/userLogout";
 
 import MainLayout from "@components/layout/MainLayout";
 import DefaultInput from "@components/common/input/DefaultInput";
@@ -26,7 +29,6 @@ import OffRadioBtnIcon from "@images/common/off-radio-btn.svg";
 import PointIcon from "@images/work/ico-point.svg";
 import { waitWorkListKey } from "@utils/query-keys/PlanterQueryKeys";
 import { DateFormatting } from "@utils/Formatting";
-import userLogout from "@utils/userLogout";
 
 const S = {
   Wrap: styled.div`
@@ -151,7 +153,7 @@ function WorkRegistrationPage() {
   }, [inputData]);
 
   // 유저 정보 API
-  const { data: userInfo } = useUserInfo({
+  const { data: userInfo, isLoading: userInfoLoading } = useUserInfo({
     successFn: () => {},
     errorFn: () => {
       userLogout(router, clearQueries);
@@ -159,7 +161,7 @@ function WorkRegistrationPage() {
   });
 
   // 작물 목록 API
-  const { data: cropList } = useCropList({
+  const { data: cropList, isLoading: cropListLoading } = useCropList({
     successFn: () => {},
     errorFn: (err) => {
       alert(err);
@@ -167,7 +169,7 @@ function WorkRegistrationPage() {
   });
 
   // 트레이 목록 API
-  const { data: trayList } = useTrayList({
+  const { data: trayList, isLoading: trayListLoading } = useTrayList({
     successFn: () => {},
     errorFn: (err) => {
       alert(err);
@@ -200,6 +202,7 @@ function WorkRegistrationPage() {
   return (
     <MainLayout
       pageName={"작업 등록"}
+      isLoading={userInfoLoading || cropListLoading || trayListLoading}
       backIconClickFn={() => {
         router.push("/");
       }}
@@ -356,8 +359,22 @@ function WorkRegistrationPage() {
 }
 
 // 로그인 안되어 있을 경우 로그인 페이지로 이동
-export const getServerSideProps = requireAuthentication((context) => {
-  return { props: {} };
+export const getServerSideProps = requireAuthentication(async (context) => {
+  const userInfoRes = await axios.get(getUserInfoUrl(true), {
+    headers: { Cookie: context.req.headers.cookie },
+  });
+
+  // 파종기 미등록 시 파종기 등록페이지로 이동
+  if (!userInfoRes.data.planter.is_register) {
+    return {
+      redirect: {
+        destination: "/QR-scanner",
+        statusCode: 302,
+      },
+    };
+  } else {
+    return { props: {} };
+  }
 });
 
 export default WorkRegistrationPage;

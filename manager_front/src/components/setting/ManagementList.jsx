@@ -455,7 +455,11 @@ function ManagementList({ userInfo }) {
       {/* 관리자추가 모달 */}
       {addManagerModalOpen && (
         <div className="modal-wrap">
-          <AddManagerModal setAddManagerModalOpen={setAddManagerModalOpen} />
+          <AddManagerModal
+            setAddManagerModalOpen={setAddManagerModalOpen}
+            setManagerList={setManagerList}
+            setManagerListPage={setManagerListPage}
+          />
         </div>
       )}
 
@@ -466,6 +470,8 @@ function ManagementList({ userInfo }) {
             editManagerModalOpen={editManagerModalOpen}
             setEditManagerModalOpen={setEditManagerModalOpen}
             setEditManagerPWChangeModalOpen={setEditManagerPWChangeModalOpen}
+            setManagerList={setManagerList}
+            setManagerListPage={setManagerListPage}
           />
         </div>
       )}

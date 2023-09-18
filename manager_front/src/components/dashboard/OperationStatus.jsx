@@ -188,7 +188,7 @@ function OperationStatus({ currentDate }) {
     }
     const intervalId = setInterval(() => {
       // planterOperationStatus
-      invalidateQueries[PlanterRealTimeKey];
+      invalidateQueries([PlanterRealTimeKey]);
     }, 30000); // 30초마다 업데이트
 
     return () => clearInterval(intervalId);

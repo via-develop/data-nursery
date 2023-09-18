@@ -2,11 +2,14 @@ import React, { useState, useCallback, useEffect } from "react";
 import styled from "styled-components";
 import { useRouter } from "next/router";
 import { useRecoilState } from "recoil";
+import axios from "axios";
 
 import useCropList from "@hooks/queries/crop/useCropList";
 import useTrayList from "@hooks/queries/planter/useTrayList";
 import useUpdateWork from "@hooks/queries/planter/useUpdateWork";
+import useWorkInfo from "@hooks/queries/planter/useWorkInfo";
 import useInvalidateQueries from "@src/hooks/queries/common/useInvalidateQueries";
+import { getUserInfoUrl } from "@apis/authAPIs";
 
 import MainLayout from "@components/layout/MainLayout";
 import DefaultInput from "@components/common/input/DefaultInput";
@@ -14,6 +17,7 @@ import DefaultCalendar from "@components/common/calendar/DefaultCalendar";
 import SuffixInput from "@components/common/input/SuffixInput";
 import DefaultSelect from "@components/common/select/DefaultSelect";
 import DefaultSelectList from "@components/common/select/DefaultSelectList";
+import CalendarButton from "@components/common/button/CalendarButton";
 
 import { isDefaultAlertShowState } from "@states/isDefaultAlertShowState";
 import { requireAuthentication } from "@utils/LoginCheckAuthentication";
@@ -22,9 +26,7 @@ import OnRadioBtnIcon from "@images/common/on-radio-btn.svg";
 import OffRadioBtnIcon from "@images/common/off-radio-btn.svg";
 import PointIcon from "@images/work/ico-point.svg";
 import { waitWorkListKey } from "@utils/query-keys/PlanterQueryKeys";
-import CalendarButton from "@components/common/button/CalendarButton";
 import { DateFormatting } from "@utils/Formatting";
-import useWorkInfo from "@hooks/queries/planter/useWorkInfo";
 
 const S = {
   Wrap: styled.div`
@@ -156,7 +158,7 @@ function WorkEditPage({ workId }) {
   }, [inputData]);
 
   // 작업 정보 API
-  const { data: workInfo } = useWorkInfo({
+  const { data: workInfo, isLoading: workInfoLoading } = useWorkInfo({
     workId: workId,
     successFn: (res) => {
       setInputData({
@@ -175,7 +177,7 @@ function WorkEditPage({ workId }) {
   });
 
   // 작물 목록 API
-  const { data: cropList } = useCropList({
+  const { data: cropList, isLoading: cropListLoading } = useCropList({
     successFn: () => {},
     errorFn: (err) => {
       alert(err);
@@ -183,7 +185,7 @@ function WorkEditPage({ workId }) {
   });
 
   // 트레이 목록 API
-  const { data: trayList } = useTrayList({
+  const { data: trayList, isLoading: trayListLoading } = useTrayList({
     successFn: () => {},
     errorFn: (err) => {
       alert(err);
@@ -218,6 +220,7 @@ function WorkEditPage({ workId }) {
   return (
     <MainLayout
       pageName={"작업정보수정"}
+      isLoading={workInfoLoading || cropListLoading || trayListLoading}
       backIconClickFn={() => {
         router.push(`/work/${workId}`);
       }}
@@ -383,6 +386,20 @@ function WorkEditPage({ workId }) {
 
 // 로그인 안되어 있을 경우 로그인 페이지로 이동
 export const getServerSideProps = requireAuthentication(async (context) => {
+  const userInfoRes = await axios.get(getUserInfoUrl(true), {
+    headers: { Cookie: context.req.headers.cookie },
+  });
+
+  // 파종기 미등록 시 파종기 등록페이지로 이동
+  if (!userInfoRes.data.planter.is_register) {
+    return {
+      redirect: {
+        destination: "/QR-scanner",
+        statusCode: 302,
+      },
+    };
+  }
+
   if (!context.query.workId) {
     return {
       redirect: {

@@ -97,7 +97,7 @@ const S = {
   `,
 };
 
-function WorkTab() {
+function WorkTab({ setLoading }) {
   const router = useRouter();
   const clearQueries = useAllCacheClear();
   const invalidateQueries = useInvalidateQueries();
@@ -130,7 +130,7 @@ function WorkTab() {
   });
 
   // 진행중인 주문 목록 API
-  const { data: workingWorkInfo } = useWorkingWorkInfo({
+  const { data: workingWorkInfo, isLoading: workingWorkInfoLoading } = useWorkingWorkInfo({
     serialNumber: userInfo?.planter.serial_number,
     successFn: () => {},
     errorFn: (err) => {
@@ -139,7 +139,7 @@ function WorkTab() {
   });
 
   // 대기중인 주문 목록 API
-  const { data: waitWorkListData } = useWaitWorkList({
+  const { data: waitWorkListData, isLoading: waitWorkListDataLoading } = useWaitWorkList({
     serialNumber: userInfo?.planter.serial_number,
     page: waitWorkListPage,
     successFn: (res) => {
@@ -149,6 +149,14 @@ function WorkTab() {
       alert(err);
     },
   });
+
+  useEffect(() => {
+    if ((workingWorkInfoLoading || waitWorkListDataLoading) && !(!workingWorkInfo || !waitWorkListData)) {
+      setLoading(true);
+    } else {
+      setLoading(false);
+    }
+  }, [workingWorkInfoLoading, waitWorkListDataLoading, workingWorkInfo, waitWorkListData]);
 
   // 페이지 변경
   const pageChange = useCallback(() => {

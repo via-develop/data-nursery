@@ -64,6 +64,7 @@ const S = {
     align-items: center;
     justify-content: start;
     gap: 10px;
+    height: 60px;
 
     .input-style {
       border: 0px;
@@ -82,6 +83,8 @@ const S = {
 
     input {
       width: 100%;
+      color: ${({ theme }) => theme.basic.gray60};
+      ${({ theme }) => theme.textStyle.h6Bold};
     }
   `,
   IdSaveWrap: styled.div`

@@ -81,6 +81,7 @@ const S = {
         width: 100%;
         ${({ theme }) => theme.textStyle.h6Bold};
         color: ${({ theme }) => theme.basic.gray50};
+        outline: none;
       }
     }
     .input-wrap {
@@ -169,7 +170,13 @@ const S = {
   `,
 };
 
-function EditManagerModal({ editManagerModalOpen, setEditManagerModalOpen, setEditManagerPWChangeModalOpen }) {
+function EditManagerModal({
+  editManagerModalOpen,
+  setEditManagerModalOpen,
+  setEditManagerPWChangeModalOpen,
+  setManagerList,
+  setManagerListPage,
+}) {
   const invalidateQueries = useInvalidateQueries();
   const [isDefaultAlertShow, setIsDefaultAlertShowState] = useRecoilState(isDefaultAlertShowState);
   const [editManagerId, setEditManagerId] = useState(editManagerModalOpen.data.user.login_id);
@@ -224,6 +231,8 @@ function EditManagerModal({ editManagerModalOpen, setEditManagerModalOpen, setEd
         okClick: null,
       });
       invalidateQueries([settingManagerListKey]);
+      setManagerList([]);
+      setManagerListPage(1);
     },
     (error) => {
       setIsDefaultAlertShowState({

@@ -120,7 +120,7 @@ const S = {
   `,
 };
 
-function AddManagerModal({ setAddManagerModalOpen }) {
+function AddManagerModal({ setAddManagerModalOpen, setManagerList, setManagerListPage }) {
   const [isDefaultAlertShow, setIsDefaultAlertShowState] = useRecoilState(isDefaultAlertShowState);
   const invalidateQueries = useInvalidateQueries();
 
@@ -175,6 +175,8 @@ function AddManagerModal({ setAddManagerModalOpen }) {
         okClick: null,
       });
       invalidateQueries([settingManagerListKey]);
+      setManagerList([]);
+      setManagerListPage(1);
     },
     (error) => {
       alert(error);

@@ -2,16 +2,18 @@ import React, { useState } from "react";
 import styled from "styled-components";
 import { useRouter } from "next/router";
 import { Button } from "react-bootstrap";
+import axios from "axios";
 
 import useUserInfo from "@hooks/queries/auth/useUserInfo";
 import useAllCacheClear from "@hooks/queries/common/useAllCacheClear";
+import { getUserInfoUrl } from "@apis/authAPIs";
+import userLogout from "@utils/userLogout";
 
 import MainLayout from "@components/layout/MainLayout";
 import DefaultModal from "@components/common/modal/DefaultModal";
 import DefaultInput from "@components/common/input/DefaultInput";
 
 import { requireAuthentication } from "@utils/LoginCheckAuthentication";
-import userLogout from "@utils/userLogout";
 
 const S = {
   Wrap: styled.div`
@@ -126,7 +128,7 @@ function NurseryInformationPage() {
   });
 
   // 유저 정보 API
-  const { data: userInfo } = useUserInfo({
+  const { data: userInfo, isLoading: userInfoLoading } = useUserInfo({
     successFn: () => {},
     errorFn: () => {
       userLogout(router, clearQueries);
@@ -136,6 +138,7 @@ function NurseryInformationPage() {
   return (
     <MainLayout
       pageName={"농가정보"}
+      isLoading={userInfoLoading}
       backIconClickFn={() => {
         router.push("/");
       }}
@@ -199,8 +202,22 @@ function NurseryInformationPage() {
 }
 
 // 로그인 안되어 있을 경우 로그인 페이지로 이동
-export const getServerSideProps = requireAuthentication((context) => {
-  return { props: {} };
+export const getServerSideProps = requireAuthentication(async (context) => {
+  const userInfoRes = await axios.get(getUserInfoUrl(true), {
+    headers: { Cookie: context.req.headers.cookie },
+  });
+
+  // 파종기 미등록 시 파종기 등록페이지로 이동
+  if (!userInfoRes.data.planter.is_register) {
+    return {
+      redirect: {
+        destination: "/QR-scanner",
+        statusCode: 302,
+      },
+    };
+  } else {
+    return { props: {} };
+  }
 });
 
 export default NurseryInformationPage;
