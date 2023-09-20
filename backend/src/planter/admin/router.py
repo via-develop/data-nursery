@@ -562,7 +562,7 @@ def get_planter_work_statics(
         .join(cropModels.Crop, planterModels.PlanterWork.crop_id == cropModels.Crop.id)
         .join(
             planterModels.PlanterTray,
-            planterModels.PlanterWork.planter_id == planterModels.PlanterTray.id,
+            planterModels.PlanterWork.planter_tray_id == planterModels.PlanterTray.id,
         )
         .join(
             planterModels.PlanterOutput,
