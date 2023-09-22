@@ -15,8 +15,8 @@ import SearchDropdown from "./SearchDropdown";
 import { NumberCommaFormatting } from "@src/utils/Formatting";
 import { GetMonthList, GetYearList, YYYYMMDDDash, YYYYMMDDSlash } from "@src/utils/Formatting";
 // import ExcelIcon from "@images/management/excel-icon.svg";
-import UpArrow from "@images/common/order-by-up-icon.svg";
-import DownArrow from "@images/common/order-by-down-icon.svg";
+import DownArrow from "@images/common/order-by-up-icon.svg";
+import UpArrow from "@images/common/order-by-down-icon.svg";
 import FinCheckIcon from "@images/statistics/fin-check-icon.svg";
 import WaitingIcon from "@images/statistics/waiting-icon.svg";
 import GrayFinCheckIcon from "@images/statistics/gray-fin-check-icon.svg";
@@ -262,10 +262,6 @@ const S = {
         color: #c6c6c6;
         ${({ theme }) => theme.textStyle.h7Bold};
       }
-
-      /* .farm-name-first {
-        background-color: #c6c6c6;
-      } */
     }
   `,
   ListBlock: styled.div`
@@ -288,12 +284,11 @@ const S = {
     }
 
     .list_id {
-      /* width: 36px; */
       width: 42px;
       justify-content: center;
     }
     .farm_id {
-      width: 168px;
+      width: 128px;
       justify-content: center;
     }
     .farm_name {
@@ -303,32 +298,32 @@ const S = {
       white-space: nowrap;
     }
     .farm_plant {
-      width: 100px;
-      justify-content: start;
+      width: 111px;
+      justify-content: center;
     }
     .plant_name {
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
-      width: 109px;
-      justify-content: start;
+      width: 131px;
+      justify-content: center;
     }
     .tray {
-      width: 24px;
+      width: 117px;
       justify-content: center;
     }
     .order_count {
-      width: 115px;
-      justify-content: end;
+      width: 74px;
+      justify-content: center;
     }
     .sowing_count {
-      width: 126px;
-      justify-content: end;
+      width: 102px;
+      justify-content: center;
       color: ${({ theme }) => theme.basic.deepBlue};
       ${({ theme }) => theme.textStyle.h7Bold};
     }
     .sowing_date {
-      width: 126px;
+      width: 86px;
       justify-content: center;
       color: ${({ theme }) => theme.basic.gray40};
       ${({ theme }) => theme.textStyle.h7Semibold}
@@ -337,7 +332,7 @@ const S = {
     .farm_name_wrap {
       display: flex;
       gap: 8px;
-      width: 224px;
+      width: 209px;
       justify-content: start;
       align-items: center;
 
@@ -352,7 +347,6 @@ const S = {
       display: flex;
       align-items: center;
       justify-content: center;
-      /* background-color: #79cec8; */
       border-radius: 30px;
       padding: 8px;
       color: #fff;
@@ -481,8 +475,8 @@ function StatisticsStatus() {
     trayTotal: "",
     orderQuantityOrderType: 2,
     planterOutputOrderType: 2,
-    sowingDateOrderType: 2,
-    isShipmentCompletedOrderType: 1,
+    sowingDateOrderType: 1,
+    isShipmentCompletedOrderType: 2,
   });
 
   // Dropdown 검색어
@@ -874,7 +868,7 @@ function StatisticsStatus() {
               <p className="info-title">통계현황</p>
               <div className="sub-wrap">
                 <p className="info-sub">통계보기 및 검색 (</p>
-                <UpArrow width={15} height={15} />
+                <DownArrow width={15} height={15} />
                 <p className="info-sub">정렬기능 )</p>
               </div>
               <S.DateChooseWrap>
@@ -1199,13 +1193,13 @@ function StatisticsStatus() {
                 <p className="order_count">{NumberCommaFormatting(data.order_quantity)}</p>
                 <p className="sowing_count">{NumberCommaFormatting(data.planter_output.output)}</p>
                 <p className="sowing_date">{YYYYMMDDSlash(data.sowing_date)}</p>
-                {!data.is_shipment_completed && !data.farmhouse.is_del ? (
+                {!!data.is_shipment_completed && !data.farmhouse.is_del ? (
                   <FinCheckIcon width={98} height={40} />
                 ) : !data.is_shipment_completed && !data.farmhouse.is_del ? (
                   <WaitingIcon width={98} height={40} />
-                ) : data.is_shipment_completed && data.farmhouse.is_del ? (
+                ) : !!data.is_shipment_completed && !!data.farmhouse.is_del ? (
                   <GrayFinCheckIcon width={98} height={40} />
-                ) : data.is_shipment_completed && data.farmhouse.is_del ? (
+                ) : !data.is_shipment_completed && !!data.farmhouse.is_del ? (
                   <GrayWaitingIcon width={98} height={40} />
                 ) : (
                   <></>
@@ -1214,7 +1208,7 @@ function StatisticsStatus() {
             );
           })
         )}
-        {staticsInfo?.total !== 0 && staticsList.length !== staticsInfo?.total && (
+        {staticsInfo?.total !== 0 && staticsList.length !== staticsInfo?.total && staticsInfo !== undefined && (
           <S.ButtonWrap>
             <S.MoreButton
               onClick={() => {

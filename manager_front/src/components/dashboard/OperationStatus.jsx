@@ -46,8 +46,21 @@ const S = {
     display: grid;
     gap: 12px;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    overflow: scroll;
+    overflow: auto;
     padding-right: 5px;
+
+    &::-webkit-scrollbar {
+      display: block !important;
+      width: 8px !important;
+      border-radius: 4px !important;
+      background-color: ${({ theme }) => theme.basic.lightSky} !important;
+      margin-left: 5px !important;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      border-radius: 4px !important;
+      background-color: #bfcad9 !important;
+    }
 
     .statusOff {
       border: 1px solid ${({ theme }) => theme.basic.whiteGray};
@@ -59,7 +72,6 @@ const S = {
   `,
   StatusBlock: styled.div`
     border-radius: 8px;
-    /* border: 2px solid #fb97a3; */
     padding: 20px 16px 20px 24px;
     width: fit-content;
     display: flex;

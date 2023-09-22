@@ -168,7 +168,7 @@ const S = {
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 12px 24px;
+    padding: 12px 0px;
     border: 1px solid #5899fb;
     background-color: #fff;
     border-radius: 8px;

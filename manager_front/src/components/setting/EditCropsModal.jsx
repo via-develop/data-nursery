@@ -215,9 +215,7 @@ const S = {
     justify-content: space-around;
 
     .chrome-picker {
-      /* height: 363px; */
     }
-    /* height: 238px; */
   `,
 };
 

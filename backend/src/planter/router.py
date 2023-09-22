@@ -161,43 +161,46 @@ def create_planter_output(
                 operating_time=operating_time,
                 planter_status__planter=planter,
             )
-
-        new_planter_work_status = create_(
-            db,
-            models.PlanterWorkStatus,
-            status="DONE",
-            planter_work_status__planter_work=planter_work_status_in_working,
-        )
-
-        # 파종기 종료시 혹시 PlanterOutput.start_count값이 None일 경우 0 저장
-        if not planter_output.start_count:
-            planter_output.start_count = 0
-        # PlanterOutput.end_count에 파종기 동작 count값 저장
-        planter_output.end_count = int(operating_count)
-
-        # PlanterOutput.end_count - PlanterOutput.start_count 값이 0이하일 경우에는 PlanterOutput.output에 0 저장
-        operating_count_in_planter_work_working = (
-            planter_output.end_count - planter_output.start_count
-        )
-        if operating_count_in_planter_work_working < 0:
-            planter_output.output = 0
-
-        # 값이 0이상일 경우에
-        else:
-            planter_output.output = (
-                planter_work_status_in_working.planter_work__planter_tray.width
-                * operating_count_in_planter_work_working
-            )
-
-        if new_planter_status != None:
             db.add(new_planter_status)
-        db.add(new_planter_work_status)
-        db.add(planter_output)
-        db.commit()
-        if new_planter_status != None:
+            db.commit()
             db.refresh(new_planter_status)
-        db.refresh(new_planter_work_status)
-        db.refresh(planter_output)
+    # new_planter_work_status = create_(
+    #     db,
+    #     models.PlanterWorkStatus,
+    #     status="DONE",
+    #     planter_work_status__planter_work=planter_work_status_in_working,
+    # )
+
+    # 파종기 종료시 혹시 PlanterOutput.start_count값이 None일 경우 0 저장
+    # if not planter_output.start_count:
+    #     planter_output.start_count = 0
+
+    # PlanterOutput.end_count에 파종기 동작 count값 저장
+    # planter_output.end_count = int(operating_count)
+
+    # PlanterOutput.end_count - PlanterOutput.start_count 값이 0이하일 경우에는 PlanterOutput.output에 0 저장
+    # operating_count_in_planter_work_working = (
+    #     planter_output.end_count - planter_output.start_count
+    # )
+    # if operating_count_in_planter_work_working < 0:
+    #     planter_output.output = 0
+
+    # 값이 0이상일 경우에
+    # else:
+    #     planter_output.output = (
+    #         planter_work_status_in_working.planter_work__planter_tray.width
+    #         * operating_count_in_planter_work_working
+    #     )
+
+    # if new_planter_status != None:
+    #     db.add(new_planter_status)
+    # db.add(new_planter_work_status)
+    # db.add(planter_output)
+    # db.commit()
+    # if new_planter_status != None:
+    #     db.refresh(new_planter_status)
+    # db.refresh(new_planter_work_status)
+    # db.refresh(planter_output)
 
     # planter_status == 1 : 파종기 전원 상태가 ON 상태
     else:

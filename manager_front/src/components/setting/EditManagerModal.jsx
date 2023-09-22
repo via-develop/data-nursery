@@ -149,7 +149,6 @@ const S = {
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 12px 24px;
     border: 1px solid #5899fb;
     background-color: #fff;
     border-radius: 8px;
@@ -260,7 +259,7 @@ function EditManagerModal({
             <p className="input-title">아이디</p>
           </S.TextWrap>
           <div className="input-wrap-off">
-            <input placeholder="사용하실 아이디를 입력하세요" value={editManagerId} />
+            <input placeholder="사용하실 아이디를 입력하세요" value={editManagerId} disabled />
           </div>
 
           <S.TextWrap>

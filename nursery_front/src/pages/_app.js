@@ -40,9 +40,20 @@ export default function App({ Component, pageProps }) {
               <ThemeProvider theme={theme}>
                 <GlobalStyle />
                 <Head>
-                  <title>자동파종기 - 농가용</title>
-                  <meta name="viewport" content="width=device-width, initial-scale=1" />
+                  <title>Data Nursery</title>
+                  <meta name="description" content="대한민국 NO.1 자동파종기 관리 시스템"></meta>
                   <link rel="icon" href="/favicon.ico" />
+
+                  {/* <meta property="og:url" content="https://datanursery.kr" />
+                  <meta property="og:type" content="website" />
+                  <meta property="og:site_name" content="Data Nursery" />
+                  <meta property="og:title" content="Data Nursery" />
+                  <meta property="og:description" content="대한민국 NO.1 자동파종기 관리 시스템" />
+                  <meta property="og:image" content="/images/common/og-image.svg" /> */}
+                  <meta
+                    name="viewport"
+                    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"
+                  />
                 </Head>
                 <Component {...pageProps} />
               </ThemeProvider>

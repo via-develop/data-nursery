@@ -21,6 +21,7 @@ import { cropListKey } from "@src/utils/query-keys/CropQueryKeys";
 const S = {
   Wrap: styled.div`
     width: 30%;
+    position: relative;
 
     .modal-wrap {
       position: fixed;
@@ -57,7 +58,7 @@ const S = {
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 16px 24px;
+    padding: 16px 0px;
     border-radius: 8px;
     background-color: #5899fb;
     box-shadow: 4px 4px 16px 0px rgba(89, 93, 107, 0.1);
@@ -105,13 +106,13 @@ const S = {
     }
 
     .table-header-first {
-      width: 168px;
+      width: 200px;
     }
     .table-header-sec {
-      width: 172px;
+      width: 94px;
     }
     .table-header-third {
-      width: 46px;
+      width: 88px;
     }
     .check-img {
       width: 24px;
@@ -122,6 +123,19 @@ const S = {
     height: 368px;
     overflow-y: auto;
     padding-right: 24px;
+
+    &::-webkit-scrollbar {
+      display: block !important;
+      width: 8px !important;
+      border-radius: 4px !important;
+      background-color: ${({ theme }) => theme.basic.lightSky} !important;
+      margin-left: 5px !important;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      border-radius: 4px !important;
+      background-color: #bfcad9 !important;
+    }
 
     .selected {
       border: 1px solid ${({ theme }) => theme.primery.primery};
@@ -169,6 +183,12 @@ const S = {
     }
     .table-text-first {
       width: 100px;
+    }
+    .first-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
     }
     .table-text-fin {
       width: 40px;
@@ -402,8 +422,10 @@ function CropsList({ userInfo }) {
                         </div>
                       )}
                       <p className="table-text-first">{index + 1}</p>
-                      <div className="crops_color" style={{ backgroundColor: crop.color }} />
-                      <p className="table-text-first crop_name">{crop.name}</p>
+                      <div className="first-wrap">
+                        <div className="crops_color" style={{ backgroundColor: crop.color }} />
+                        <p className="table-text-first crop_name">{crop.name}</p>
+                      </div>
 
                       <div className="table-text-fin option-modal-wrap">
                         {userInfo?.admin_user_info?.is_top_admin === true && (
@@ -415,16 +437,15 @@ function CropsList({ userInfo }) {
                             <OptionDot width={32} height={32} />
                           </div>
                         )}
-
-                        {index === optionModalOpen.index && (
-                          <CropsOptionModal
-                            optionModalOpen={optionModalOpen}
-                            setOptionModalOpen={setOptionModalOpen}
-                            setDeleteCropsModalOpen={setDeleteCropsModalOpen}
-                            setEditCropsModalOpen={setEditCropsModalOpen}
-                          />
-                        )}
                       </div>
+                      {index === optionModalOpen.index && (
+                        <CropsOptionModal
+                          optionModalOpen={optionModalOpen}
+                          setOptionModalOpen={setOptionModalOpen}
+                          setDeleteCropsModalOpen={setDeleteCropsModalOpen}
+                          setEditCropsModalOpen={setEditCropsModalOpen}
+                        />
+                      )}
                     </S.ListBlock>
                   );
                 })}

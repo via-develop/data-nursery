@@ -56,7 +56,7 @@ const S = {
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 16px 24px;
+    padding: 16px 0px;
     border-radius: 8px;
     background-color: #5899fb;
     box-shadow: 4px 4px 16px 0px rgba(89, 93, 107, 0.1);
@@ -121,6 +121,19 @@ const S = {
     max-height: 444px;
     overflow-y: auto;
     padding-right: 24px;
+
+    &::-webkit-scrollbar {
+      display: block !important;
+      width: 8px !important;
+      border-radius: 4px !important;
+      background-color: ${({ theme }) => theme.basic.lightSky} !important;
+      margin-left: 5px !important;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      border-radius: 4px !important;
+      background-color: #bfcad9 !important;
+    }
 
     .selected {
       border: 1px solid ${({ theme }) => theme.primery.primery};
@@ -434,16 +447,15 @@ function ManagementList({ userInfo }) {
                         <OptionDot width={32} height={32} />
                       </div>
                     )}
-
-                    {index === optionModalOpen.index && (
-                      <OptionModal
-                        optionModalOpen={optionModalOpen}
-                        setOptionModalOpen={setOptionModalOpen}
-                        setEditManagerModalOpen={setEditManagerModalOpen}
-                        setDeleteManagerModalOpen={setDeleteManagerModalOpen}
-                      />
-                    )}
                   </div>
+                  {index === optionModalOpen.index && (
+                    <OptionModal
+                      optionModalOpen={optionModalOpen}
+                      setOptionModalOpen={setOptionModalOpen}
+                      setEditManagerModalOpen={setEditManagerModalOpen}
+                      setDeleteManagerModalOpen={setDeleteManagerModalOpen}
+                    />
+                  )}
                 </S.ListBlock>
               );
             })}
@@ -482,6 +494,8 @@ function ManagementList({ userInfo }) {
           <EditManagerPasswordModal
             editManagerModalOpen={editManagerModalOpen}
             setEditManagerPWChangeModalOpen={setEditManagerPWChangeModalOpen}
+            setManagerList={setManagerList}
+            setManagerListPage={setManagerListPage}
           />
         </div>
       )}

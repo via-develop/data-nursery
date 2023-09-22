@@ -304,6 +304,7 @@ function WorkRegistrationPage() {
               handleInputChange("orderQuantity", e.target.value.replace(/[^0-9]/g, ""));
             }}
             placeholder={"작업수량을 입력하세요"}
+            inputmode="numeric"
             suffix={"장"}
           />
         </S.InputWrap>

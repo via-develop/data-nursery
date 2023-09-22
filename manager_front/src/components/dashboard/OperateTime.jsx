@@ -40,9 +40,7 @@ const S = {
       line-height: 16px;
     }
   `,
-  GraphWrap: styled.div`
-    /* padding: 60px 0px 24px 0px; */
-  `,
+  GraphWrap: styled.div``,
 };
 
 function OperateTime({ currentDate }) {

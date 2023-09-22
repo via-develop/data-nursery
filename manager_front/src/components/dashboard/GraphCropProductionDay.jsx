@@ -161,6 +161,7 @@ function GraphCropProductionDay() {
               //   align: "end",
               //   text: "개 (단위 : 만)",
               // },
+              beginAtZero: true,
               ticks: {
                 stepSize: 10,
               },

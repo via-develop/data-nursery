@@ -66,7 +66,16 @@ const S = {
   `,
 };
 
-function SuffixInput({ text, setText, type = "text", maxLength, placeholder, readOnly = false, suffix }) {
+function SuffixInput({
+  text,
+  setText,
+  type = "text",
+  maxLength,
+  placeholder,
+  inputmode = "text",
+  readOnly = false,
+  suffix,
+}) {
   return (
     <S.InputWrap readOnly={readOnly}>
       <S.CustomInput
@@ -74,6 +83,7 @@ function SuffixInput({ text, setText, type = "text", maxLength, placeholder, rea
         type={type}
         maxLength={maxLength}
         placeholder={placeholder}
+        inputmode={inputmode}
         onChange={setText}
         readOnly={readOnly}
       />

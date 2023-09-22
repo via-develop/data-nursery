@@ -301,7 +301,7 @@ function AddFarmSaveModal({
         <S.InputWrap>
           <p className="title-info">파종기 시리얼번호</p>
           <div className="input-wrap-off">
-            <input value={addFarmSerialNumber} disabled />
+            <input value={addFarmSerialNumber.toUpperCase()} disabled />
           </div>
           <p className="title-info">육묘업 등록번호</p>
           <div className="input-wrap">

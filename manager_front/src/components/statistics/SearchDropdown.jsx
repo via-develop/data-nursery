@@ -48,12 +48,6 @@ const S = {
       display: flex;
       flex-direction: column;
       gap: 8px;
-
-      /* p {
-        display: flex;
-        align-items: center;
-        justify-content: start;
-      } */
     }
 
     .drop-down-list {

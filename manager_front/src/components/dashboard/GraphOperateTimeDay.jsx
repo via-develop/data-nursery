@@ -78,19 +78,26 @@ function GraphOperateTimeDay() {
 
     const textCenter = {
       id: "textCenter",
-      beforeDatasetsDraw(chart, args, pluginOptions) {
-        const { ctx, data } = chart;
+      afterDatasetsDraw(chart, args, options) {
+        const {
+          ctx,
+          data,
+          chartArea: { top, bottom, left, right, width, height },
+        } = chart;
 
         ctx.save();
-        ctx.font = "bolder 32px sans-serif";
+        ctx.font = "normal 20px Pretendard";
         ctx.fillStyle = "#405F8D";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText(
-          "평균" + "\n" + Math.floor(planterOperation?.total_avg / 3600) + "h",
-          chart.getDatasetMeta(0).data[0].x,
-          chart.getDatasetMeta(0).data[0].y,
-        );
+        ctx.fillText("평균", width / 1.88, height / 2.2);
+        ctx.restore();
+
+        ctx.font = "bolder 32px Pretendard";
+        ctx.fillStyle = "#405F8D";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(Math.floor(planterOperation?.total_avg / 3600) + "h", width / 1.88, height / 2.2 + top + 25);
       },
     };
 

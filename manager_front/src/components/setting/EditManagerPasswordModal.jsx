@@ -143,7 +143,12 @@ const S = {
   `,
 };
 
-function EditManagerPasswordModal({ editManagerModalOpen, setEditManagerPWChangeModalOpen }) {
+function EditManagerPasswordModal({
+  editManagerModalOpen,
+  setEditManagerPWChangeModalOpen,
+  setManagerList,
+  setManagerListPage,
+}) {
   const invalidateQueries = useInvalidateQueries();
   const [isDefaultAlertShow, setIsDefaultAlertShowState] = useRecoilState(isDefaultAlertShowState);
 
@@ -220,6 +225,8 @@ function EditManagerPasswordModal({ editManagerModalOpen, setEditManagerPWChange
         okClick: null,
       });
       invalidateQueries([settingManagerListKey]);
+      setManagerList([]);
+      setManagerListPage(1);
       closeModal();
     },
     (error) => {

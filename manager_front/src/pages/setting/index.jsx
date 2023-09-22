@@ -23,7 +23,6 @@ const S = {
     display: flex;
     gap: 72px;
     justify-content: space-between;
-    /* min-width: 1500px; */
   `,
 };
 

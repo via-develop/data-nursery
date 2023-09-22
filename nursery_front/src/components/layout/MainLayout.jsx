@@ -88,7 +88,7 @@ const S = {
     height: 100%;
 
     border-radius: 24px;
-    overflow: hidden;
+    overflow: hidden !important;
     box-shadow: 4px 4px 16px 0px rgba(89, 93, 107, 0.1);
 
     ${({ theme }) => theme.media.max_mobile} {
@@ -209,9 +209,15 @@ const S = {
     box-shadow: 0px -4px 10px 0px rgba(165, 166, 168, 0.16);
     padding: 8px 24px;
 
+    border-radius: 0px 0px 24px 24px;
+
     .work-start-text {
       ${({ theme }) => theme.textStyle.h6Bold}
       color: ${({ theme }) => theme.basic.warning};
+    }
+
+    ${({ theme }) => theme.media.max_mobile} {
+      border-radius: 0px;
     }
   `,
 };
