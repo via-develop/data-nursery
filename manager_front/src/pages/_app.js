@@ -6,6 +6,11 @@ import SSRProvider from "react-bootstrap/SSRProvider";
 import Head from "next/head";
 import { ThemeProvider } from "styled-components";
 import theme from "@src/styles/theme";
+import axios from "axios";
+
+axios.defaults.xsrfCookieName = "csrftoken";
+axios.defaults.xsrfHeaderName = "X-CSRFToken";
+axios.defaults.withCredentials = true;
 
 export default function App({ Component, pageProps }) {
   // 사용자별 요청 데이터 공유 안되게

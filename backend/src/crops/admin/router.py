@@ -18,7 +18,9 @@ def search_crop_name_for_admin(
 ):
     get_current_user("99", request.cookies, db)
 
-    crop_name_query = db.query(cropModels.Crop.name)
+    crop_name_query = db.query(cropModels.Crop.name).filter(
+        cropModels.Crop.is_del == False
+    )
 
     if search:
         crop_name_query = crop_name_query.filter(
@@ -66,8 +68,8 @@ async def update_crop_info(
 
     if image_del:
         if crop.image:
-          await delete_file(crop.image)
-          crop.image = None
+            await delete_file(crop.image)
+            crop.image = None
 
     if is_del is not None:
         crop.is_del = is_del

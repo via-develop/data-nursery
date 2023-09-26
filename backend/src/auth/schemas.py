@@ -60,6 +60,7 @@ class FarmHouse(FarmHouseBase):
 
 class FarmHouseUpdate(BaseModel):
     id: int
+    nursery_number: Optional[str] = None
     name: Optional[str] = None
     producer_name: Optional[str] = None
     phone: Optional[str] = None
@@ -69,7 +70,7 @@ class FarmHouseUpdate(BaseModel):
 class FarmHouseResponse(BaseModel):
     id: int
     name: str
-    nursery_number: str
+    nursery_number: Optional[str]
     farm_house_id: str
     producer_name: str
     address: str

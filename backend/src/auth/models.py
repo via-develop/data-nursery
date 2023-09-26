@@ -9,7 +9,7 @@ from src.planter.models import Planter
 class User(BaseModel):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True, index=True)
-    login_id = Column(String(length=20), unique=True, index=True)
+    login_id = Column(String(length=20), unique=True, nullable=True)
     password = Column(String)
     name = Column(String(length=20))
     code = Column(String(length=2), default="01")
@@ -45,10 +45,10 @@ class FarmHouse(BaseModel):
     __tablename__ = "farm_houses"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(length=255), unique=True, index=True)
-    nursery_number = Column(String(length=244), unique=True, index=True)
-    farm_house_id = Column(String(length=20), unique=True, index=True)
-    producer_name = Column(String(length=20), index=True)
+    name = Column(String(length=255), unique=True, nullable=True)
+    nursery_number = Column(String(length=244), unique=True, nullable=True)
+    farm_house_id = Column(String(length=20), unique=True, nullable=True)
+    producer_name = Column(String(length=20))
     address = Column(Text)
     owner_id = Column(Integer, ForeignKey("users.id"))
     phone = Column(String(length=20))

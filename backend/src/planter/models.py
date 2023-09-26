@@ -9,9 +9,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import relationship
 
-from utils.database import BaseModel, AppModelBase
-
-# from src.auth.models import User, FarmHouse
+from utils.database import BaseModel
 
 
 class Planter(BaseModel):
@@ -19,7 +17,7 @@ class Planter(BaseModel):
 
     farm_house_id = Column(Integer, ForeignKey("farm_houses.id"))
     id = Column(Integer, primary_key=True, index=True)
-    serial_number = Column(String(length=255), unique=True)
+    serial_number = Column(String(length=255), unique=True, nullable=True)
     is_register = Column(Boolean, default=False)
     register_date = Column(DateTime(timezone=True), nullable=True)
     qrcode = Column(String)
