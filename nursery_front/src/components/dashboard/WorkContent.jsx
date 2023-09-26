@@ -1,5 +1,5 @@
 import { ImagePathCheck, NumberFormatting } from "@utils/Formatting";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styled, { css } from "styled-components";
 import Image from "next/image";
 import { useRouter } from "next/router";
@@ -157,6 +157,18 @@ function WorkContent({ workingWorkInfo }) {
       alert(error);
     },
   );
+
+  useEffect(() => {
+    if (!workingWorkInfo) {
+      return;
+    }
+
+    const intervalId = setInterval(() => {
+      invalidateQueries([workingWorkInfoKey]);
+    }, 30000); // 30초마다 업데이트
+
+    return () => clearInterval(intervalId);
+  }, [workingWorkInfo]);
 
   return !!workingWorkInfo ? (
     <S.Wrap>

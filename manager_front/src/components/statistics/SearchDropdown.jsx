@@ -48,12 +48,6 @@ const S = {
       display: flex;
       flex-direction: column;
       gap: 8px;
-
-      /* p {
-        display: flex;
-        align-items: center;
-        justify-content: start;
-      } */
     }
 
     .drop-down-list {
@@ -107,9 +101,9 @@ function SearchDropdown({ width, type, dataList, selectData, searchText, setSear
               className="drop-down-list"
               key={`${type + index}`}
               onClick={() => {
-                dataClick(selectData.split("||").includes(data), type, data);
+                dataClick(selectData.toString().split("||").includes(data.toString()), type, data.toString());
               }}>
-              {selectData.split("||").includes(data) ? (
+              {selectData.toString().split("||").includes(data.toString()) ? (
                 <CheckBoxOn width={24} height={24} />
               ) : (
                 <CheckBoxOff width={24} height={24} />

@@ -3,9 +3,8 @@ import styled from "styled-components";
 import { useRecoilState } from "recoil";
 
 import { useDaumPostcodePopup } from "react-daum-postcode";
-
 import { isDefaultAlertShowState } from "@src/states/isDefaultAlertShowState";
-import { useFarmAllListKey } from "@src/utils/query-keys/AuthQueryKeys";
+import { farmAllListKey } from "@src/utils/query-keys/AuthQueryKeys";
 import useInvalidateQueries from "@src/hooks/queries/common/useInvalidateQueries";
 import useCreateFarmhouse from "@src/hooks/queries/auth/useCreateFarmhouse";
 
@@ -182,7 +181,6 @@ function AddFarmSaveModal({
   setCreateQrcode,
   setAddFarmSerialNumber,
   qrCodeUrl,
-  setQrCodeUrl,
   addressCode,
   setAddressCode,
 }) {
@@ -211,7 +209,7 @@ function AddFarmSaveModal({
         text: "정상적으로 저장되었습니다.",
         okClick: null,
       });
-      invalidateQueries([useFarmAllListKey]);
+      invalidateQueries([farmAllListKey]);
     },
     (error) => {
       setIsDefaultAlertShowState({
@@ -301,9 +299,9 @@ function AddFarmSaveModal({
           </div>
         </S.TitleWrap>
         <S.InputWrap>
-          <p className="title-info">파종기 시러얼번호</p>
+          <p className="title-info">파종기 시리얼번호</p>
           <div className="input-wrap-off">
-            <input value={addFarmSerialNumber} disabled />
+            <input value={addFarmSerialNumber.toUpperCase()} disabled />
           </div>
           <p className="title-info">육묘업 등록번호</p>
           <div className="input-wrap">

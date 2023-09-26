@@ -69,6 +69,12 @@ const GlobalStyle = createGlobalStyle`
     border-radius: 50%;
     background-color: #FB97A3;
   }
+
+  .loading-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 `;
 
 export default GlobalStyle;

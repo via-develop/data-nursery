@@ -4,9 +4,15 @@ export const loginAPI = (data) => {
   return axios.post(process.env.NEXT_PUBLIC_END_POINT + "/api/auth/login", data, { withCredentials: true });
 };
 
+export const logoutAPI = (data) => {
+  return axios.post(process.env.NEXT_PUBLIC_END_POINT + `/api/auth/logout?l_type=${data.lType}`, data, {
+    withCredentials: true,
+  });
+};
+
 export const getUserInfo = async () => {
   try {
-    const res = await axios.get(process.env.NEXT_PUBLIC_END_POINT + `/api/auth/common/user`, {
+    const res = await axios.get(process.env.NEXT_PUBLIC_END_POINT + `/api/auth/admin/user`, {
       withCredentials: true,
     });
     return res.data;
@@ -190,5 +196,22 @@ export const deleteAdminAPI = async (data) => {
     return res.data;
   } catch (error) {
     throw new Error(error.response?.status || "관리자를 삭제하는데 실패하였습니다. 잠시 후 다시 시도해주세요.");
+  }
+};
+
+//농가수정 :: 비밀번호 변경
+export const updateFarmhousePwAPI = async (data) => {
+  try {
+    const res = await axios.patch(
+      process.env.NEXT_PUBLIC_END_POINT +
+        `/api/admin/auth/farmhouse/update/password?farmhouse_id=${data.farmhouseId}&new_password=${data.newPassword}`,
+      data,
+      {
+        withCredentials: true,
+      },
+    );
+    return res.data;
+  } catch (error) {
+    throw new Error(error.response?.status || "농가비밀번호를 수정하는데 실패하였습니다. 잠시 후 다시 시도해주세요.");
   }
 };

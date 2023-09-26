@@ -113,7 +113,7 @@ def login_user(user_data: schemas.UserLogin, db: Session = Depends(get_db)):
                     "farm_house_id": farm_house.farm_house_id,
                     "producer_name": farm_house.producer_name,
                     "nursery_number": farm_house.nursery_number,
-                     "address": farm_house.address,
+                    "address": farm_house.address,
                     "phone": farm_house.phone,
                 },
                 "planter": {
@@ -174,11 +174,27 @@ def login_user(user_data: schemas.UserLogin, db: Session = Depends(get_db)):
 def login_user(l_type: str, request: Request, db: Session = Depends(get_db)):
     if l_type == "01":
         response = JSONResponse(status_code=200, content={"msg": "SUCCESS"})
-        response.delete_cookie(AUTH_COOKIE_COMMON_USER_ACCESS_TOKEN)
+        # response.delete_cookie(AUTH_COOKIE_COMMON_USER_ACCESS_TOKEN)
+        response.set_cookie(
+            key=AUTH_COOKIE_COMMON_USER_ACCESS_TOKEN,
+            httponly=True,
+            expires=datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S GMT"),
+            domain=AUTH_COOKIE_DOMAIN if AUTH_COOKIE_DOMAIN != "None" else None,
+            secure=True if AUTH_COOKIE_SECURE != "False" else False,
+            samesite="lax",
+        )
 
     if l_type == "99":
         response = JSONResponse(status_code=200, content={"msg": "SUCCESS"})
-        response.delete_cookie(AUTH_COOKIE_ADMIN_USER_ACCESS_TOKEN)
+        # response.delete_cookie(AUTH_COOKIE_ADMIN_USER_ACCESS_TOKEN)
+        response.set_cookie(
+            key=AUTH_COOKIE_ADMIN_USER_ACCESS_TOKEN,
+            httponly=True,
+            expires=datetime.utcnow().strftime("%a, %d %b %Y %H:%M:%S GMT"),
+            domain=AUTH_COOKIE_DOMAIN if AUTH_COOKIE_DOMAIN != "None" else None,
+            secure=True if AUTH_COOKIE_SECURE != "False" else False,
+            samesite="lax",
+        )
 
     return response
 
@@ -276,7 +292,7 @@ def get_user(request: Request, db: Session = Depends(get_db)):
 async def create_farm_house(
     request: Request,
     serial_number: str = Form(...),
-    nursery_number: str = Form(...),
+    nursery_number: str = Form(None),
     farm_house_id: str = Form(...),
     name: str = Form(...),
     producer_name: str = Form(...),
@@ -318,7 +334,9 @@ async def create_farm_house(
             status_code=404, content=dict(msg="DUPLICATED_PLANTER_SERIAL_NUMBER")
         )
 
-    hash_pw = bcrypt.hashpw(phone.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+    hash_pw = bcrypt.hashpw(
+        phone.replace("-", "").encode("utf-8"), bcrypt.gensalt()
+    ).decode("utf-8")
 
     new_user = create_(
         db,
@@ -518,10 +536,12 @@ def delete_farmhouse(
         # Farmhouse User 삭제
         user = farmhouse.farm_house_user
         user.is_del = True
+        user.login_id = None
 
         # Famhouse Planter 삭제
         planter = farmhouse.farm_house_planter
         planter.is_del = True
+        planter.serial_number = None
 
         # Planter status 삭제
         planter_status_list = planter.planter__planter_status
@@ -549,6 +569,9 @@ def delete_farmhouse(
 
         # Farmhouse 삭제
         farmhouse.is_del = True
+        farmhouse.name = None
+        farmhouse.nursery_number = None
+        farmhouse.farm_house_id = None
 
     db.commit()
 

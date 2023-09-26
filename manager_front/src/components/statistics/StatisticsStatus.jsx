@@ -1,8 +1,7 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
 import styled from "styled-components";
 
-// import DatePickerMain from "./DatePickerMain";
-// import { YYYYMMDDSlash } from "@src/utils/Formatting";
+import colorArray from "@components/common/ListColor";
 import useStatics from "@src/hooks/queries/auth/useStatics";
 import useFarmHouseIdList from "@src/hooks/queries/auth/useFarmHouseIdList";
 import useFarmHouseNameList from "@src/hooks/queries/auth/useFarmHouseNameList";
@@ -15,9 +14,9 @@ import SearchDropdown from "./SearchDropdown";
 
 import { NumberCommaFormatting } from "@src/utils/Formatting";
 import { GetMonthList, GetYearList, YYYYMMDDDash, YYYYMMDDSlash } from "@src/utils/Formatting";
-import ExcelIcon from "@images/management/excel-icon.svg";
-import UpArrow from "@images/common/order-by-up-icon.svg";
-import DownArrow from "@images/common/order-by-down-icon.svg";
+// import ExcelIcon from "@images/management/excel-icon.svg";
+import DownArrow from "@images/common/order-by-up-icon.svg";
+import UpArrow from "@images/common/order-by-down-icon.svg";
 import FinCheckIcon from "@images/statistics/fin-check-icon.svg";
 import WaitingIcon from "@images/statistics/waiting-icon.svg";
 import GrayFinCheckIcon from "@images/statistics/gray-fin-check-icon.svg";
@@ -88,36 +87,36 @@ const S = {
       color:${({ theme }) => theme.basic.gray50}
     }
 
-    .button-wrap {
+    /* .button-wrap {
       display: flex;
       gap: 16px;
-    }
+    } */
   `,
-  ExcelButton: styled.div`
-    cursor: pointer;
-    gap: 16px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 16px 24px;
-    border: 1px solid #5899fb;
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 4px 4px 16px 0px rgba(89, 93, 107, 0.1);
+  // ExcelButton: styled.div`
+  //   cursor: pointer;
+  //   gap: 16px;
+  //   display: flex;
+  //   justify-content: center;
+  //   align-items: center;
+  //   padding: 16px 24px;
+  //   border: 1px solid #5899fb;
+  //   background-color: #fff;
+  //   border-radius: 8px;
+  //   box-shadow: 4px 4px 16px 0px rgba(89, 93, 107, 0.1);
 
-    p {
-      color: #5899fb;
-      ${({ theme }) => theme.textStyle.h6Bold}
-    }
+  //   p {
+  //     color: #5899fb;
+  //     ${({ theme }) => theme.textStyle.h6Bold}
+  //   }
 
-    &:hover {
-      border: 1px solid ${({ theme }) => theme.basic.btnAction};
-    }
-    &:active {
-      border: 1px solid ${({ theme }) => theme.basic.btnAction};
-      background-color: ${({ theme }) => theme.basic.lightSky};
-    }
-  `,
+  //   &:hover {
+  //     border: 1px solid ${({ theme }) => theme.basic.btnAction};
+  //   }
+  //   &:active {
+  //     border: 1px solid ${({ theme }) => theme.basic.btnAction};
+  //     background-color: ${({ theme }) => theme.basic.lightSky};
+  //   }
+  // `,
   DateChooseWrap: styled.div`
     display: flex;
     gap: 8px;
@@ -263,10 +262,6 @@ const S = {
         color: #c6c6c6;
         ${({ theme }) => theme.textStyle.h7Bold};
       }
-
-      .farm-name-first {
-        background-color: #c6c6c6;
-      }
     }
   `,
   ListBlock: styled.div`
@@ -289,12 +284,11 @@ const S = {
     }
 
     .list_id {
-      /* width: 36px; */
       width: 42px;
       justify-content: center;
     }
     .farm_id {
-      width: 168px;
+      width: 128px;
       justify-content: center;
     }
     .farm_name {
@@ -304,32 +298,32 @@ const S = {
       white-space: nowrap;
     }
     .farm_plant {
-      width: 100px;
-      justify-content: start;
+      width: 111px;
+      justify-content: center;
     }
     .plant_name {
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
-      width: 109px;
-      justify-content: start;
+      width: 131px;
+      justify-content: center;
     }
     .tray {
-      width: 24px;
+      width: 117px;
       justify-content: center;
     }
     .order_count {
-      width: 115px;
-      justify-content: end;
+      width: 74px;
+      justify-content: center;
     }
     .sowing_count {
-      width: 126px;
-      justify-content: end;
+      width: 102px;
+      justify-content: center;
       color: ${({ theme }) => theme.basic.deepBlue};
       ${({ theme }) => theme.textStyle.h7Bold};
     }
     .sowing_date {
-      width: 126px;
+      width: 86px;
       justify-content: center;
       color: ${({ theme }) => theme.basic.gray40};
       ${({ theme }) => theme.textStyle.h7Semibold}
@@ -338,7 +332,7 @@ const S = {
     .farm_name_wrap {
       display: flex;
       gap: 8px;
-      width: 224px;
+      width: 209px;
       justify-content: start;
       align-items: center;
 
@@ -353,7 +347,6 @@ const S = {
       display: flex;
       align-items: center;
       justify-content: center;
-      background-color: #79cec8;
       border-radius: 30px;
       padding: 8px;
       color: #fff;
@@ -482,8 +475,8 @@ function StatisticsStatus() {
     trayTotal: "",
     orderQuantityOrderType: 2,
     planterOutputOrderType: 2,
-    sowingDateOrderType: 2,
-    isShipmentCompletedOrderType: 1,
+    sowingDateOrderType: 1,
+    isShipmentCompletedOrderType: 2,
   });
 
   // Dropdown 검색어
@@ -491,6 +484,12 @@ function StatisticsStatus() {
   const [searchFarmHouseName, setSearchFarmHouseName] = useState("");
   const [searchCropName, setSearchCropName] = useState("");
   const [searchTrayTotal, setSearchTrayTotal] = useState("");
+
+  //Dropdown 나타내는 글씨
+  const [farmIdSelectText, setFarmIdSelectText] = useState("");
+  const [farmNameSelectText, setFarmNameSelectText] = useState("");
+  const [cropNameSelectText, setCropNameSelectText] = useState("");
+  const [traySelectText, setTraySelectText] = useState("");
 
   // 농가목록 데이터
   const [staticsList, setStaticsList] = useState([]);
@@ -708,7 +707,7 @@ function StatisticsStatus() {
         }
       } else {
         // dropdown으로 선택하는 값
-        const preValue = selectData[name];
+        const preValue = selectData[name].toString();
         let changeValue = "";
 
         if (isSelect) {
@@ -806,6 +805,60 @@ function StatisticsStatus() {
     },
   });
 
+  //농가 ID select box 글씨
+  useEffect(() => {
+    if (selectData.farmHouseId === "") {
+      setFarmIdSelectText("농가ID");
+    } else if (selectData?.farmHouseId?.includes("||")) {
+      setFarmIdSelectText(
+        selectData?.farmHouseId.split("||")[0] + "외 " + (selectData?.farmHouseId.split("||").length - 1) + "개",
+      );
+    } else {
+      setFarmIdSelectText(selectData?.farmHouseId);
+    }
+  }, [selectData, farmIdSelectText]);
+
+  //농가면 select box 글씨
+  useEffect(() => {
+    if (selectData.farmHouseName === "") {
+      setFarmNameSelectText("농가명");
+    } else if (selectData?.farmHouseName?.includes("||")) {
+      setFarmNameSelectText(
+        selectData?.farmHouseName.split("||")[0] + "외 " + (selectData?.farmHouseName.split("||").length - 1) + "개",
+      );
+    } else {
+      setFarmNameSelectText(selectData?.farmHouseName);
+    }
+  }, [selectData, farmNameSelectText]);
+
+  //작물명 select box 글씨
+  useEffect(() => {
+    if (selectData.cropName === "") {
+      setCropNameSelectText("작물명");
+    } else if (selectData?.cropName?.includes("||")) {
+      setCropNameSelectText(
+        selectData?.cropName.split("||")[0] + "외 " + (selectData?.cropName.split("||").length - 1) + "개",
+      );
+    } else {
+      setCropNameSelectText(selectData?.cropName);
+    }
+  }, [cropNameSelectText, selectData]);
+
+  //트레이 select box 글씨
+  useEffect(() => {
+    if (selectData?.trayTotal === "") {
+      setTraySelectText("트레이");
+    }
+    // 두개 이상선택시
+    else if (selectData?.trayTotal?.includes("||")) {
+      setTraySelectText(
+        selectData?.trayTotal.split("||")[0] + "외 " + (selectData?.trayTotal.split("||").length - 1) + "개",
+      );
+    } else {
+      setTraySelectText(selectData?.trayTotal);
+    }
+  }, [traySelectText, selectData]);
+
   return (
     <S.Wrap>
       <S.InfoBlock>
@@ -815,7 +868,7 @@ function StatisticsStatus() {
               <p className="info-title">통계현황</p>
               <div className="sub-wrap">
                 <p className="info-sub">통계보기 및 검색 (</p>
-                <UpArrow width={15} height={15} />
+                <DownArrow width={15} height={15} />
                 <p className="info-sub">정렬기능 )</p>
               </div>
               <S.DateChooseWrap>
@@ -870,14 +923,14 @@ function StatisticsStatus() {
           </div>
         </div>
         <div>
-          {staticsList.length !== 0 && (
+          {/* {staticsList.length !== 0 && (
             <div className="button-wrap">
               <S.ExcelButton>
                 <ExcelIcon width={20} height={25} />
                 <p>엑셀 내려받기</p>
               </S.ExcelButton>
             </div>
-          )}
+          )} */}
         </div>
       </S.InfoBlock>
       <S.ContentList>
@@ -886,7 +939,7 @@ function StatisticsStatus() {
 
           <div className="search-select-modal-wrap">
             <S.HeaderDropDown style={{ width: "168px" }} onClick={handleFarmIdClick}>
-              <p>농가 ID</p>
+              <p>{farmIdSelectText}</p>
               <HeaderSelectArrowIcon width={20} height={20} />
             </S.HeaderDropDown>
             {isFarmId && (
@@ -904,7 +957,7 @@ function StatisticsStatus() {
 
           <div className="search-select-modal-wrap">
             <S.HeaderDropDown style={{ width: "224px" }} onClick={handleFarmNameClick}>
-              <p>농가명</p>
+              <p>{farmNameSelectText}</p>
               <HeaderSelectArrowIcon width={20} height={20} />
             </S.HeaderDropDown>
             {isFarmName && (
@@ -922,7 +975,7 @@ function StatisticsStatus() {
 
           <div className="search-select-modal-wrap">
             <S.HeaderDropDown style={{ width: "154px" }} onClick={handleCropsNameClick}>
-              <p>작물명</p>
+              <p>{cropNameSelectText}</p>
               <HeaderSelectArrowIcon width={20} height={20} />
             </S.HeaderDropDown>
             {isCropsName && (
@@ -972,7 +1025,7 @@ function StatisticsStatus() {
 
           <div className="search-select-modal-wrap">
             <S.HeaderDropDown style={{ width: "154px" }} onClick={handleTrayCountClick}>
-              <p>트레이</p>
+              <p>{traySelectText}</p>
               <HeaderSelectArrowIcon width={20} height={20} />
             </S.HeaderDropDown>
             {isTrayCount && (
@@ -1129,7 +1182,9 @@ function StatisticsStatus() {
                 <p className="list_id">{index + 1}</p>
                 <p className="farm_id">{data.farmhouse.farm_house_id}</p>
                 <div className="farm_name_wrap">
-                  <div className="farm-name-first">{data.farmhouse.name.slice(0, 1)}</div>
+                  <div className="farm-name-first" style={{ backgroundColor: colorArray[data.id % 20] }}>
+                    {data.farmhouse.name.slice(0, 1)}
+                  </div>
                   <p className="farm_name">{data.farmhouse.name}</p>
                 </div>
                 <p className="farm_plant">{data.crop.name}</p>
@@ -1138,13 +1193,13 @@ function StatisticsStatus() {
                 <p className="order_count">{NumberCommaFormatting(data.order_quantity)}</p>
                 <p className="sowing_count">{NumberCommaFormatting(data.planter_output.output)}</p>
                 <p className="sowing_date">{YYYYMMDDSlash(data.sowing_date)}</p>
-                {!data.is_shipment_completed && !data.farmhouse.is_del ? (
+                {!!data.is_shipment_completed && !data.farmhouse.is_del ? (
                   <FinCheckIcon width={98} height={40} />
                 ) : !data.is_shipment_completed && !data.farmhouse.is_del ? (
                   <WaitingIcon width={98} height={40} />
-                ) : data.is_shipment_completed && data.farmhouse.is_del ? (
+                ) : !!data.is_shipment_completed && !!data.farmhouse.is_del ? (
                   <GrayFinCheckIcon width={98} height={40} />
-                ) : data.is_shipment_completed && data.farmhouse.is_del ? (
+                ) : !data.is_shipment_completed && !!data.farmhouse.is_del ? (
                   <GrayWaitingIcon width={98} height={40} />
                 ) : (
                   <></>
@@ -1153,7 +1208,7 @@ function StatisticsStatus() {
             );
           })
         )}
-        {staticsInfo?.total !== 0 && staticsList.length !== staticsInfo?.total && (
+        {staticsInfo?.total !== 0 && staticsList.length !== staticsInfo?.total && staticsInfo !== undefined && (
           <S.ButtonWrap>
             <S.MoreButton
               onClick={() => {

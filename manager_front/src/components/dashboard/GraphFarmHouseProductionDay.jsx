@@ -12,8 +12,22 @@ const S = {
 
     .scrollBox {
       max-height: 300px;
-      overflow-y: scroll;
+      overflow-y: auto;
+
+      &::-webkit-scrollbar {
+        display: block !important;
+        width: 8px !important;
+        border-radius: 4px !important;
+        background-color: ${({ theme }) => theme.basic.lightSky} !important;
+        margin-left: 5px !important;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        border-radius: 4px !important;
+        background-color: #bfcad9 !important;
+      }
     }
+
     .scrollBoxBody {
       width: 100%;
     }
@@ -25,17 +39,25 @@ function GraphFarmHouseProductionDay() {
     queryType: "day",
     successFn: () => {},
     errorFn: (err) => {
-      console.log("!!err", err);
+      alert(err);
     },
   });
 
   //육묘장 이름
   const nameArray = planterFarm?.map((item) => item.farmhouse_name);
 
+  // if (nameArray?.length < 5) {
+  //   nameArray.push(" ");
+  //   nameArray.push(" ");
+  //   nameArray.push(" ");
+  //   nameArray.push(" ");
+  //   nameArray.push(" ");
+  //   nameArray.push(" ");
+  //   nameArray.push(" ");
+  // }
+
   //육묘장 데이터
   const dataArray = planterFarm?.map((item) => item.total_output);
-
-  console.log("!!!! planterFarm", planterFarm);
 
   const graphRef = useRef(null);
   const graphUnitRef = useRef(null);
@@ -138,7 +160,27 @@ function GraphFarmHouseProductionDay() {
               display: false,
             },
             tooltip: {
-              enabled: false,
+              backgroundColor: "#4F5B6C",
+              borderRadius: 8,
+              padding: 16,
+              xAlign: "center",
+              yAlign: "bottom",
+              displayColors: false,
+              titleAlign: "center",
+              bodyAlign: "center",
+              titleColor: "#C2D6E1",
+              bodyColor: "#fff",
+              callbacks: {
+                title: function (context) {
+                  return "";
+                },
+                beforeBody: function (context) {
+                  return context[0].formattedValue;
+                },
+                label: function (context) {
+                  return "";
+                },
+              },
             },
           },
         },
@@ -165,11 +207,11 @@ function GraphFarmHouseProductionDay() {
               afterFit: (context) => {
                 context.height += 23;
               },
-              title: {
-                display: true,
-                align: "end",
-                text: "개 (단위 : 만)",
-              },
+              // title: {
+              //   display: true,
+              //   align: "end",
+              //   text: "개 (단위 : 만)",
+              // },
             },
             y: {
               afterFit: (context) => {

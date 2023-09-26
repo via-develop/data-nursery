@@ -1,10 +1,13 @@
 import React, { useCallback, useState } from "react";
 import styled from "styled-components";
 import { useRouter } from "next/router";
+import axios from "axios";
 
 import useRegisterPlanter from "@hooks/queries/planter/useRegisterPlanter";
 import useUserInfo from "@hooks/queries/auth/useUserInfo";
 import useAllCacheClear from "@hooks/queries/common/useAllCacheClear";
+import { getUserInfoUrl } from "@apis/authAPIs";
+import userLogout from "@utils/userLogout";
 
 import MainLayout from "@components/layout/MainLayout";
 import DefaultButton from "@components/common/button/DefaultButton";
@@ -12,7 +15,6 @@ import DefaultModal from "@components/common/modal/DefaultModal";
 
 import { defaultButtonColor } from "@utils/ButtonColor";
 import { requireAuthentication } from "@utils/LoginCheckAuthentication";
-import userLogout from "@utils/userLogout";
 
 const S = {
   Wrap: styled.div`
@@ -62,6 +64,9 @@ function PlanterRegistrationPage() {
   const router = useRouter();
   const clearQueries = useAllCacheClear();
 
+  // 스크롤 유무 판단하기 위함
+  const [isScroll, setIsScroll] = useState(false);
+
   const [serialNumber, setSerialNumber] = useState("");
   const [modalOpen, setModalOpen] = useState({
     open: false,
@@ -71,6 +76,15 @@ function PlanterRegistrationPage() {
     btnType: "",
     afterFn: null,
   });
+
+  // 스크롤 감지
+  const contentScroll = useCallback((e) => {
+    if (e.target.scrollTop > 0) {
+      setIsScroll(true);
+    } else {
+      setIsScroll(false);
+    }
+  }, []);
 
   const checkPlanterSerial = useCallback(() => {
     if (serialNumber === userInfo.planter.serial_number) {
@@ -92,7 +106,7 @@ function PlanterRegistrationPage() {
   }, [serialNumber]);
 
   // 유저 정보 API
-  const { data: userInfo } = useUserInfo({
+  const { data: userInfo, isLoading: userInfoLoading } = useUserInfo({
     successFn: () => {},
     errorFn: () => {
       userLogout(router, clearQueries);
@@ -121,6 +135,8 @@ function PlanterRegistrationPage() {
   return (
     <MainLayout
       pageName={"파종기 등록"}
+      isLoading={userInfoLoading}
+      isScroll={isScroll}
       backIconClickFn={() => {
         router.push(
           {
@@ -130,16 +146,15 @@ function PlanterRegistrationPage() {
           "/QR-scanner",
         );
       }}>
-      <S.Wrap>
+      <S.Wrap onScroll={contentScroll}>
         <p className="description-text">파종기 시리얼 번호를{"\n"}입력해주세요</p>
         <S.InputWrap>
           <S.CustomInput
             value={serialNumber}
             type={"text"}
-            // maxLength={maxLength}
             placeholder={"예) KN001DS958"}
             onChange={(e) => {
-              setSerialNumber(e.target.value);
+              setSerialNumber(e.target.value.toUpperCase());
             }}
           />
         </S.InputWrap>
@@ -157,8 +172,22 @@ function PlanterRegistrationPage() {
 }
 
 // 로그인 안되어 있을 경우 로그인 페이지로 이동
-export const getServerSideProps = requireAuthentication((context) => {
-  return { props: {} };
+export const getServerSideProps = requireAuthentication(async (context) => {
+  const userInfoRes = await axios.get(getUserInfoUrl(true), {
+    headers: { Cookie: context.req.headers.cookie },
+  });
+
+  // 파종기 등록완료 상태에서 접근 시 dashboard 페이지로 이동
+  if (userInfoRes.data.planter.is_register) {
+    return {
+      redirect: {
+        destination: "/",
+        statusCode: 302,
+      },
+    };
+  } else {
+    return { props: {} };
+  }
 });
 
 export default PlanterRegistrationPage;

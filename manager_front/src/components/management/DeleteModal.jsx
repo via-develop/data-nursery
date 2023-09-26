@@ -4,7 +4,7 @@ import { useRecoilState } from "recoil";
 
 import { isDefaultAlertShowState } from "@src/states/isDefaultAlertShowState";
 import useDeleteFarmhouse from "@src/hooks/queries/auth/useDeleteFarmhouse";
-import { useFarmAllListKey } from "@src/utils/query-keys/AuthQueryKeys";
+import { farmAllListKey } from "@src/utils/query-keys/AuthQueryKeys";
 import useInvalidateQueries from "@src/hooks/queries/common/useInvalidateQueries";
 
 const S = {
@@ -83,12 +83,12 @@ const S = {
   `,
 };
 
-function AddFarmModal({ deleteModalOpen, setDeleteModalOpen, checkArray }) {
+function AddFarmModal({ deleteModalOpen, setDeleteModalOpen, setPage, farmList, setFarmList }) {
   const [isDefaultAlertShow, setIsDefaultAlertShowState] = useRecoilState(isDefaultAlertShowState);
   const invalidateQueries = useInvalidateQueries();
 
   const closeModal = useCallback(() => {
-    setDeleteModalOpen({ open: false, data: undefined });
+    setDeleteModalOpen({ open: false, deleteId: undefined });
   }, []);
 
   //체크한 선택삭제는 배열로 들어가고
@@ -97,21 +97,23 @@ function AddFarmModal({ deleteModalOpen, setDeleteModalOpen, checkArray }) {
   const handleDeleteOkClick = useCallback(() => {
     deleteFarmhouseMutate({
       data: {
-        farmhouseIds: deleteModalOpen.data.data.id,
+        farmhouseIds: deleteModalOpen.deleteId,
       },
     });
-  }, [deleteModalOpen]);
+    setPage(1);
+    setFarmList([]);
+  }, [deleteModalOpen, farmList]);
 
   const { mutate: deleteFarmhouseMutate } = useDeleteFarmhouse(
     () => {
-      closeModal();
+      invalidateQueries([farmAllListKey]);
       setIsDefaultAlertShowState({
         isShow: true,
         type: "success",
         text: "정상적으로 삭제되었습니다.",
         okClick: null,
       });
-      invalidateQueries([useFarmAllListKey]);
+      closeModal();
     },
     (error) => {
       setIsDefaultAlertShowState({

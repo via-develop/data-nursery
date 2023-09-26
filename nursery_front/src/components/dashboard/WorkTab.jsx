@@ -97,7 +97,7 @@ const S = {
   `,
 };
 
-function WorkTab() {
+function WorkTab({ setLoading }) {
   const router = useRouter();
   const clearQueries = useAllCacheClear();
   const invalidateQueries = useInvalidateQueries();
@@ -110,13 +110,6 @@ function WorkTab() {
   const { ref, inView, entry } = useInView({
     threshold: 0, // 요소가 얼마나 노출되었을때 inView를 true로 변경할지 (0~1 사이의 값)
   });
-
-  // 페이지 변경
-  const pageChange = useCallback(() => {
-    if (waitWorkListData?.total > waitWorkList.length) {
-      setWaitWorkListPage(waitWorkListPage + 1);
-    }
-  }, [waitWorkListPage, waitWorkList]);
 
   useEffect(() => {
     if (inView) {
@@ -137,7 +130,7 @@ function WorkTab() {
   });
 
   // 진행중인 주문 목록 API
-  const { data: workingWorkInfo } = useWorkingWorkInfo({
+  const { data: workingWorkInfo, isLoading: workingWorkInfoLoading } = useWorkingWorkInfo({
     serialNumber: userInfo?.planter.serial_number,
     successFn: () => {},
     errorFn: (err) => {
@@ -146,7 +139,7 @@ function WorkTab() {
   });
 
   // 대기중인 주문 목록 API
-  const { data: waitWorkListData } = useWaitWorkList({
+  const { data: waitWorkListData, isLoading: waitWorkListDataLoading } = useWaitWorkList({
     serialNumber: userInfo?.planter.serial_number,
     page: waitWorkListPage,
     successFn: (res) => {
@@ -156,6 +149,21 @@ function WorkTab() {
       alert(err);
     },
   });
+
+  useEffect(() => {
+    if ((workingWorkInfoLoading || waitWorkListDataLoading) && !(!workingWorkInfo || !waitWorkListData)) {
+      setLoading(true);
+    } else {
+      setLoading(false);
+    }
+  }, [workingWorkInfoLoading, waitWorkListDataLoading, workingWorkInfo, waitWorkListData]);
+
+  // 페이지 변경
+  const pageChange = useCallback(() => {
+    if (waitWorkList.length !== 0 && waitWorkListData?.total > waitWorkList.length) {
+      setWaitWorkListPage(waitWorkListPage + 1);
+    }
+  }, [waitWorkListData, waitWorkListPage, waitWorkList]);
 
   return !!workingWorkInfo || waitWorkListData?.total !== 0 ? (
     <S.Wrap>

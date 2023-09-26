@@ -21,6 +21,7 @@ import { cropListKey } from "@src/utils/query-keys/CropQueryKeys";
 const S = {
   Wrap: styled.div`
     width: 30%;
+    position: relative;
 
     .modal-wrap {
       position: fixed;
@@ -57,7 +58,7 @@ const S = {
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 16px 24px;
+    padding: 16px 0px;
     border-radius: 8px;
     background-color: #5899fb;
     box-shadow: 4px 4px 16px 0px rgba(89, 93, 107, 0.1);
@@ -105,19 +106,36 @@ const S = {
     }
 
     .table-header-first {
-      width: 120px;
+      width: 200px;
     }
     .table-header-sec {
-      width: 172px;
+      width: 94px;
     }
     .table-header-third {
-      width: 46px;
+      width: 88px;
+    }
+    .check-img {
+      width: 24px;
+      height: 24px;
     }
   `,
   ListBlockWrap: styled.div`
     height: 368px;
     overflow-y: auto;
     padding-right: 24px;
+
+    &::-webkit-scrollbar {
+      display: block !important;
+      width: 8px !important;
+      border-radius: 4px !important;
+      background-color: ${({ theme }) => theme.basic.lightSky} !important;
+      margin-left: 5px !important;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      border-radius: 4px !important;
+      background-color: #bfcad9 !important;
+    }
 
     .selected {
       border: 1px solid ${({ theme }) => theme.primery.primery};
@@ -140,6 +158,7 @@ const S = {
     border: 1px solid ${({ theme }) => theme.basic.recOutline};
     background-color: ${({ theme }) => theme.blackWhite.white};
     border-radius: 8px;
+    height: 64px;
 
     p {
       color: ${({ theme }) => theme.basic.gray50};
@@ -164,6 +183,12 @@ const S = {
     }
     .table-text-first {
       width: 100px;
+    }
+    .first-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
     }
     .table-text-fin {
       width: 40px;
@@ -206,7 +231,7 @@ const S = {
   `,
 };
 
-function CropsList() {
+function CropsList({ userInfo }) {
   const invalidateQueries = useInvalidateQueries();
 
   const [optionModalOpen, setOptionModalOpen] = useState({
@@ -305,13 +330,15 @@ function CropsList() {
           <p className="title">작물목록</p>
           <p className="sub-title">작물목록 추가, 변경</p>
         </S.Title>
-        <S.AddButton
-          onClick={() => {
-            setAddCropsModalOpen(true);
-          }}>
-          <AddIcon width={24} height={24} />
-          <p>작물 추가</p>
-        </S.AddButton>
+        {userInfo?.admin_user_info?.is_top_admin === true && (
+          <S.AddButton
+            onClick={() => {
+              setAddCropsModalOpen(true);
+            }}>
+            <AddIcon width={24} height={24} />
+            <p>작물 추가</p>
+          </S.AddButton>
+        )}
       </S.TitleWrap>
       <S.ContentList>
         {cropList?.crops.length === 0 ? (
@@ -324,21 +351,29 @@ function CropsList() {
             <div className="table-header">
               <div>
                 {checkArray.length !== 0 && checkArray.length === cropList?.crops.length ? (
-                  <CheckBoxOn
-                    width={24}
-                    height={24}
-                    onClick={() => {
-                      toggleAll(true);
-                    }}
-                  />
+                  <div className="check-img">
+                    {userInfo?.admin_user_info?.is_top_admin === true && (
+                      <CheckBoxOn
+                        width={24}
+                        height={24}
+                        onClick={() => {
+                          toggleAll(true);
+                        }}
+                      />
+                    )}
+                  </div>
                 ) : (
-                  <CheckBoxOff
-                    width={24}
-                    height={24}
-                    onClick={() => {
-                      toggleAll(false);
-                    }}
-                  />
+                  <div className="check-img">
+                    {userInfo?.admin_user_info?.is_top_admin === true && (
+                      <CheckBoxOff
+                        width={24}
+                        height={24}
+                        onClick={() => {
+                          toggleAll(false);
+                        }}
+                      />
+                    )}
+                  </div>
                 )}
               </div>
               {checkArray.length === 0 ? (
@@ -374,31 +409,43 @@ function CropsList() {
                       key={`crop${crop.id}`}
                       className={`table-row ${checkArray.includes(crop.id) ? "selected" : ""}`}>
                       {checkArray.includes(crop.id) ? (
-                        <CheckBoxOn width={24} height={24} onClick={() => toggleItem(true, crop.id)} />
+                        <div className="check-img">
+                          {userInfo?.admin_user_info?.is_top_admin === true && (
+                            <CheckBoxOn width={24} height={24} onClick={() => toggleItem(true, crop.id)} />
+                          )}
+                        </div>
                       ) : (
-                        <CheckBoxOff width={24} height={24} onClick={() => toggleItem(false, crop.id)} />
+                        <div className="check-img">
+                          {userInfo?.admin_user_info?.is_top_admin === true && (
+                            <CheckBoxOff width={24} height={24} onClick={() => toggleItem(false, crop.id)} />
+                          )}
+                        </div>
                       )}
                       <p className="table-text-first">{index + 1}</p>
-                      <div className="crops_color" style={{ backgroundColor: crop.color }} />
-                      <p className="table-text-first crop_name">{crop.name}</p>
+                      <div className="first-wrap">
+                        <div className="crops_color" style={{ backgroundColor: crop.color }} />
+                        <p className="table-text-first crop_name">{crop.name}</p>
+                      </div>
 
                       <div className="table-text-fin option-modal-wrap">
-                        <div
-                          className="option-dot"
-                          onClick={() => {
-                            handleCropsOptionModalClick(index, crop);
-                          }}>
-                          <OptionDot width={32} height={32} />
-                        </div>
-                        {index === optionModalOpen.index && (
-                          <CropsOptionModal
-                            optionModalOpen={optionModalOpen}
-                            setOptionModalOpen={setOptionModalOpen}
-                            setDeleteCropsModalOpen={setDeleteCropsModalOpen}
-                            setEditCropsModalOpen={setEditCropsModalOpen}
-                          />
+                        {userInfo?.admin_user_info?.is_top_admin === true && (
+                          <div
+                            className="option-dot"
+                            onClick={() => {
+                              handleCropsOptionModalClick(index, crop);
+                            }}>
+                            <OptionDot width={32} height={32} />
+                          </div>
                         )}
                       </div>
+                      {index === optionModalOpen.index && (
+                        <CropsOptionModal
+                          optionModalOpen={optionModalOpen}
+                          setOptionModalOpen={setOptionModalOpen}
+                          setDeleteCropsModalOpen={setDeleteCropsModalOpen}
+                          setEditCropsModalOpen={setEditCropsModalOpen}
+                        />
+                      )}
                     </S.ListBlock>
                   );
                 })}

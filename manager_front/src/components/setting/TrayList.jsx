@@ -57,7 +57,7 @@ const S = {
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 16px 24px;
+    padding: 16px 0px;
     border-radius: 8px;
     background-color: #5899fb;
     box-shadow: 4px 4px 16px 0px rgba(89, 93, 107, 0.1);
@@ -119,11 +119,29 @@ const S = {
     .table-header-five {
       width: 104px;
     }
+
+    .check-img {
+      width: 24px;
+      height: 24px;
+    }
   `,
   ListBlockWrap: styled.div`
     height: 368px;
     overflow-y: auto;
     padding-right: 24px;
+
+    &::-webkit-scrollbar {
+      display: block !important;
+      width: 8px !important;
+      border-radius: 4px !important;
+      background-color: ${({ theme }) => theme.basic.lightSky} !important;
+      margin-left: 5px !important;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      border-radius: 4px !important;
+      background-color: #bfcad9 !important;
+    }
 
     .selected {
       border: 1px solid ${({ theme }) => theme.primery.primery};
@@ -167,6 +185,7 @@ const S = {
     border: 1px solid ${({ theme }) => theme.basic.recOutline};
     background-color: ${({ theme }) => theme.blackWhite.white};
     border-radius: 8px;
+    height: 64px;
 
     p {
       color: ${({ theme }) => theme.basic.gray50};
@@ -222,7 +241,7 @@ const S = {
   `,
 };
 
-function TrayList() {
+function TrayList({ userInfo }) {
   const invalidateQueries = useInvalidateQueries();
 
   // 옵션 모달
@@ -320,13 +339,15 @@ function TrayList() {
           <p className="title">트레이목록</p>
           <p className="sub-title">트레이목록 추가, 변경</p>
         </S.Title>
-        <S.AddButton
-          onClick={() => {
-            setAddTrayModalOpen(true);
-          }}>
-          <AddIcon width={24} height={24} />
-          <p>트레이 추가</p>
-        </S.AddButton>
+        {userInfo?.admin_user_info?.is_top_admin === true && (
+          <S.AddButton
+            onClick={() => {
+              setAddTrayModalOpen(true);
+            }}>
+            <AddIcon width={24} height={24} />
+            <p>트레이 추가</p>
+          </S.AddButton>
+        )}
       </S.TitleWrap>
       <S.ContentList>
         {trayList?.planter_trays.length === 0 ? (
@@ -339,21 +360,29 @@ function TrayList() {
             <div className="table-header">
               <div>
                 {checkArray.length !== 0 && checkArray.length === trayList?.planter_trays.length ? (
-                  <CheckBoxOn
-                    width={24}
-                    height={24}
-                    onClick={() => {
-                      toggleAll(true);
-                    }}
-                  />
+                  <div className="check-img">
+                    {userInfo?.admin_user_info?.is_top_admin === true && (
+                      <CheckBoxOn
+                        width={24}
+                        height={24}
+                        onClick={() => {
+                          toggleAll(true);
+                        }}
+                      />
+                    )}
+                  </div>
                 ) : (
-                  <CheckBoxOff
-                    width={24}
-                    height={24}
-                    onClick={() => {
-                      toggleAll(false);
-                    }}
-                  />
+                  <div className="check-img">
+                    {userInfo?.admin_user_info?.is_top_admin === true && (
+                      <CheckBoxOff
+                        width={24}
+                        height={24}
+                        onClick={() => {
+                          toggleAll(false);
+                        }}
+                      />
+                    )}
+                  </div>
                 )}
               </div>
               {checkArray.length === 0 ? (
@@ -390,9 +419,17 @@ function TrayList() {
                       key={`tray${tray.id}`}
                       className={`table-row ${checkArray.includes(tray.id) ? "selected" : ""}`}>
                       {checkArray.includes(tray.id) ? (
-                        <CheckBoxOn width={24} height={24} onClick={() => toggleItem(true, tray.id)} />
+                        <div className="check-img">
+                          {userInfo?.admin_user_info?.is_top_admin === true && (
+                            <CheckBoxOn width={24} height={24} onClick={() => toggleItem(true, tray.id)} />
+                          )}
+                        </div>
                       ) : (
-                        <CheckBoxOff width={24} height={24} onClick={() => toggleItem(false, tray.id)} />
+                        <div className="check-img">
+                          {userInfo?.admin_user_info?.is_top_admin === true && (
+                            <CheckBoxOff width={24} height={24} onClick={() => toggleItem(false, tray.id)} />
+                          )}
+                        </div>
                       )}
                       <p className="table-text-fir">{index + 1}</p>
                       <div className="table-text-sec icon-wrap">
@@ -402,22 +439,24 @@ function TrayList() {
                       <p className="table-text-thir">{tray.width}</p>
                       <p className="table-text-four">{tray.height}</p>
                       <div className="table-text-fiv option-modal-wrap">
-                        <div
-                          className="option-dot"
-                          onClick={() => {
-                            handleCropsOptionModalClick(index, tray);
-                          }}>
-                          <OptionDot width={32} height={32} />
-                        </div>
-                        {index === optionModalOpen.index && (
-                          <OptionModal
-                            optionModalOpen={optionModalOpen}
-                            setOptionModalOpen={setOptionModalOpen}
-                            setEditTrayModalOpen={setEditTrayModalOpen}
-                            setDeleteTrayModalOpen={setDeleteTrayModalOpen}
-                          />
+                        {userInfo?.admin_user_info?.is_top_admin === true && (
+                          <div
+                            className="option-dot"
+                            onClick={() => {
+                              handleCropsOptionModalClick(index, tray);
+                            }}>
+                            <OptionDot width={32} height={32} />
+                          </div>
                         )}
                       </div>
+                      {index === optionModalOpen.index && (
+                        <OptionModal
+                          optionModalOpen={optionModalOpen}
+                          setOptionModalOpen={setOptionModalOpen}
+                          setEditTrayModalOpen={setEditTrayModalOpen}
+                          setDeleteTrayModalOpen={setDeleteTrayModalOpen}
+                        />
+                      )}
                     </S.ListBlock>
                   );
                 })}

@@ -6,6 +6,11 @@ import SSRProvider from "react-bootstrap/SSRProvider";
 import Head from "next/head";
 import { ThemeProvider } from "styled-components";
 import theme from "@src/styles/theme";
+import axios from "axios";
+
+axios.defaults.xsrfCookieName = "csrftoken";
+axios.defaults.xsrfHeaderName = "X-CSRFToken";
+axios.defaults.withCredentials = true;
 
 export default function App({ Component, pageProps }) {
   // 사용자별 요청 데이터 공유 안되게
@@ -30,7 +35,17 @@ export default function App({ Component, pageProps }) {
             <ThemeProvider theme={theme}>
               <GlobalStyle />
               <Head>
-                <title>Data Nursery</title>
+                <title>Data Nursery - Admin</title>
+                {/* <meta name="description" content="대한민국 NO.1 자동파종기 관리 시스템"/>
+                <meta property="og:type" content="website" />
+                <meta property="og:site_name" content="Data Nursery - Admin" />
+                <meta property="og:locale" content="ko_KR" />
+                <meta property="og:image:width" content="800" />
+                <meta property="og:image:height" content="401" />
+                <meta property="og:url" content="https://admin.datanursery.kr/login" />
+                <meta property="og:title" content="Data Nursery - Admin" />
+                <meta property="og:image" content="/images/og/og-img-kakao.svg" />
+                <meta name="viewport" content="width=device-width, initial-scale=1.0,maximum-scale=1.0,user-scalable=0" /> */}
               </Head>
               <Component {...pageProps} />
             </ThemeProvider>

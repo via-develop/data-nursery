@@ -62,7 +62,7 @@ function GraphOperateTimeMonth() {
     queryType: "month",
     successFn: () => {},
     errorFn: (err) => {
-      console.log("!!err", err);
+      alert(err);
     },
   });
 
@@ -78,20 +78,25 @@ function GraphOperateTimeMonth() {
 
     const textCenter = {
       id: "textCenter",
-      beforeDatasetsDraw(chart, args, pluginOptions) {
-        const { ctx, data } = chart;
+      afterDatasetsDraw(chart, args, options) {
+        const {
+          ctx,
+          chartArea: { top, bottom, left, right, width, height },
+        } = chart;
 
         ctx.save();
-        ctx.font = "bolder 32px sans-serif";
+        ctx.font = "normal 20px Pretendard";
         ctx.fillStyle = "#405F8D";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText(
-          "평균" + "\n" + planterOperation?.total_avg + "h",
-          // "평균" + "\n" + data.datasets[0].data[0] + "h",
-          chart.getDatasetMeta(0).data[0].x,
-          chart.getDatasetMeta(0).data[0].y,
-        );
+        ctx.fillText("평균", width / 1.88, height / 2.2);
+        ctx.restore();
+
+        ctx.font = "bolder 32px Pretendard";
+        ctx.fillStyle = "#405F8D";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(Math.floor(planterOperation?.total_avg / 3600) + "h", width / 1.88, height / 2.2 + top + 25);
       },
     };
 
@@ -102,7 +107,10 @@ function GraphOperateTimeMonth() {
         data: {
           datasets: [
             {
-              data: [planterOperation?.min?.farmhouse_name, 10 - planterOperation?.min?.farmhouse_name], // 여기서 첫 번째 데이터는 강조하고자 하는 값, 두 번째 데이터는 나머지 비율
+              data: [
+                Math.floor(planterOperation?.total_avg / 3600),
+                24 - Math.floor(planterOperation?.total_avg / 3600),
+              ], // 여기서 첫 번째 데이터는 강조하고자 하는 값, 두 번째 데이터는 나머지 비율
               backgroundColor: ["#8DBAEF", "#F7F7FA"],
               borderColor: ["#8DBAEF", "#F7F7FA"],
               hoverBackgroundColor: ["#8DBAEF", "#F7F7FA"],
@@ -160,12 +168,12 @@ function GraphOperateTimeMonth() {
       <S.InfoBlockWrap>
         <S.InfoBlock>
           <p className="info-title">최대 가동 시간</p>
-          <p className="info-hour">{planterOperation?.max?.operating_time}h</p>
+          <p className="info-hour">{Math.floor(planterOperation?.max?.operating_time / 3600)}h</p>
           <p className="info-name">{planterOperation?.max?.farmhouse_name}</p>
         </S.InfoBlock>
         <S.InfoBlock>
           <p className="info-title">최소 가동 시간</p>
-          <p className="info-hour">{planterOperation?.min?.operating_time}h</p>
+          <p className="info-hour">{Math.floor(planterOperation?.min?.operating_time / 3600)}h</p>
           <p className="info-name">{planterOperation?.min?.farmhouse_name}</p>
         </S.InfoBlock>
       </S.InfoBlockWrap>

@@ -2,11 +2,14 @@ import React, { useState, useCallback, useEffect } from "react";
 import styled from "styled-components";
 import { useRouter } from "next/router";
 import { useRecoilState } from "recoil";
+import axios from "axios";
 
 import useCropList from "@hooks/queries/crop/useCropList";
 import useTrayList from "@hooks/queries/planter/useTrayList";
 import useUpdateWork from "@hooks/queries/planter/useUpdateWork";
+import useWorkInfo from "@hooks/queries/planter/useWorkInfo";
 import useInvalidateQueries from "@src/hooks/queries/common/useInvalidateQueries";
+import { getUserInfoUrl } from "@apis/authAPIs";
 
 import MainLayout from "@components/layout/MainLayout";
 import DefaultInput from "@components/common/input/DefaultInput";
@@ -14,6 +17,7 @@ import DefaultCalendar from "@components/common/calendar/DefaultCalendar";
 import SuffixInput from "@components/common/input/SuffixInput";
 import DefaultSelect from "@components/common/select/DefaultSelect";
 import DefaultSelectList from "@components/common/select/DefaultSelectList";
+import CalendarButton from "@components/common/button/CalendarButton";
 
 import { isDefaultAlertShowState } from "@states/isDefaultAlertShowState";
 import { requireAuthentication } from "@utils/LoginCheckAuthentication";
@@ -22,9 +26,7 @@ import OnRadioBtnIcon from "@images/common/on-radio-btn.svg";
 import OffRadioBtnIcon from "@images/common/off-radio-btn.svg";
 import PointIcon from "@images/work/ico-point.svg";
 import { waitWorkListKey } from "@utils/query-keys/PlanterQueryKeys";
-import CalendarButton from "@components/common/button/CalendarButton";
 import { DateFormatting } from "@utils/Formatting";
-import useWorkInfo from "@hooks/queries/planter/useWorkInfo";
 
 const S = {
   Wrap: styled.div`
@@ -64,6 +66,9 @@ function WorkEditPage({ workId }) {
   const invalidateQueries = useInvalidateQueries();
   const [isDefaultAlertShow, setIsDefaultAlertShowState] = useRecoilState(isDefaultAlertShowState);
 
+  // 스크롤 유무 판단하기 위함
+  const [isScroll, setIsScroll] = useState(false);
+
   // BottomButton 정보
   const [buttonSetting, setButtonSetting] = useState({
     color: disableButtonColor,
@@ -74,7 +79,7 @@ function WorkEditPage({ workId }) {
   // 입력값 정보
   const [inputData, setInputData] = useState({
     cropKind: "", // 품종
-    sowingDate: "", // 파종일
+    sowingDate: new Date(), // 파종일
     deadline: "", // 출하일
     orderQuantity: "", // 주문수량
     seedQuantity: 0, // 파종량
@@ -96,6 +101,15 @@ function WorkEditPage({ workId }) {
   // 트레이 선택
   const [isTraySelectOpen, setIsTraySelectOpen] = useState(false);
 
+  // 스크롤 감지
+  const contentScroll = useCallback((e) => {
+    if (e.target.scrollTop > 0) {
+      setIsScroll(true);
+    } else {
+      setIsScroll(false);
+    }
+  }, []);
+
   // 입력값 변경
   const handleInputChange = useCallback(
     (name, value) => {
@@ -115,6 +129,12 @@ function WorkEditPage({ workId }) {
       handleInputChange("seedQuantity", 0);
     }
   }, [inputData.planterTray, inputData.orderQuantity]);
+
+  // 출하일 계산
+  useEffect(() => {
+    const changeDate = new Date(inputData.sowingDate);
+    handleInputChange("deadline", changeDate.setDate(changeDate.getDate() + 45));
+  }, [inputData.sowingDate]);
 
   // BottomButton 활성화 여부
   useEffect(() => {
@@ -150,7 +170,7 @@ function WorkEditPage({ workId }) {
   }, [inputData]);
 
   // 작업 정보 API
-  const { data: workInfo } = useWorkInfo({
+  const { data: workInfo, isLoading: workInfoLoading } = useWorkInfo({
     workId: workId,
     successFn: (res) => {
       setInputData({
@@ -169,7 +189,7 @@ function WorkEditPage({ workId }) {
   });
 
   // 작물 목록 API
-  const { data: cropList } = useCropList({
+  const { data: cropList, isLoading: cropListLoading } = useCropList({
     successFn: () => {},
     errorFn: (err) => {
       alert(err);
@@ -177,7 +197,7 @@ function WorkEditPage({ workId }) {
   });
 
   // 트레이 목록 API
-  const { data: trayList } = useTrayList({
+  const { data: trayList, isLoading: trayListLoading } = useTrayList({
     successFn: () => {},
     errorFn: (err) => {
       alert(err);
@@ -212,11 +232,13 @@ function WorkEditPage({ workId }) {
   return (
     <MainLayout
       pageName={"작업정보수정"}
+      isLoading={workInfoLoading || cropListLoading || trayListLoading}
+      isScroll={isScroll}
       backIconClickFn={() => {
         router.push(`/work/${workId}`);
       }}
       buttonSetting={buttonSetting}>
-      <S.Wrap>
+      <S.Wrap onScroll={contentScroll}>
         <S.InputWrap>
           <p className="category-text">파종일</p>
           <CalendarButton
@@ -304,6 +326,7 @@ function WorkEditPage({ workId }) {
               handleInputChange("orderQuantity", e.target.value.replace(/[^0-9]/g, ""));
             }}
             placeholder={"작업수량을 입력하세요"}
+            inputmode="numeric"
             suffix={"장"}
           />
         </S.InputWrap>
@@ -315,7 +338,11 @@ function WorkEditPage({ workId }) {
             <p className="seed-quantity-description-text">자동계산되며, 실제파종량과 다를 수 있습니다.</p>
           </div>
         </S.InputWrap>
-        <DefaultCalendar calendarOpen={calendarOpen} setCalendarOpen={setCalendarOpen} />
+        <DefaultCalendar
+          calendarOpen={calendarOpen}
+          setCalendarOpen={setCalendarOpen}
+          sowingDate={inputData.sowingDate}
+        />
         {isCropSelectOpen && (
           <DefaultSelectList
             onClickEvent={() => {
@@ -373,6 +400,20 @@ function WorkEditPage({ workId }) {
 
 // 로그인 안되어 있을 경우 로그인 페이지로 이동
 export const getServerSideProps = requireAuthentication(async (context) => {
+  const userInfoRes = await axios.get(getUserInfoUrl(true), {
+    headers: { Cookie: context.req.headers.cookie },
+  });
+
+  // 파종기 미등록 시 파종기 등록페이지로 이동
+  if (!userInfoRes.data.planter.is_register) {
+    return {
+      redirect: {
+        destination: "/QR-scanner",
+        statusCode: 302,
+      },
+    };
+  }
+
   if (!context.query.workId) {
     return {
       redirect: {

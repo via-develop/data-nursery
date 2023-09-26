@@ -12,6 +12,10 @@ const GlobalStyle = createGlobalStyle`
     * {
     font-family: Pretendard;
     }
+
+    ::-webkit-scrollbar {
+      display: none;
+    }
   }
   
   #root {

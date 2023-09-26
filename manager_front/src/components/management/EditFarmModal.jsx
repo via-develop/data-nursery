@@ -1,14 +1,12 @@
 import React, { useCallback, useState } from "react";
 import styled from "styled-components";
 import { useRecoilState } from "recoil";
-
-import useUpdateFarmhouse from "@src/hooks/queries/auth/useUpdateFarmhouse";
 import { useDaumPostcodePopup } from "react-daum-postcode";
 
-import { isDefaultAlertShowState } from "@src/states/isDefaultAlertShowState";
+import useUpdateFarmhouse from "@src/hooks/queries/auth/useUpdateFarmhouse";
 import useInvalidateQueries from "@src/hooks/queries/common/useInvalidateQueries";
-import { useFarmAllListKey } from "@src/utils/query-keys/AuthQueryKeys";
-
+import { isDefaultAlertShowState } from "@src/states/isDefaultAlertShowState";
+import { farmAllListKey } from "@src/utils/query-keys/AuthQueryKeys";
 import XIcon from "@images/common/icon-x.svg";
 import SearchIcon from "@images/management/search-btn.svg";
 
@@ -47,6 +45,11 @@ const S = {
       top: 0;
       height: 100%;
       width: 100%;
+    }
+
+    .input-btn-wrap {
+      display: flex;
+      gap: 16px;
     }
   `,
   TitleWrap: styled.div`
@@ -158,18 +161,44 @@ const S = {
       ${({ theme }) => theme.textStyle.h5Bold}
     }
   `,
+  PasswordChangeBtn: styled.div`
+    cursor: pointer;
+    height: 52px;
+    width: 156px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 12px 0px;
+    border: 1px solid #5899fb;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 4px 4px 16px 0px rgba(89, 93, 107, 0.1);
+
+    p {
+      color: #5899fb;
+      ${({ theme }) => theme.textStyle.h7Bold}
+    }
+
+    &:hover {
+      border: 1px solid ${({ theme }) => theme.basic.btnAction};
+    }
+    &:active {
+      border: 1px solid ${({ theme }) => theme.basic.btnAction};
+      background-color: ${({ theme }) => theme.basic.lightSky};
+    }
+  `,
 };
 
-function EditFarmModal({ editModalOpen, setEditModalOpen }) {
+function EditFarmModal({ editModalOpen, setEditModalOpen, setPage, farmList, setFarmList, setEditPWChangeModalOpen }) {
   const invalidateQueries = useInvalidateQueries();
   const [isDefaultAlertShow, setIsDefaultAlertShowState] = useRecoilState(isDefaultAlertShowState);
 
-  const [editFarmName, setEditFarmName] = useState(editModalOpen.data.data.name);
-  const [editName, setEditName] = useState(editModalOpen.data.data.producer_name);
-  const [editPhone, setEditPhone] = useState(editModalOpen.data.data.phone);
-  const [editAddressCode, setEditAddressCode] = useState(editModalOpen.data.data.address.split("||")[0]);
-  const [editAddress, setEditAddress] = useState(editModalOpen.data.data.address.split("||")[1]);
-  const [editAddressData, setEditAddressData] = useState(editModalOpen.data.data.address.split("||")[2]);
+  const [editFarmName, setEditFarmName] = useState(editModalOpen.data.name);
+  const [editName, setEditName] = useState(editModalOpen.data.producer_name);
+  const [editPhone, setEditPhone] = useState(editModalOpen.data.phone);
+  const [editAddressCode, setEditAddressCode] = useState(editModalOpen.data.address.split("||")[0]);
+  const [editAddress, setEditAddress] = useState(editModalOpen.data.address.split("||")[1]);
+  const [editAddressData, setEditAddressData] = useState(editModalOpen.data.address.split("||")[2]);
 
   const closeModal = useCallback(() => {
     setEditModalOpen({ open: false, data: undefined });
@@ -178,16 +207,17 @@ function EditFarmModal({ editModalOpen, setEditModalOpen }) {
   const FarmInfoSave = useCallback(() => {
     updateFarmhouseMutate({
       data: {
-        id: editModalOpen.data.data.id,
+        id: editModalOpen.data.id,
         name: editFarmName,
         producer_name: editName,
         phone: editPhone,
         address: editAddressCode + "||" + editAddress + "||" + editAddressData,
       },
     });
-
+    setFarmList([]);
+    setPage(1);
     closeModal();
-  }, [editModalOpen, editName, editFarmName, editAddressCode, editAddress, editAddressData]);
+  }, [editModalOpen, editName, editFarmName, editAddressCode, editAddress, editAddressData, farmList]);
 
   const open = useDaumPostcodePopup("https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js");
 
@@ -217,15 +247,14 @@ function EditFarmModal({ editModalOpen, setEditModalOpen }) {
 
   const { mutate: updateFarmhouseMutate } = useUpdateFarmhouse(
     () => {
-      invalidateQueries([useFarmAllListKey]);
-      closeModal();
       setIsDefaultAlertShowState({
         isShow: true,
         type: "success",
         text: "정상적으로 저장되었습니다.",
         okClick: null,
       });
-      invalidateQueries([useFarmAllListKey]);
+      closeModal();
+      invalidateQueries([farmAllListKey]);
     },
     (error) => {
       setIsDefaultAlertShowState({
@@ -236,6 +265,11 @@ function EditFarmModal({ editModalOpen, setEditModalOpen }) {
       });
     },
   );
+
+  //비밀번호 변경버튼 클릭
+  const handlePasswordChangeClick = useCallback(() => {
+    setEditPWChangeModalOpen({ open: true, data: editModalOpen });
+  }, [editModalOpen]);
 
   return (
     <S.Wrap>
@@ -249,17 +283,17 @@ function EditFarmModal({ editModalOpen, setEditModalOpen }) {
           </div>
         </S.TitleWrap>
         <S.InputWrap>
-          <p className="title-info">파종기 시러얼번호</p>
+          <p className="title-info">파종기 시리얼번호</p>
           <div className="input-wrap-off">
-            <input value={editModalOpen.data.data.planter.serial_number} disabled />
+            <input value={editModalOpen.data.planter.serial_number} disabled />
           </div>
           <p className="title-info">육묘업 등록번호</p>
           <div className="input-wrap-off">
-            <input value={editModalOpen.data.data.nursery_number} />
+            <input value={editModalOpen.data.nursery_number} disabled />
           </div>
           <p className="title-info">농가ID</p>
           <div className="input-wrap-off">
-            <input value={editModalOpen.data.data.farm_house_id} />
+            <input value={editModalOpen.data.farm_house_id} />
           </div>
           <p className="title-info">농가명</p>
           <div className="input-wrap">
@@ -299,6 +333,15 @@ function EditFarmModal({ editModalOpen, setEditModalOpen }) {
                 onChange={(e) => setEditAddressData(e.target.value)}
               />
             </div>
+          </div>
+          <p className="title-info">비밀번호</p>
+          <div className="input-btn-wrap">
+            <div className="input-wrap">
+              <input value={"***********"} disabled />
+            </div>
+            <S.PasswordChangeBtn onClick={handlePasswordChangeClick}>
+              <p>비밀번호 변경</p>
+            </S.PasswordChangeBtn>
           </div>
         </S.InputWrap>
 

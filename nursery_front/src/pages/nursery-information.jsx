@@ -1,18 +1,19 @@
-import React, { useState } from "react";
-import styled from "styled-components";
+import React, { useCallback, useState } from "react";
+import styled, { css } from "styled-components";
 import { useRouter } from "next/router";
 import { Button } from "react-bootstrap";
+import axios from "axios";
 
 import useUserInfo from "@hooks/queries/auth/useUserInfo";
 import useAllCacheClear from "@hooks/queries/common/useAllCacheClear";
+import { getUserInfoUrl } from "@apis/authAPIs";
+import userLogout from "@utils/userLogout";
 
 import MainLayout from "@components/layout/MainLayout";
 import DefaultModal from "@components/common/modal/DefaultModal";
 import DefaultInput from "@components/common/input/DefaultInput";
 
 import { requireAuthentication } from "@utils/LoginCheckAuthentication";
-import userLogout from "@utils/userLogout";
-
 const S = {
   Wrap: styled.div`
     display: flex;
@@ -40,6 +41,12 @@ const S = {
       ${({ theme }) => theme.textStyle.h3Bold}
       color: #ffffff;
     }
+
+    ${(props) =>
+      props.isScroll &&
+      css`
+        filter: drop-shadow(0px 4px 10px rgba(165, 166, 168, 0.16));
+      `}
   `,
   InfoWrap: styled.div`
     padding: 38px 24px;
@@ -85,11 +92,39 @@ const S = {
     background-color: #ffffff !important;
     border: 1px solid ${({ theme }) => theme.basic.recOutline} !important;
   `,
+  AddressBox: styled.div`
+    width: 100%;
+    flex: 1;
+    min-height: 52px;
+    height: 52px;
+    max-height: fit-content;
+    border-radius: 8px;
+    padding: 13px 8px 13px 16px;
+    background-color: #ffffff;
+    border: 1px solid ${({ theme }) => theme.basic.lightSky};
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+
+    .address-text {
+      ${({ theme }) => theme.textStyle.h6Bold}
+      color: ${({ theme }) => theme.basic.grey60};
+      overflow: visible;
+      word-break: break-word;
+      word-wrap: break-word;
+      white-space: normal;
+      text-align: left;
+      line-height: 24px !important;
+    }
+  `,
 };
 
 function NurseryInformationPage() {
   const router = useRouter();
   const clearQueries = useAllCacheClear();
+
+  // 스크롤 유무 판단하기 위함
+  const [isScroll, setIsScroll] = useState(false);
 
   const [modalOpen, setModalOpen] = useState({
     open: false,
@@ -100,8 +135,17 @@ function NurseryInformationPage() {
     afterFn: null,
   });
 
+  // 스크롤 감지
+  const contentScroll = useCallback((e) => {
+    if (e.target.scrollTop > 0) {
+      setIsScroll(true);
+    } else {
+      setIsScroll(false);
+    }
+  }, []);
+
   // 유저 정보 API
-  const { data: userInfo } = useUserInfo({
+  const { data: userInfo, isLoading: userInfoLoading } = useUserInfo({
     successFn: () => {},
     errorFn: () => {
       userLogout(router, clearQueries);
@@ -111,15 +155,16 @@ function NurseryInformationPage() {
   return (
     <MainLayout
       pageName={"농가정보"}
+      isLoading={userInfoLoading}
       backIconClickFn={() => {
         router.push("/");
       }}
       backgroundColor="#5899FB">
       <S.Wrap>
-        <S.FarmHouseNameWrap>
+        <S.FarmHouseNameWrap isScroll={isScroll}>
           <p>{userInfo?.farm_house.name}</p>
         </S.FarmHouseNameWrap>
-        <S.InfoWrap>
+        <S.InfoWrap onScroll={contentScroll}>
           <S.InfoContent>
             <p className="title-text">파종기 S/N</p>
             <DefaultInput text={userInfo?.planter.serial_number} readOnly={true} />
@@ -134,7 +179,13 @@ function NurseryInformationPage() {
           </S.InfoContent>
           <S.InfoContent>
             <p className="title-text">주소</p>
-            <DefaultInput text={userInfo?.farm_house.address} readOnly={true} />
+            <S.AddressBox>
+              <p className="address-text">
+                ({userInfo?.farm_house.address.split("||")[0]}) {userInfo?.farm_house.address.split("||")[1]}
+                {!!userInfo?.farm_house.address.split("||")[2] && ", "}
+                {userInfo?.farm_house.address.split("||")[2]}
+              </p>
+            </S.AddressBox>
           </S.InfoContent>
           <S.InfoContent>
             <p className="title-text">생산자명</p>
@@ -168,8 +219,22 @@ function NurseryInformationPage() {
 }
 
 // 로그인 안되어 있을 경우 로그인 페이지로 이동
-export const getServerSideProps = requireAuthentication((context) => {
-  return { props: {} };
+export const getServerSideProps = requireAuthentication(async (context) => {
+  const userInfoRes = await axios.get(getUserInfoUrl(true), {
+    headers: { Cookie: context.req.headers.cookie },
+  });
+
+  // 파종기 미등록 시 파종기 등록페이지로 이동
+  if (!userInfoRes.data.planter.is_register) {
+    return {
+      redirect: {
+        destination: "/QR-scanner",
+        statusCode: 302,
+      },
+    };
+  } else {
+    return { props: {} };
+  }
 });
 
 export default NurseryInformationPage;

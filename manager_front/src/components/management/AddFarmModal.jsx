@@ -249,7 +249,7 @@ function AddFarmModal({
           {createQrcode ? (
             <>
               <div className="input-wrap-off">
-                <input value={addFarmSerialNumber} disabled />
+                <input value={addFarmSerialNumber.toUpperCase()} disabled />
               </div>
             </>
           ) : (
@@ -257,7 +257,7 @@ function AddFarmModal({
               <div className="input-wrap">
                 <input
                   placeholder="시리얼번호를 입력하세요"
-                  value={addFarmSerialNumber}
+                  value={addFarmSerialNumber.toUpperCase()}
                   onChange={(e) => setAddFarmSerialNumber(e.target.value)}
                 />
               </div>

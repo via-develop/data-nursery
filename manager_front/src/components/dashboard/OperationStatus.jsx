@@ -46,8 +46,21 @@ const S = {
     display: grid;
     gap: 12px;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    overflow: scroll;
+    overflow: auto;
     padding-right: 5px;
+
+    &::-webkit-scrollbar {
+      display: block !important;
+      width: 8px !important;
+      border-radius: 4px !important;
+      background-color: ${({ theme }) => theme.basic.lightSky} !important;
+      margin-left: 5px !important;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      border-radius: 4px !important;
+      background-color: #bfcad9 !important;
+    }
 
     .statusOff {
       border: 1px solid ${({ theme }) => theme.basic.whiteGray};
@@ -59,7 +72,6 @@ const S = {
   `,
   StatusBlock: styled.div`
     border-radius: 8px;
-    /* border: 2px solid #fb97a3; */
     padding: 20px 16px 20px 24px;
     width: fit-content;
     display: flex;
@@ -171,19 +183,6 @@ function OperationStatus({ currentDate }) {
     threshold: 0, // 요소가 얼마나 노출되었을때 inView를 true로 변경할지 (0~1 사이의 값)
   });
 
-  // 페이지 변경
-  const pageChange = useCallback(() => {
-    if (planterOperationStatus?.total > operationList.length) {
-      setOperationListPage(operationListPage + 1);
-    }
-  }, [operationListPage, operationList]);
-
-  useEffect(() => {
-    if (inView) {
-      pageChange();
-    }
-  }, [inView]);
-
   const { data: planterOperationStatus } = usePlanterRealTime({
     page: operationListPage,
     size: 20,
@@ -191,11 +190,9 @@ function OperationStatus({ currentDate }) {
       setOperationList((prev) => [...prev, ...res.planter]);
     },
     errorFn: (err) => {
-      console.log("!!err", err);
+      alert(err);
     },
   });
-
-  console.log("planterOperationStatus", planterOperationStatus);
 
   useEffect(() => {
     if (!planterOperationStatus) {
@@ -203,11 +200,24 @@ function OperationStatus({ currentDate }) {
     }
     const intervalId = setInterval(() => {
       // planterOperationStatus
-      invalidateQueries[PlanterRealTimeKey];
+      invalidateQueries([PlanterRealTimeKey]);
     }, 30000); // 30초마다 업데이트
 
     return () => clearInterval(intervalId);
   }, [planterOperationStatus, PlanterRealTimeKey]);
+
+  useEffect(() => {
+    if (inView) {
+      pageChange();
+    }
+  }, [inView]);
+
+  // 페이지 변경
+  const pageChange = useCallback(() => {
+    if (operationList.length !== 0 && planterOperationStatus?.total > operationList.length) {
+      setOperationListPage(operationListPage + 1);
+    }
+  }, [planterOperationStatus, operationListPage, operationList]);
 
   return (
     <S.Wrap>

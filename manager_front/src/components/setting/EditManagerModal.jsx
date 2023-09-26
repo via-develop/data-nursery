@@ -81,6 +81,7 @@ const S = {
         width: 100%;
         ${({ theme }) => theme.textStyle.h6Bold};
         color: ${({ theme }) => theme.basic.gray50};
+        outline: none;
       }
     }
     .input-wrap {
@@ -148,7 +149,6 @@ const S = {
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 12px 24px;
     border: 1px solid #5899fb;
     background-color: #fff;
     border-radius: 8px;
@@ -169,19 +169,23 @@ const S = {
   `,
 };
 
-function EditManagerModal({ editManagerModalOpen, setEditManagerModalOpen, setEditManagerPWChangeModalOpen }) {
+function EditManagerModal({
+  editManagerModalOpen,
+  setEditManagerModalOpen,
+  setEditManagerPWChangeModalOpen,
+  setManagerList,
+  setManagerListPage,
+}) {
   const invalidateQueries = useInvalidateQueries();
   const [isDefaultAlertShow, setIsDefaultAlertShowState] = useRecoilState(isDefaultAlertShowState);
-  const [editManagerId, setEditManagerId] = useState(editManagerModalOpen.data.data.user.login_id);
-  const [editManagerCompany, setEditManagerCompany] = useState(editManagerModalOpen.data.data.admin_user_info.company);
+  const [editManagerId, setEditManagerId] = useState(editManagerModalOpen.data.user.login_id);
+  const [editManagerCompany, setEditManagerCompany] = useState(editManagerModalOpen.data.admin_user_info.company);
   const [editManagerDepartment, setEditManagerDepartment] = useState(
-    editManagerModalOpen.data.data.admin_user_info.department,
+    editManagerModalOpen.data.admin_user_info.department,
   );
-  const [editManagerPosition, setEditManagerPosition] = useState(
-    editManagerModalOpen.data.data.admin_user_info.position,
-  );
-  const [editManagerName, setEditManagerName] = useState(editManagerModalOpen.data.data.user.name);
-  const [editManagerPhone, setEditManagerPhone] = useState(editManagerModalOpen.data.data.admin_user_info.phone);
+  const [editManagerPosition, setEditManagerPosition] = useState(editManagerModalOpen.data.admin_user_info.position);
+  const [editManagerName, setEditManagerName] = useState(editManagerModalOpen.data.user.name);
+  const [editManagerPhone, setEditManagerPhone] = useState(editManagerModalOpen.data.admin_user_info.phone);
   const closeModal = useCallback(() => {
     setEditManagerModalOpen({ open: false, data: undefined });
     setEditManagerCompany("");
@@ -194,7 +198,7 @@ function EditManagerModal({ editManagerModalOpen, setEditManagerModalOpen, setEd
   const handleTraySaveClick = useCallback(() => {
     updateManagerList({
       data: {
-        userId: editManagerModalOpen.data.data.user.id,
+        userId: editManagerModalOpen.data.user.id,
         user_data: {
           name: editManagerName,
           is_del: false,
@@ -208,12 +212,6 @@ function EditManagerModal({ editManagerModalOpen, setEditManagerModalOpen, setEd
         },
       },
     });
-
-    console.log("회사", editManagerCompany);
-    console.log("부서", editManagerDepartment);
-    console.log("직책", editManagerPosition);
-    console.log("이름", editManagerName);
-    console.log("전화번호", editManagerPhone);
 
     closeModal();
   }, [editManagerCompany, editManagerDepartment, editManagerPosition, editManagerName, editManagerPhone]);
@@ -232,6 +230,8 @@ function EditManagerModal({ editManagerModalOpen, setEditManagerModalOpen, setEd
         okClick: null,
       });
       invalidateQueries([settingManagerListKey]);
+      setManagerList([]);
+      setManagerListPage(1);
     },
     (error) => {
       setIsDefaultAlertShowState({
@@ -259,7 +259,7 @@ function EditManagerModal({ editManagerModalOpen, setEditManagerModalOpen, setEd
             <p className="input-title">아이디</p>
           </S.TextWrap>
           <div className="input-wrap-off">
-            <input placeholder="사용하실 아이디를 입력하세요" value={editManagerId} />
+            <input placeholder="사용하실 아이디를 입력하세요" value={editManagerId} disabled />
           </div>
 
           <S.TextWrap>
@@ -323,7 +323,7 @@ function EditManagerModal({ editManagerModalOpen, setEditManagerModalOpen, setEd
           <div className="input-btn-wrap">
             <div className="input-wrap">
               <input value={"***********"} disabled />
-              {/* <input value={editManagerModalOpen.data.data.password} type="password" disabled /> */}
+              {/* <input value={editManagerModalOpen.data.password} type="password" disabled /> */}
             </div>
             <S.PasswordChangeBtn onClick={handlePasswordChangeClick}>
               <p>비밀번호 변경</p>

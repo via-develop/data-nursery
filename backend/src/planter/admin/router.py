@@ -562,7 +562,7 @@ def get_planter_work_statics(
         .join(cropModels.Crop, planterModels.PlanterWork.crop_id == cropModels.Crop.id)
         .join(
             planterModels.PlanterTray,
-            planterModels.PlanterWork.planter_id == planterModels.PlanterTray.id,
+            planterModels.PlanterWork.planter_tray_id == planterModels.PlanterTray.id,
         )
         .join(
             planterModels.PlanterOutput,
@@ -719,7 +719,9 @@ def search_planter_tray_total_for_admin(
 ):
     get_current_user("99", request.cookies, db)
 
-    planter_tray_total_query = db.query(planterModels.PlanterTray.total)
+    planter_tray_total_query = db.query(planterModels.PlanterTray.total).filter(
+        planterModels.PlanterTray.is_del == False
+    )
 
     if search:
         planter_tray_total_query = planter_tray_total_query.filter(

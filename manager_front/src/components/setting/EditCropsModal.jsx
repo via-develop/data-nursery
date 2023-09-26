@@ -8,7 +8,7 @@ import useUpdateCrop from "@src/hooks/queries/crop/useUpdateCrop";
 import useInvalidateQueries from "@src/hooks/queries/common/useInvalidateQueries";
 
 import CropsImgDeleteModal from "./CropsImgDeleteModal";
-import { cropColorArray } from "@components/common/CropListColor";
+import cropColorArray from "@components/common/CropListColor";
 
 import XIcon from "@images/common/icon-x.svg";
 import CropsNoIcon from "@images/setting/crops-no-img.svg";
@@ -151,6 +151,11 @@ const S = {
       ${({ theme }) => theme.textStyle.h6Bold};
       margin-bottom: 8px;
     }
+
+    .input-info {
+      color: ${({ theme }) => theme.basic.gray50};
+      margin-bottom: 8px;
+    }
   `,
   ButtonWrap: styled.div`
     display: flex;
@@ -210,9 +215,7 @@ const S = {
     justify-content: space-around;
 
     .chrome-picker {
-      /* height: 363px; */
     }
-    /* height: 238px; */
   `,
 };
 
@@ -362,6 +365,7 @@ function EditCropsModal({ editCropsModalOpen, setEditCropsModalOpen }) {
             </div>
             <S.TextWrap>
               <p className="input-title">작물 표시 색상</p>
+              <p className="input-info">※ 선택된 색상으로 차트에 표시됩니다.</p>
             </S.TextWrap>
             <S.Border />
             <S.ColorWrap>

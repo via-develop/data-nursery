@@ -19,7 +19,9 @@ def search_farm_house_id_for_admin(
 ):
     get_current_user("99", request.cookies, db)
 
-    farm_house_id_query = db.query(authModels.FarmHouse.farm_house_id)
+    farm_house_id_query = db.query(authModels.FarmHouse.farm_house_id).filter(
+        authModels.FarmHouse.is_del == False
+    )
 
     if search:
         farm_house_id_query = farm_house_id_query.filter(
@@ -41,7 +43,9 @@ def search_farmhouse_name_for_admin(
 ):
     get_current_user("99", request.cookies, db)
 
-    farmhouse_name_query = db.query(authModels.FarmHouse.name)
+    farmhouse_name_query = db.query(authModels.FarmHouse.name).filter(
+        authModels.FarmHouse.is_del == False
+    )
 
     if search:
         farmhouse_name_query = farmhouse_name_query.filter(
@@ -221,3 +225,31 @@ def delete_multiple_admin_user(
     db.commit()
 
     return JSONResponse(status_code=200, content=dict(msg="SUCCESS"))
+
+
+@router.patch(
+    "/farmhouse/update/password",
+    status_code=200,
+)
+def update_farm_house_info(
+    request: Request,
+    farmhouse_id: int,
+    new_password: str,
+    db: Session = Depends(get_db),
+):
+    get_current_user("99", request.cookies, db)
+    farmhouse = get_(db, authModels.FarmHouse, id=farmhouse_id)
+
+    if not farmhouse:
+        return JSONResponse(status_code=404, content=dict(msg="FARMHOUSE_NOT_FOUND"))
+
+    farmhouse_user = farmhouse.farm_house_user
+
+    hash_pw = bcrypt.hashpw(new_password.encode("utf-8"), bcrypt.gensalt())
+
+    farmhouse_user.password = hash_pw.decode("utf-8")
+
+    db.commit()
+    db.refresh(farmhouse_user)
+
+    return JSONResponse(status_code=200, content=dict(msg="UPDATE_SUCCESS"))

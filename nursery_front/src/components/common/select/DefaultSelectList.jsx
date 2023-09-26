@@ -69,7 +69,7 @@ const S = {
 
       &::-webkit-scrollbar {
         display: block !important;
-        width: 6px !important;
+        width: 8px !important;
         border-radius: 4px !important;
         background-color: ${({ theme }) => theme.basic.whiteGrey} !important;
         margin-left: 5px !important;

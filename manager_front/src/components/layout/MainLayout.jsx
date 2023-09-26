@@ -17,6 +17,7 @@ const S = {
       flex: 1;
       padding: 64px 79px 112px 79px;
       background-color: #f7f7fa;
+      position: relative;
     }
   `,
 };

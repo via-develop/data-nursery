@@ -9,14 +9,12 @@ const S = {
     display: flex;
     justify-content: end;
     position: absolute;
-    /* right: 30px; */
-    right: -83px;
+    right: 68px;
     z-index: 1;
 
     .wrap-inner {
       align-items: center;
       position: absolute;
-      /* top: 10px; */
       background-color: #fff;
       border-radius: 8px;
       padding: 8px;
@@ -70,18 +68,17 @@ function ManagerOptionModal({
   optionModalOpen,
   setOptionModalOpen,
   setEditManagerModalOpen,
-  deleteManagerModalOpen,
   setDeleteManagerModalOpen,
 }) {
   // 관리자 수정
   const handelEditClick = useCallback(() => {
-    setEditManagerModalOpen({ open: true, data: optionModalOpen });
+    setEditManagerModalOpen({ open: true, data: optionModalOpen.data });
     setOptionModalOpen({ open: false, index: undefined, data: undefined });
   }, []);
 
   //삭제
   const handleDeleteClick = useCallback(() => {
-    setDeleteManagerModalOpen({ open: true, data: deleteManagerModalOpen });
+    setDeleteManagerModalOpen({ open: true, deleteId: optionModalOpen.data.user.id });
     setOptionModalOpen({ open: false, index: undefined, data: undefined });
   });
 
