@@ -561,11 +561,7 @@ def delete_farmhouse(
                 # PlanterWorkStatus 삭제
                 planter_work_status.is_del = True
             # PlanterOutput 가져오기
-            planter_work_output_list = planter_work.planter_works__planter_output
-            # PlanterWork별 PlanterOutput 가져오기
-            for planter_work_output in planter_work_output_list:
-                # PlanterOutput 삭제
-                planter_work_output.is_del = True
+            planter_work.planter_works__planter_output.is_del = True
 
         # Farmhouse 삭제
         farmhouse.is_del = True
