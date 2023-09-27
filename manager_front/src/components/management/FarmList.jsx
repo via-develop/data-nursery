@@ -5,6 +5,7 @@ import { Tooltip } from "react-tooltip";
 import useFarmAllList from "@src/hooks/queries/auth/useFarmAllList";
 import { farmAllListKey } from "@src/utils/query-keys/AuthQueryKeys";
 import useInvalidateQueries from "@src/hooks/queries/common/useInvalidateQueries";
+import useFarmAllListDownload from "@src/hooks/queries/auth/useFarmAllListDownload";
 
 import colorArray from "@components/common/ListColor";
 
@@ -16,7 +17,7 @@ import DeleteModal from "./DeleteModal";
 import EditFarmModal from "./EditFarmModal";
 import EditPasswordModal from "./EditPasswordModal";
 
-// import ExcelIcon from "@images/management/excel-icon.svg";
+import ExcelIcon from "@images/management/excel-icon.svg";
 import AddIcon from "@images/management/add-icon.svg";
 import CheckBoxOff from "@images/common/check-icon-off.svg";
 import CheckBoxOn from "@images/common/check-icon-on.svg";
@@ -75,31 +76,31 @@ const S = {
     }
   `,
 
-  // ExcelButton: styled.div`
-  //   cursor: pointer;
-  //   gap: 16px;
-  //   display: flex;
-  //   justify-content: center;
-  //   align-items: center;
-  //   padding: 16px 24px;
-  //   border: 1px solid #5899fb;
-  //   background-color: #fff;
-  //   border-radius: 8px;
-  //   box-shadow: 4px 4px 16px 0px rgba(89, 93, 107, 0.1);
+  ExcelButton: styled.div`
+    cursor: pointer;
+    gap: 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 16px 24px;
+    border: 1px solid #5899fb;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 4px 4px 16px 0px rgba(89, 93, 107, 0.1);
 
-  //   p {
-  //     color: #5899fb;
-  //     ${({ theme }) => theme.textStyle.h6Bold}
-  //   }
+    p {
+      color: #5899fb;
+      ${({ theme }) => theme.textStyle.h6Bold}
+    }
 
-  //   &:hover {
-  //     border: 1px solid ${({ theme }) => theme.basic.btnAction};
-  //   }
-  //   &:active {
-  //     border: 1px solid ${({ theme }) => theme.basic.btnAction};
-  //     background-color: ${({ theme }) => theme.basic.lightSky};
-  //   }
-  // `,
+    &:hover {
+      border: 1px solid ${({ theme }) => theme.basic.btnAction};
+    }
+    &:active {
+      border: 1px solid ${({ theme }) => theme.basic.btnAction};
+      background-color: ${({ theme }) => theme.basic.lightSky};
+    }
+  `,
   AddButton: styled.div`
     cursor: pointer;
     gap: 16px;
@@ -399,6 +400,13 @@ function FarmList() {
     },
   });
 
+  const { data: farmhouseListDownload } = useFarmAllListDownload({
+    successFn: () => {},
+    errorFn: (err) => {
+      alert(err);
+    },
+  });
+
   // 농가추가시 작성하는 시리얼넘버
   const [addFarmSerialNumber, setAddFarmSerialNumber] = useState("");
   // 농가추가시 필요한 데이터
@@ -466,10 +474,10 @@ function FarmList() {
     setAddFarmModalOpen(true);
   }, [addFarmModalOpen]);
 
-  // // 엑셀 다운로드 버튼
-  // const handleExcelClick = useCallback(() => {
-  //   alert("엑셀 다운로드 클릭");
-  // }, []);
+  // 엑셀 다운로드 버튼
+  const handleExcelClick = useCallback(() => {
+    alert("엑셀 다운로드 클릭");
+  }, []);
 
   const [checkArray, setCheckArray] = useState([]);
 
@@ -511,6 +519,8 @@ function FarmList() {
     [checkArray],
   );
 
+  console.log("farmhouseListDownload", farmhouseListDownload);
+
   return (
     <S.Wrap>
       <S.InfoBlock>
@@ -520,10 +530,10 @@ function FarmList() {
             <p className="info-sub">농가 목록 추가, 수정, 삭제, QR코드 관리</p>
           </div>
           <div className="button-wrap">
-            {/* <S.ExcelButton onClick={handleExcelClick}>
+            <S.ExcelButton onClick={handleExcelClick}>
               <ExcelIcon width={20} height={25} />
               <p>엑셀 내려받기</p>
-            </S.ExcelButton> */}
+            </S.ExcelButton>
             <S.AddButton onClick={handleAddFarmModalClick}>
               <AddIcon width={24} height={24} />
               <p>농가 추가</p>

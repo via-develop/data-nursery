@@ -215,3 +215,15 @@ export const updateFarmhousePwAPI = async (data) => {
     throw new Error(error.response?.status || "농가비밀번호를 수정하는데 실패하였습니다. 잠시 후 다시 시도해주세요.");
   }
 };
+
+//농가목록 Excel다운로드
+export const getFarmhouseListDownloadAPI = async () => {
+  try {
+    const res = await axios.get(process.env.NEXT_PUBLIC_END_POINT + `/api/admin/auth/farmhouse/list/download`, {
+      withCredentials: true,
+    });
+    return res;
+  } catch (err) {
+    throw new Error(err.response?.status || "농가목록 excel 다운로드에 실패하였습니다. 잠시 후 다시 시도해주세요.");
+  }
+};
