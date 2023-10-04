@@ -23,7 +23,10 @@ export default class MyDocument extends Document {
     const { styleTags } = this.props;
     return (
       <Html lang="en">
-        <Head>{styleTags}</Head>
+        <Head>
+          {styleTags}
+          <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests" />
+        </Head>
         <body>
           <div id="default-alert" />
           <Main />
