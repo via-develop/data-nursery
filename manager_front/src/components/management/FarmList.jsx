@@ -476,8 +476,20 @@ function FarmList() {
 
   // 엑셀 다운로드 버튼
   const handleExcelClick = useCallback(() => {
-    alert("엑셀 다운로드 클릭");
-  }, []);
+    try {
+      if (farmhouseListDownload === undefined) {
+        return;
+      }
+      const url = window.URL.createObjectURL(new Blob([farmhouseListDownload.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "farmhouse_list.csv");
+      document.body.appendChild(link);
+      link.click();
+    } catch (err) {
+      alert("엑셀 내려받기에 실패하였습니다. 잠시 후 다시 시도해주세요.");
+    }
+  }, [farmhouseListDownload]);
 
   const [checkArray, setCheckArray] = useState([]);
 
@@ -518,8 +530,6 @@ function FarmList() {
     },
     [checkArray],
   );
-
-  console.log("farmhouseListDownload", farmhouseListDownload);
 
   return (
     <S.Wrap>
