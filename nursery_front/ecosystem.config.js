@@ -3,7 +3,7 @@ module.exports = {
     {
       name: "data-nursery-farmhouse",
       exec_mode: "cluster",
-      instances: "1G", // Or a number of instances
+      instances: "0", // Or a number of instances , 0으로 설정 시 최대 수로 구동
       script: "node_modules/next/dist/bin/next",
       args: "start --port 3000",
       env_local: {
