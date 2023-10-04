@@ -20,8 +20,8 @@ import EditPasswordModal from "./EditPasswordModal";
 import AddIcon from "@images/management/add-icon.svg";
 import CheckBoxOff from "@images/common/check-icon-off.svg";
 import CheckBoxOn from "@images/common/check-icon-on.svg";
-import UpArrow from "@images/common/order-by-up-icon.svg";
-import DownArrow from "@images/common/order-by-down-icon.svg";
+import DownArrow from "@images/common/order-by-up-icon.svg";
+import UpArrow from "@images/common/order-by-down-icon.svg";
 import OptionDot from "@images/common/option-dot-icon.svg";
 import FarmIcon from "@images/management/icon-farm.svg";
 import DeleteIcon from "@images/setting/icon-delete.svg";
@@ -142,6 +142,14 @@ const S = {
       svg {
         cursor: pointer;
       }
+
+      .order-none-icon {
+        width: 24px;
+        height: 24px;
+        margin-bottom: 5px;
+        ${({ theme }) => theme.textStyle.h3Bold}
+        color: ${({ theme }) => theme.basic.gray50};
+      }
     }
     p {
       ${({ theme }) => theme.textStyle.h7Reguler};
@@ -173,19 +181,22 @@ const S = {
     }
 
     .header-table {
-      width: 120px;
-    }
-    .header-table-second {
-      width: 140px;
+      width: 128px;
     }
     .header-table-third {
-      width: 200px;
+      width: 153px;
     }
     .header-table-fourth {
-      width: 130px;
+      width: 232px;
+    }
+    .header-table-fifth {
+      width: 127px;
+    }
+    .header-table-sixth {
+      width: 196px;
     }
     .header-table-eighth {
-      width: 160px;
+      width: 141px;
     }
 
     .table-first {
@@ -198,10 +209,10 @@ const S = {
       width: 200px;
     }
     .table-text {
-      width: 120px;
+      width: 163px;
     }
     .table-eighth {
-      width: 90px;
+      width: 59px;
     }
 
     .address {
@@ -231,7 +242,7 @@ const S = {
     }
 
     .farm_number {
-      width: 132px;
+      width: 150px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -357,8 +368,9 @@ const S = {
 
 function FarmList() {
   const invalidateQueries = useInvalidateQueries();
-  const [isNameOrderBy, setIsNameOrderBy] = useState(0);
-  const [isStateOrderBy, setIsStateOrderBy] = useState(0);
+  const [isFarmhouseIdOrder, setIsFarmHouseIdOrder] = useState(1);
+  const [isNameOrderBy, setIsNameOrderBy] = useState(2);
+  const [isStateOrderBy, setIsStateOrderBy] = useState(2);
 
   // 페이지네이션
   const [page, setPage] = useState(1);
@@ -366,33 +378,10 @@ function FarmList() {
   //농가목록 데이터
   const [farmList, setFarmList] = useState([]);
 
-  // 농가명 정렬
-  const sortByFarmName = useCallback(() => {
-    if (isNameOrderBy === 0) {
-      setIsNameOrderBy(1);
-    } else {
-      setIsNameOrderBy(0);
-    }
-    setFarmList([]);
-    setPage(1);
-    invalidateQueries([farmAllListKey]);
-  }, [isNameOrderBy, farmAllListKey]);
-
-  // 상태 정렬
-  const sortByStatus = useCallback(() => {
-    if (isStateOrderBy === 0) {
-      setIsStateOrderBy(1);
-    } else {
-      setIsStateOrderBy(0);
-    }
-    setFarmList([]);
-    setPage(1);
-    invalidateQueries([farmAllListKey]);
-  }, [isStateOrderBy]);
-
   const [isAddDataClick, setIsAddDataClick] = useState(false); // 더보기 클릭 여부
 
   const { data: farmhouseList } = useFarmAllList({
+    farmhouseIdOrder: isFarmhouseIdOrder,
     nameOrder: isNameOrderBy,
     statusOrder: isStateOrderBy,
     page: page,
@@ -566,22 +555,144 @@ function FarmList() {
           {checkArray.length === 0 ? (
             <>
               <p className="header-table">파종기 S/N</p>
-              <p className="header-table-second">농가 ID</p>
+              <div className="header-table-third arrow-wrap">
+                <p>농가 ID</p>
+                {isFarmhouseIdOrder === 0 && (
+                  <DownArrow
+                    width={24}
+                    height={24}
+                    onClick={() => {
+                      setFarmList([]);
+                      setPage(1);
+                      setIsFarmHouseIdOrder(1);
+                      setIsNameOrderBy(2);
+                      setIsStateOrderBy(2);
+                      invalidateQueries([farmAllListKey]);
+                    }}
+                  />
+                )}
+                {isFarmhouseIdOrder === 1 && (
+                  <UpArrow
+                    width={24}
+                    height={24}
+                    onClick={() => {
+                      setFarmList([]);
+                      setPage(1);
+                      setIsFarmHouseIdOrder(2);
+                      setIsNameOrderBy(2);
+                      setIsStateOrderBy(2);
+                      invalidateQueries([farmAllListKey]);
+                    }}
+                  />
+                )}
+                {isFarmhouseIdOrder === 2 && (
+                  <p
+                    className="order-none-icon"
+                    onClick={() => {
+                      setFarmList([]);
+                      setPage(1);
+                      setIsFarmHouseIdOrder(0);
+                      setIsNameOrderBy(2);
+                      setIsStateOrderBy(2);
+                      invalidateQueries([farmAllListKey]);
+                    }}>
+                    -
+                  </p>
+                )}
+              </div>
               <div className="header-table-third arrow-wrap">
                 <p>농가명</p>
-                <div className="icon-wrap" onClick={sortByFarmName}>
-                  {isNameOrderBy ? <UpArrow width={24} height={24} /> : <DownArrow width={24} height={24} />}
-                </div>
+                {isNameOrderBy === 0 && (
+                  <DownArrow
+                    width={24}
+                    height={24}
+                    onClick={() => {
+                      setFarmList([]);
+                      setPage(1);
+                      setIsFarmHouseIdOrder(2);
+                      setIsNameOrderBy(1);
+                      setIsStateOrderBy(2);
+                      invalidateQueries([farmAllListKey]);
+                    }}
+                  />
+                )}
+                {isNameOrderBy === 1 && (
+                  <UpArrow
+                    width={24}
+                    height={24}
+                    onClick={() => {
+                      setFarmList([]);
+                      setPage(1);
+                      setIsFarmHouseIdOrder(2);
+                      setIsNameOrderBy(2);
+                      setIsStateOrderBy(2);
+                      invalidateQueries([farmAllListKey]);
+                    }}
+                  />
+                )}
+                {isNameOrderBy === 2 && (
+                  <p
+                    className="order-none-icon"
+                    onClick={() => {
+                      setFarmList([]);
+                      setPage(1);
+                      setIsFarmHouseIdOrder(2);
+                      setIsNameOrderBy(0);
+                      setIsStateOrderBy(2);
+                      invalidateQueries([farmAllListKey]);
+                    }}>
+                    -
+                  </p>
+                )}
               </div>
               <p className="header-table-fourth">생산자명</p>
-              <p className="header-table">육묘업등록번호</p>
-              <p className="header-table">주소</p>
+              <p className="header-table-fifth">육묘업등록번호</p>
+              <p className="header-table-sixth">주소</p>
               <p className="header-table">연락처</p>
               <div className="header-table-eighth arrow-wrap">
                 <p>상태</p>
-                <div className="icon-wrap" onClick={sortByStatus}>
-                  {isStateOrderBy ? <UpArrow width={24} height={24} /> : <DownArrow width={24} height={24} />}
-                </div>
+                {isStateOrderBy === 0 && (
+                  <DownArrow
+                    width={24}
+                    height={24}
+                    onClick={() => {
+                      setFarmList([]);
+                      setPage(1);
+                      setIsFarmHouseIdOrder(2);
+                      setIsStateOrderBy(1);
+                      setIsNameOrderBy(2);
+                      invalidateQueries([farmAllListKey]);
+                    }}
+                  />
+                )}
+                {isStateOrderBy === 1 && (
+                  <UpArrow
+                    width={24}
+                    height={24}
+                    onClick={() => {
+                      setFarmList([]);
+                      setPage(1);
+                      setIsFarmHouseIdOrder(2);
+                      setIsStateOrderBy(2);
+                      setIsNameOrderBy(2);
+                      invalidateQueries([farmAllListKey]);
+                    }}
+                  />
+                )}
+                {isStateOrderBy === 2 && (
+                  <p
+                    className="order-none-icon"
+                    onClick={() => {
+                      setFarmList([]);
+                      setPage(1);
+                      setIsFarmHouseIdOrder(2);
+                      setIsStateOrderBy(0);
+                      setIsNameOrderBy(2);
+                      invalidateQueries([farmAllListKey]);
+                    }}>
+                    -
+                  </p>
+                )}
               </div>
               <p></p>
             </>

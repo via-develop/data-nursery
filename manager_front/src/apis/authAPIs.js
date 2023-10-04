@@ -22,11 +22,11 @@ export const getUserInfo = async () => {
 };
 
 //농가관리 페이지 : 농가목록
-export const getAllFarmListAPI = async (nameOrder, statusOrder, page, size) => {
+export const getAllFarmListAPI = async (farmhouseIdOrder, nameOrder, statusOrder, page, size) => {
   try {
     const res = await axios.get(
       process.env.NEXT_PUBLIC_END_POINT +
-        `/api/auth/farmhouse/list?name_order=${nameOrder}&status_order=${statusOrder}&page=${page}&size=${size}`,
+        `/api/auth/farmhouse/list?farmhouse_id_order=${farmhouseIdOrder}&name_order=${nameOrder}&status_order=${statusOrder}&page=${page}&size=${size}`,
       {
         withCredentials: true,
       },

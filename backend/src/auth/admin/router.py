@@ -1,11 +1,14 @@
 from fastapi import APIRouter, Depends, Request
+from fastapi.responses import StreamingResponse
 from sqlalchemy.orm import Session
 from starlette.responses import JSONResponse
 import bcrypt
+import pandas as pd
 
 from utils.database import get_db
 from utils.db_shortcuts import get_current_user, create_, get_
 import src.auth.models as authModels
+import src.planter.models as planterModels
 import src.auth.schemas as authSchemas
 import src.auth.admin.schemas as authAdminSchemas
 
@@ -253,3 +256,41 @@ def update_farm_house_info(
     db.refresh(farmhouse_user)
 
     return JSONResponse(status_code=200, content=dict(msg="UPDATE_SUCCESS"))
+
+
+@router.get("/farmhouse/list/download", description="관리자 페이지 내 농가 목록 Excel 다운로드 시 사용")
+def download_farmhouse_list(request: Request, db: Session = Depends(get_db)):
+    get_current_user("99", request.cookies, db)
+
+    farmhouse_list = (
+        db.query(authModels.FarmHouse, planterModels.Planter.serial_number)
+        .join(
+            planterModels.Planter,
+            planterModels.Planter.farm_house_id == authModels.FarmHouse.id,
+        )
+        .filter(authModels.FarmHouse.is_del == False)
+        .order_by(planterModels.Planter.serial_number.asc())
+        .all()
+    )
+
+    df = pd.DataFrame(
+        [
+            [
+                serial_number,
+                farmhouse.farm_house_id,
+                farmhouse.name,
+                farmhouse.producer_name,
+                farmhouse.nursery_number,
+                " ".join(farmhouse.address.split("||")),
+                farmhouse.phone,
+            ]
+            for farmhouse, serial_number in farmhouse_list
+        ],
+        columns=["파종기 S/N", "농가ID(시설ID)", "농가명", "생산자명", "육묘업등록번호", "주소", "연락처"],
+    )
+
+    return StreamingResponse(
+        iter([df.to_csv(index=False)]),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f"attachment; filename=farmhouse_list.csv"},
+    )

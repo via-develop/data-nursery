@@ -90,14 +90,14 @@ function GraphOperateTimeDay() {
         ctx.fillStyle = "#405F8D";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText("평균", width / 1.88, height / 2.2);
+        ctx.fillText("평균", width / 2, height / 2 - 13);
         ctx.restore();
 
         ctx.font = "bolder 32px Pretendard";
         ctx.fillStyle = "#405F8D";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
-        ctx.fillText(Math.floor(planterOperation?.total_avg / 3600) + "h", width / 1.88, height / 2.2 + top + 25);
+        ctx.fillText(Math.floor(planterOperation?.total_avg / 3600) + "h", width / 2, height / 2 + top + 13);
       },
     };
 
@@ -130,12 +130,6 @@ function GraphOperateTimeDay() {
             },
           },
           cutout: "80%", // 도넛 차트의 중앙 공간 설정,
-          layout: {
-            padding: {
-              left: 20,
-              right: 20,
-            },
-          },
           maintainAspectRatio: false, //그래프 크기를 조절하기 위해서
           scales: {
             x: {

@@ -29,7 +29,18 @@ const S = {
     }
 
     .scrollBoxBody {
+      width: 98%;
+
+      .canvas-top {
+        width: 100%;
+      }
+    }
+    .box {
       width: 100%;
+      .canvas-bottom {
+        width: 100%;
+        height: 45px;
+      }
     }
   `,
 };
@@ -131,12 +142,11 @@ function GraphFarmHouseProductionDay() {
         },
         plugins: [horizontalBackgroundPlugin],
         options: {
-          maintainAspectRatio: false, //왼쪽 막힌거 false
+          maintainAspectRatio: false, // 그래프 크기를 조절하기 위해서
           indexAxis: "y", // 그래프 가로형
           interaction: {
             intersect: false, // 툴팁 데이터위에 hover했을때만 나오게 하는것 false
           },
-          responsive: false, // 그래프 크기를 조절하기 위해서
           scales: {
             x: {
               grid: {
@@ -222,7 +232,6 @@ function GraphFarmHouseProductionDay() {
               },
             },
           },
-          responsive: false, // 그래프 크기를 조절하기 위해서
           plugins: {
             legend: {
               display: false,
@@ -256,11 +265,11 @@ function GraphFarmHouseProductionDay() {
     <S.Wrap>
       <div className="scrollBox">
         <div className="scrollBoxBody">
-          <canvas ref={graphRef} height={450} width={530} />
+          <canvas ref={graphRef} className="canvas-top" />
         </div>
       </div>
       <div className="box">
-        <canvas ref={graphUnitRef} height={45} width={530} />
+        <canvas ref={graphUnitRef} className="canvas-bottom" />
       </div>
     </S.Wrap>
   );

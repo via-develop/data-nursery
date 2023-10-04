@@ -71,6 +71,9 @@ function GraphCropProductionMonth() {
       return;
     }
 
+    // 라벨 배열을 생성
+    const labels = Array.from({ length: 12 }, (_, i) => i + 1);
+
     const graphCtx = graphRef.current?.getContext("2d");
 
     const annotationline = {
@@ -97,12 +100,12 @@ function GraphCropProductionMonth() {
       graphInstance = new Chart(graphCtx, {
         type: "line",
         data: {
-          labels: Array.from({ length: 12 }, (_, i) => i + 1),
+          labels: labels,
           datasets: Object.keys(planterCrops).map((key) => ({
             label: key,
-            data: Array.from({ length: 12 }, (_, i) => {
+            data: labels.map((month) => {
               // key에 해당하는 데이터를 라벨과 매칭
-              const dayData = planterCrops[key].find((item) => item.day === i + 1);
+              const dayData = planterCrops[key].find((item) => item.month === month);
               return dayData ? dayData.output : 0;
             }),
             borderColor: planterCrops[key][0].color, // key에 해당하는 첫 번째 데이터의 color를 사용

@@ -5,12 +5,15 @@ import { useInView } from "react-intersection-observer";
 import { PlanterRealTimeKey } from "@src/utils/query-keys/PlanterQueryKeys";
 import useInvalidateQueries from "@src/hooks/queries/common/useInvalidateQueries";
 
+import usePlanterRealTime from "@src/hooks/queries/planter/usePlanterRealTime";
+import usePlanterRealTimeToday from "@src/hooks/queries/planter/usePlanterRealTimeToday";
+
 import { Tooltip } from "react-tooltip";
 import { NumberCommaFormatting, CountPlusFormatting } from "@src/utils/Formatting";
+import RealTimeDetailModal from "./RealTimeDetailModal";
 import BarIcon from "@images/dashboard/icon-bar.svg";
 import StatusOnIcon from "@images/dashboard/operation_status_on.svg";
 import StatusOffIcon from "@images/dashboard/operation_status_off.svg";
-import usePlanterRealTime from "@src/hooks/queries/planter/usePlanterRealTime";
 
 const S = {
   Wrap: styled.div`
@@ -23,6 +26,16 @@ const S = {
     gap: 28px;
     display: flex;
     flex-direction: column;
+
+    .modal-wrap {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #00000040;
+      z-index: 1;
+    }
   `,
   TitleWrap: styled.div`
     display: flex;
@@ -177,6 +190,7 @@ function OperationStatus({ currentDate }) {
 
   const [operationListPage, setOperationListPage] = useState(1);
   const [operationList, setOperationList] = useState([]);
+  const [selectPlanterId, setSelectPlanterId] = useState("");
 
   // inView : 요소가 뷰포트에 진입했는지 여부
   const { ref, inView, entry } = useInView({
@@ -188,6 +202,25 @@ function OperationStatus({ currentDate }) {
     size: 20,
     successFn: (res) => {
       setOperationList((prev) => [...prev, ...res.planter]);
+    },
+    errorFn: (err) => {
+      alert(err);
+    },
+  });
+
+  const handelRealTimeDetailClick = useCallback(
+    (data) => {
+      setRealTimeModalOpen({ open: true, data: data });
+      setSelectPlanterId(data.planter);
+    },
+    [selectPlanterId],
+  );
+
+  const { data: planterToday } = usePlanterRealTimeToday({
+    // planterId:33,
+    planterId: selectPlanterId,
+    successFn: (res) => {
+      // setOperationList((prev) => [...prev, ...res.planter]);
     },
     errorFn: (err) => {
       alert(err);
@@ -219,6 +252,12 @@ function OperationStatus({ currentDate }) {
     }
   }, [planterOperationStatus, operationListPage, operationList]);
 
+  //실시간가동현황 모달 오픈
+  const [realTimeModalOpen, setRealTimeModalOpen] = useState({
+    open: false,
+    data: undefined,
+  });
+
   return (
     <S.Wrap>
       <S.TitleWrap>
@@ -230,7 +269,11 @@ function OperationStatus({ currentDate }) {
         {planterOperationStatus?.planter?.map((data, index) => {
           return (
             <>
-              <S.StatusBlock key={`map${index}`} className={data?.planter_status === "ON" ? "statusOn" : "statusOff"}>
+              <S.StatusBlock
+                key={`map${index}`}
+                className={data?.planter_status === "ON" ? "statusOn" : "statusOff"}
+                // onClick={() => handelRealTimeDetailClick(data)}
+              >
                 {data?.planter_status === "ON" ? (
                   <StatusOnIcon width={68} height={68} />
                 ) : (
@@ -269,6 +312,15 @@ function OperationStatus({ currentDate }) {
         })}
         <div ref={ref} />
       </S.ContentWrap>
+      {realTimeModalOpen.open && (
+        <div className="modal-wrap">
+          <RealTimeDetailModal
+            realTimeModalOpen={realTimeModalOpen}
+            setRealTimeModalOpen={setRealTimeModalOpen}
+            planterToday={planterToday}
+          />
+        </div>
+      )}
     </S.Wrap>
   );
 }

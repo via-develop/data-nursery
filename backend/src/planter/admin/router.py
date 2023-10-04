@@ -1,10 +1,11 @@
 from fastapi import APIRouter, Depends, Request
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, aliased
 from sqlalchemy import func, case, extract, desc, asc, cast, String
-from starlette.responses import JSONResponse
-from datetime import date, datetime, timedelta
-from pytz import timezone, utc
+from starlette.responses import JSONResponse, StreamingResponse
+from datetime import datetime, timedelta
+from pytz import timezone
 from collections import defaultdict
+import pandas as pd
 
 
 import src.auth.models as authModels
@@ -162,6 +163,106 @@ def get_admin_dashboard_realtime_planter(
         )
 
     return {"total": total, "planter": planter_responses}
+
+
+@router.get(
+    "/dashboard/real-time/{planter_id}",
+    description="관리자 개요 페이지 실시간 가동현황 중 파종기의 오늘 작업 목록 확인",
+)
+def get_admin_dashboard_planter_today_work(
+    request: Request, planter_id: int, db: Session = Depends(get_db)
+):
+    get_current_user("99", request.cookies, db)
+
+    planter = get_(db, planterModels.Planter, id=planter_id)
+    if not planter:
+        return JSONResponse(status_code=404, content=dict(msg="NOT_FOUNRD_PLANTER"))
+
+    target_timezone = timezone("Asia/Seoul")
+    target_date = datetime.now(tz=target_timezone).date()
+
+    pw = aliased(planterModels.PlanterWork)
+    pws = aliased(planterModels.PlanterWorkStatus)
+
+    last_pws_subq = (
+        db.query(
+            pws.planter_work_id,
+            func.max(pws.id).label("last_pws_id"),
+        )
+        .filter(
+            pws.is_del == False,
+            extract(
+                "year",
+                func.timezone("Asia/Seoul", pws.created_at),
+            )
+            == target_date.year,
+            extract(
+                "month",
+                func.timezone("Asia/Seoul", pws.created_at),
+            )
+            == target_date.month,
+            extract(
+                "day",
+                func.timezone("Asia/Seoul", pws.created_at),
+            )
+            == target_date.day,
+        )
+        .group_by(pws.planter_work_id)
+        .subquery()
+    )
+
+    working_pw_bq = (
+        db.query(
+            pw.id,
+            pws.status.label("last_pws_status"),
+            pws.created_at,
+            cropModels.Crop.name,
+            cropModels.Crop.image,
+            planterModels.PlanterOutput.output,
+            planterModels.PlanterOutput.updated_at,
+        )
+        .join(
+            last_pws_subq,
+            last_pws_subq.c.planter_work_id == pw.id,
+        )
+        .join(
+            pws,
+            (pws.planter_work_id == last_pws_subq.c.planter_work_id)
+            & (pws.id == last_pws_subq.c.last_pws_id),
+        )
+        .join(cropModels.Crop, cropModels.Crop.id == pw.crop_id)
+        .join(
+            planterModels.PlanterOutput,
+            planterModels.PlanterOutput.planter_work_id == pw.id,
+        )
+        .filter(
+            pw.is_del == False,
+            pw.planter_id == planter.id,
+            pws.status.in_(["WORKING", "DONE"]),
+        )
+        .order_by(
+            case(
+                (pws.status == "WORKING", 2), (pws.status == "DONE", 1), else_=0
+            ).desc(),
+            pws.created_at.desc(),
+        )
+        .all()
+    )
+
+    result = [
+        {
+            "pw_id": pw_id,
+            "last_pws_status": last_pws_status,
+            "last_pws_created_at": last_pws_created_at,
+            "crop_name": crop_name,
+            "crop_img": crop_img,
+            "output": output,
+            "output_updated_at": output_updated_at,
+        }
+        for pw_id, last_pws_status, last_pws_created_at, crop_name, crop_img, output, output_updated_at in working_pw_bq
+    ]
+
+    return result
 
 
 @router.get(
@@ -707,6 +808,181 @@ def get_planter_work_statics(
         )
 
     return {"total": total, "data": result_data}
+
+
+@router.get(
+    "/planter-work/statics/download",
+    description=(
+        "관리자 통계현황 페이지 파종기 작업 excel 다운로드 api<br/>검색 시 사용했던 파라미터값 동일하게 사용<br/>farm_house_id,farmhouse_name,crop_name,tray_total 검색 시 구분값 || 넣어서 요청하기 ex) farm_house_id 중 PF_0021350, PF_0021351 검색하고 싶을 시 farm_house_id='PF_0021350||PF_0021351' 로 요청"
+    ),
+    status_code=200,
+)
+def get_planter_work_statics(
+    request: Request,
+    year: int = None,
+    month: int = None,
+    date_range: str = None,
+    farm_house_id: str = None,
+    farmhouse_name: str = None,
+    crop_name: str = None,
+    tray_total: str = None,
+    db: Session = Depends(get_db),
+):
+    get_current_user("99", request.cookies, db)
+
+    base_query = (
+        db.query(
+            planterModels.PlanterWork.id,
+            planterModels.PlanterWork.crop_kind,
+            planterModels.PlanterWork.order_quantity,
+            planterModels.PlanterWork.sowing_date,
+            planterModels.PlanterWork.is_shipment_completed,
+            authModels.FarmHouse.farm_house_id,
+            authModels.FarmHouse.name.label("farmhouse_name"),
+            # authModels.FarmHouse.is_del.label("farmhouse_is_del"),
+            cropModels.Crop.name.label("crop_name"),
+            planterModels.PlanterTray.total,
+            planterModels.PlanterOutput.output,
+        )
+        .join(
+            planterModels.Planter,
+            planterModels.PlanterWork.planter_id == planterModels.Planter.id,
+        )
+        .join(
+            authModels.FarmHouse,
+            planterModels.Planter.farm_house_id == authModels.FarmHouse.id,
+        )
+        .join(cropModels.Crop, planterModels.PlanterWork.crop_id == cropModels.Crop.id)
+        .join(
+            planterModels.PlanterTray,
+            planterModels.PlanterWork.planter_tray_id == planterModels.PlanterTray.id,
+        )
+        .join(
+            planterModels.PlanterOutput,
+            planterModels.PlanterWork.id == planterModels.PlanterOutput.planter_work_id,
+        )
+    )
+
+    delimiter = "||"
+
+    if date_range:
+        target_timezone = timezone("Asia/Seoul")
+        start_date, end_date = date_range.split(delimiter)
+        start_year, start_month, start_day = start_date.split("-")
+        end_year, end_month, end_day = end_date.split("-")
+
+        target_start_date = datetime(
+            int(start_year), int(start_month), int(start_day), tzinfo=target_timezone
+        ).date()
+        target_end_date = datetime(
+            int(end_year), int(end_month), int(end_day), tzinfo=target_timezone
+        ).date()
+        if target_start_date == target_end_date:
+            base_query = base_query.filter(
+                extract(
+                    "year",
+                    func.timezone("Asia/Seoul", planterModels.PlanterWork.updated_at),
+                )
+                == end_year,
+                extract(
+                    "month",
+                    func.timezone("Asia/Seoul", planterModels.PlanterWork.updated_at),
+                )
+                == end_month,
+                extract(
+                    "day",
+                    func.timezone("Asia/Seoul", planterModels.PlanterWork.updated_at),
+                )
+                == end_day,
+            )
+        else:
+            base_query = base_query.filter(
+                func.timezone("Asia/Seoul", planterModels.PlanterWork.updated_at)
+                >= target_start_date,
+                func.timezone("Asia/Seoul", planterModels.PlanterWork.updated_at)
+                <= target_end_date,
+            )
+        # return None
+    elif month:
+        base_query = base_query.filter(
+            extract(
+                "year",
+                func.timezone("Asia/Seoul", planterModels.PlanterWork.updated_at),
+            )
+            == year,
+            extract(
+                "month",
+                func.timezone("Asia/Seoul", planterModels.PlanterWork.updated_at),
+            )
+            == month,
+        )
+    elif year:
+        base_query = base_query.filter(
+            extract(
+                "year",
+                func.timezone("Asia/Seoul", planterModels.PlanterWork.updated_at),
+            )
+            == year,
+        )
+
+    if farm_house_id:
+        search_farm_house_ids = farm_house_id.split(delimiter)
+        base_query = base_query.filter(
+            authModels.FarmHouse.farm_house_id.in_(search_farm_house_ids)
+        )
+
+    if farmhouse_name:
+        search_farmhouse_names = farmhouse_name.split(delimiter)
+        base_query = base_query.filter(
+            authModels.FarmHouse.name.in_(search_farmhouse_names)
+        )
+    if crop_name:
+        search_crop_names = crop_name.split(delimiter)
+        base_query = base_query.filter(cropModels.Crop.name.in_(search_crop_names))
+    if tray_total:
+        search_tray_totals = tray_total.split(delimiter)
+        base_query = base_query.filter(
+            planterModels.PlanterTray.total.in_(search_tray_totals)
+        )
+
+    base_query = base_query.order_by(planterModels.PlanterWork.sowing_date.desc())
+
+    kst_timezone = timezone("Asia/Seoul")
+    df = pd.DataFrame(
+        [
+            [
+                result.farm_house_id,
+                result.farmhouse_name,
+                result.crop_name,
+                result.crop_kind,
+                result.total,
+                result.order_quantity,
+                result.output,
+                result.sowing_date.astimezone(kst_timezone).strftime(
+                    "%Y-%m-%d %H:%M:%S"
+                ),
+                "완료" if result.is_shipment_completed else "대기중",
+            ]
+            for result in base_query.all()
+        ],
+        columns=[
+            "농가ID(시설ID)",
+            "농가명",
+            "작물명",
+            "품종명",
+            "트레이",
+            "주문수량",
+            "파종량",
+            "파종일자",
+            "출하상태",
+        ],
+    )
+
+    return StreamingResponse(
+        iter([df.to_csv(index=False)]),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f"attachment; filename=planter_work_list.csv"},
+    )
 
 
 @router.get(

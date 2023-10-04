@@ -148,8 +148,18 @@ function QrDownloadModal({ qrDownloadModalOpen, setQrDownloadModalOpen }) {
   // const qrImage = "https://b.datanursery.kr" + qrDownloadModalOpen?.data?.planter?.qrcode;
 
   const qrCodeDownloadClick = useCallback(() => {
+    // 이미지파일이 열림
     let url = qrImage;
     saveAs(url, qrDownloadModalOpen?.data?.planter?.serial_number + "-qrcode");
+
+    //이미지파일을 열지 않고 다운로드함
+    // 이미지를 가져와서 Blob 객체로 변환합니다.
+    // fetch(qrImage)
+    //   .then((response) => response.blob())
+    //   .then((blob) => {
+    //     // Blob 객체를 파일로 저장합니다.
+    //     saveAs(blob, 'image.png'); // 두 번째 매개변수는 다운로드될 파일의 이름을 나타냅니다.
+    //   });
   }, [qrImage]);
 
   return (
