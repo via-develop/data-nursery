@@ -182,22 +182,22 @@ const S = {
     }
 
     .header-table {
-      width: 128px;
+      width: 130px;
     }
     .header-table-third {
-      width: 153px;
+      width: 167px;
     }
     .header-table-fourth {
-      width: 232px;
+      width: 267px;
     }
     .header-table-fifth {
-      width: 127px;
+      width: 131px;
     }
     .header-table-sixth {
-      width: 196px;
+      width: 182px;
     }
     .header-table-eighth {
-      width: 141px;
+      width: 154px;
     }
 
     .table-first {
@@ -243,7 +243,8 @@ const S = {
     }
 
     .farm_number {
-      width: 150px;
+      /* width: 150px; */
+      width: 187px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
