@@ -241,35 +241,31 @@ export const getStaticsListDownloadAPI = async (
   try {
     let urlPath = "/api/admin/planter/planter-work/statics/download?";
 
-    if(!!year){
-      urlPath +=`year=${year}&`
+    if (!!year) {
+      urlPath += `year=${year}&`;
     }
-    if(!!month){
-      urlPath +=`month=${month}&`
+    if (!!month) {
+      urlPath += `month=${month}&`;
     }
-    if(!!dateRange){
-      urlPath +=`date_range=${dateRange}&`
+    if (!!dateRange) {
+      urlPath += `date_range=${dateRange}&`;
     }
-    if(!!farmHouseId){
-      urlPath +=`farm_house_id=${farmHouseId}&`
+    if (!!farmHouseId) {
+      urlPath += `farm_house_id=${farmHouseId}&`;
     }
-    if(!!farmhouseName){
-      urlPath +=`farmhouse_name=${farmhouseName}&`
+    if (!!farmhouseName) {
+      urlPath += `farmhouse_name=${farmhouseName}&`;
     }
-    if(!!cropName){
-      urlPath +=`crop_name=${cropName}&`
+    if (!!cropName) {
+      urlPath += `crop_name=${cropName}&`;
     }
-    if(!!trayTotal){
-      urlPath +=`tray_total=${trayTotal}&`
+    if (!!trayTotal) {
+      urlPath += `tray_total=${trayTotal}&`;
     }
 
-    const res = await axios.get(
-      process.env.NEXT_PUBLIC_END_POINT +
-        urlPath,
-      {
-        withCredentials: true,
-      },
-    );
+    const res = await axios.get(process.env.NEXT_PUBLIC_END_POINT + urlPath, {
+      withCredentials: true,
+    });
     return res;
   } catch (err) {
     throw new Error(err.response?.status || "통계현황 excel 다운로드에 실패하였습니다. 잠시 후 다시 시도해주세요.");
