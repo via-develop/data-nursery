@@ -872,7 +872,7 @@ function StatisticsStatus() {
         ? ""
         : YYYYMMDDDash(dateRange.startDate) + "||" + YYYYMMDDDash(dateRange.endDate),
     farmHouseId: selectData.farmHouseId,
-    farmHouseName: selectData.farmHouseName,
+    farmhouseName: selectData.farmHouseName,
     cropName: selectData.cropName,
     trayTotal: selectData.trayTotal,
     successFn: () => {},
@@ -881,45 +881,12 @@ function StatisticsStatus() {
     },
   });
 
-  console.log("!!!!!!!!!!!!!!!!!");
-  console.log("선택한 연도", selectYear);
-  console.log("선택한 월", selectMonth);
-  console.log(
-    "사용자선택 날짜",
-    dateRange.startDate === null || dateRange.endDate === null
-      ? ""
-      : YYYYMMDDDash(dateRange.startDate) + "||" + YYYYMMDDDash(dateRange.endDate),
-  );
-  console.log("농장 아이디", selectData.farmHouseId);
-  console.log("농장 이름", selectData.farmHouseName);
-  console.log("작물 이름", selectData.cropName);
-  console.log("트레이", selectData.trayTotal);
-  console.log("!!!!!!!!!!!!!!!!!");
-  console.log("1", staticsListDownload);
-
   // 엑셀 다운로드 버튼
   const handleExcelClick = useCallback(() => {
     try {
       if (staticsListDownload === undefined) {
         return;
       }
-      console.log("====================");
-      console.log("선택한 연도", selectYear);
-      console.log("선택한 월", selectMonth);
-      console.log(
-        "사용자선택 날짜",
-        dateRange.startDate === null || dateRange.endDate === null
-          ? ""
-          : YYYYMMDDDash(dateRange.startDate) + "||" + YYYYMMDDDash(dateRange.endDate),
-      );
-      console.log("농장 아이디", selectData.farmHouseId);
-      console.log("농장 이름", selectData.farmHouseName);
-      console.log("작물 이름", selectData.cropName);
-      console.log("트레이", selectData.trayTotal);
-      console.log("====================");
-
-      console.log("2", staticsListDownload);
-
       const url = window.URL.createObjectURL(new Blob([staticsListDownload.data]));
       const link = document.createElement("a");
       link.href = url;
