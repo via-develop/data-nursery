@@ -323,7 +323,6 @@ function EditManagerModal({
           <div className="input-btn-wrap">
             <div className="input-wrap">
               <input value={"***********"} disabled />
-              {/* <input value={editManagerModalOpen.data.password} type="password" disabled /> */}
             </div>
             <S.PasswordChangeBtn onClick={handlePasswordChangeClick}>
               <p>비밀번호 변경</p>

@@ -243,7 +243,6 @@ const S = {
     }
 
     .farm_number {
-      /* width: 150px; */
       width: 187px;
       overflow: hidden;
       text-overflow: ellipsis;
