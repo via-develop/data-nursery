@@ -185,10 +185,10 @@ const S = {
       width: 130px;
     }
     .header-table-third {
-      width: 167px;
+      width: 175px;
     }
     .header-table-fourth {
-      width: 267px;
+      width: 240px;
     }
     .header-table-fifth {
       width: 131px;
