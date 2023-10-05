@@ -532,6 +532,8 @@ function FarmList() {
     [checkArray],
   );
 
+  console.log("farmList", farmList);
+
   return (
     <S.Wrap>
       <S.InfoBlock>
@@ -753,7 +755,9 @@ function FarmList() {
                   <p className="farm_name">{data?.name}</p>
                 </div>
                 <p className="table-text name">{data?.producer_name}</p>
-                <p className="table-text farm_number">{data?.nursery_number}</p>
+                <p className="table-text farm_number">
+                  {data?.nursery_number === null ? <p>-</p> : data?.nursery_number}
+                </p>
                 <p className="table-text address" id={`address${index}`}>
                   {data?.address.split("||")[1] + " " + data?.address.split("||")[2]}
                 </p>

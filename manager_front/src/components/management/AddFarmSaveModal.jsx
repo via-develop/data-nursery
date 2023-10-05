@@ -360,8 +360,7 @@ function AddFarmSaveModal({
           </div>
         </S.InputWrap>
 
-        {nurseryRegNumber.length === 0 ||
-        farmId.length === 0 ||
+        {farmId.length === 0 ||
         farmName.length === 0 ||
         producerName.length === 0 ||
         phoneNumber.length === 0 ||
