@@ -84,6 +84,7 @@ const S = {
     }
   `,
   StatusBlock: styled.div`
+    cursor: pointer;
     border-radius: 8px;
     padding: 20px 16px 20px 24px;
     width: fit-content;
@@ -95,7 +96,7 @@ const S = {
       flex-direction: column;
       gap: 8px;
       justify-content: center;
-      cursor: default;
+      /* cursor: default; */
     }
     .block-count-wrap {
       display: flex;
@@ -272,8 +273,7 @@ function OperationStatus({ currentDate }) {
               <S.StatusBlock
                 key={`map${index}`}
                 className={data?.planter_status === "ON" ? "statusOn" : "statusOff"}
-                // onClick={() => handelRealTimeDetailClick(data)}
-              >
+                onClick={() => handelRealTimeDetailClick(data)}>
                 {data?.planter_status === "ON" ? (
                   <StatusOnIcon width={68} height={68} />
                 ) : (

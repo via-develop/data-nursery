@@ -10,6 +10,7 @@ import XIcon from "@images/common/icon-x.svg";
 import StatusOnIcon from "@images/dashboard/operation_status_on.svg";
 import StatusOffIcon from "@images/dashboard/operation_status_off.svg";
 import BarIcon from "@images/dashboard/icon-bar.svg";
+import PlantIcon from "@images/dashboard/plant-icon.svg";
 // import { isDefaultAlertShowState } from "@src/states/isDefaultAlertShowState";
 
 const S = {
@@ -173,6 +174,22 @@ const S = {
         ${({ theme }) => theme.textStyle.h5Reguler};
       }
     }
+
+    .work-none {
+      display: flex;
+      flex-direction: column;
+      padding: 24px;
+      gap: 24px;
+      border-radius: 8px;
+      border: 3px solid ${({ theme }) => theme.basic.gray20};
+      justify-content: center;
+      align-items: center;
+
+      p {
+        ${({ theme }) => theme.textStyle.h5Reguler};
+        color: ${({ theme }) => theme.basic.gray50};
+      }
+    }
   `,
   Complete: styled.div`
     margin-top: 32px;
@@ -229,6 +246,21 @@ const S = {
     &::-webkit-scrollbar-thumb {
       border-radius: 4px !important;
       background-color: #bfcad9 !important;
+    }
+
+    .work-none {
+      margin-top: 31.58px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      justify-content: center;
+      align-items: center;
+
+      p {
+        ${({ theme }) => theme.textStyle.h5Reguler};
+        color: ${({ theme }) => theme.basic.gray50};
+      }
     }
   `,
   ListBlock: styled.div`
@@ -321,21 +353,28 @@ function RealTimeDetailModal({ realTimeModalOpen, setRealTimeModalOpen, planterT
             </div>
             <S.Proceeding>
               <p>진행중</p>
-              <div className="create-ing">
-                <div className="create-ing-product">
-                  <p>사진</p>
-                  <div className="create-ing-text">
-                    <div className="create-time">
-                      <p>17:30 ~</p>
+              {realTimeModalOpen.data.planter_status === "ON" ? (
+                <div className="create-ing">
+                  <div className="create-ing-product">
+                    <p>사진</p>
+                    <div className="create-ing-text">
+                      <div className="create-time">
+                        <p>17:30 ~</p>
+                      </div>
+                      <p>토마토</p>
                     </div>
-                    <p>토마토</p>
+                  </div>
+                  <div className="production-count">
+                    <p className="num">{NumberCommaFormatting(54000)}</p>
+                    <p className="unit">개</p>
                   </div>
                 </div>
-                <div className="production-count">
-                  <p className="num">{NumberCommaFormatting(54000)}</p>
-                  <p className="unit">개</p>
+              ) : (
+                <div className="work-none">
+                  <PlantIcon width={41} height={43} />
+                  <p>현재 진행중인 작업이 없습니다.</p>
                 </div>
-              </div>
+              )}
             </S.Proceeding>
             <S.Complete>
               <p className="complete-title">작업완료</p>
@@ -348,14 +387,21 @@ function RealTimeDetailModal({ realTimeModalOpen, setRealTimeModalOpen, planterT
                 </div>
                 <S.ListBlockWrap>
                   <div className="list-inner">
-                    <S.ListBlock>
-                      <p className="text-one">08:00</p>
-                      <div className="text-img-wrap">
-                        <div>이미지</div>
-                        <p className="text-two">수박</p>
+                    {realTimeModalOpen.data.planter_status === "ON" ? (
+                      <S.ListBlock>
+                        <p className="text-one">08:00</p>
+                        <div className="text-img-wrap">
+                          <div>이미지</div>
+                          <p className="text-two">수박</p>
+                        </div>
+                        <p className="text-three">3000</p>
+                      </S.ListBlock>
+                    ) : (
+                      <div className="work-none">
+                        <PlantIcon width={41} height={43} />
+                        <p>오늘 완료된 작업이 없습니다.</p>
                       </div>
-                      <p className="text-three">3000</p>
-                    </S.ListBlock>
+                    )}
                   </div>
                 </S.ListBlockWrap>
               </div>
