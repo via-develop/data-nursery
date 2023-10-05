@@ -532,8 +532,6 @@ function FarmList() {
     [checkArray],
   );
 
-  console.log("farmList", farmList);
-
   return (
     <S.Wrap>
       <S.InfoBlock>
