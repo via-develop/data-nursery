@@ -266,7 +266,7 @@ function OperationStatus({ currentDate }) {
         <p className="status-date">{currentDate}</p>
       </S.TitleWrap>
       <S.ContentWrap>
-        {planterOperationStatus?.planter?.map((data, index) => {
+        {operationList.map((data, index) => {
           return (
             <>
               <S.StatusBlock
