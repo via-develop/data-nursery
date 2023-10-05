@@ -5,3 +5,4 @@ export const farmHouseIdListKey = "farmHouseIdListKey";
 export const farmHouseNameListKey = "farmHouseNameListKey";
 export const settingManagerListKey = "settingManagerListKey";
 export const farmHouseDownloadKey = "farmHouseDownloadKey";
+export const staticsListDownloadKey = "staticsListDownloadKey";

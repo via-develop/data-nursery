@@ -8,13 +8,14 @@ import useFarmHouseNameList from "@src/hooks/queries/auth/useFarmHouseNameList";
 import useCropNameList from "@src/hooks/queries/crop/useCropNameList";
 import useTrayTotalList from "@src/hooks/queries/planter/useTrayTotalList";
 import useInvalidateQueries from "@src/hooks/queries/common/useInvalidateQueries";
+import useStaticsListDownload from "@src/hooks/queries/auth/useStaticsListDownload";
 
 import DatePickerMain from "./DatePickerMain";
 import SearchDropdown from "./SearchDropdown";
 
 import { NumberCommaFormatting } from "@src/utils/Formatting";
 import { GetMonthList, GetYearList, YYYYMMDDDash, YYYYMMDDSlash } from "@src/utils/Formatting";
-// import ExcelIcon from "@images/management/excel-icon.svg";
+import ExcelIcon from "@images/management/excel-icon.svg";
 import DownArrow from "@images/common/order-by-up-icon.svg";
 import UpArrow from "@images/common/order-by-down-icon.svg";
 import FinCheckIcon from "@images/statistics/fin-check-icon.svg";
@@ -58,7 +59,8 @@ const S = {
     }
 
     .month-dropdown-list {
-      left: 542px;
+      left: 279px;
+      width: 120px !important;
     }
 
     .info-wrap {
@@ -87,36 +89,36 @@ const S = {
       color:${({ theme }) => theme.basic.gray50}
     }
 
-    /* .button-wrap {
+    .button-wrap {
       display: flex;
       gap: 16px;
-    } */
+    }
   `,
-  // ExcelButton: styled.div`
-  //   cursor: pointer;
-  //   gap: 16px;
-  //   display: flex;
-  //   justify-content: center;
-  //   align-items: center;
-  //   padding: 16px 24px;
-  //   border: 1px solid #5899fb;
-  //   background-color: #fff;
-  //   border-radius: 8px;
-  //   box-shadow: 4px 4px 16px 0px rgba(89, 93, 107, 0.1);
+  ExcelButton: styled.div`
+    cursor: pointer;
+    gap: 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 16px 24px;
+    border: 1px solid #5899fb;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 4px 4px 16px 0px rgba(89, 93, 107, 0.1);
 
-  //   p {
-  //     color: #5899fb;
-  //     ${({ theme }) => theme.textStyle.h6Bold}
-  //   }
+    p {
+      color: #5899fb;
+      ${({ theme }) => theme.textStyle.h6Bold}
+    }
 
-  //   &:hover {
-  //     border: 1px solid ${({ theme }) => theme.basic.btnAction};
-  //   }
-  //   &:active {
-  //     border: 1px solid ${({ theme }) => theme.basic.btnAction};
-  //     background-color: ${({ theme }) => theme.basic.lightSky};
-  //   }
-  // `,
+    &:hover {
+      border: 1px solid ${({ theme }) => theme.basic.btnAction};
+    }
+    &:active {
+      border: 1px solid ${({ theme }) => theme.basic.btnAction};
+      background-color: ${({ theme }) => theme.basic.lightSky};
+    }
+  `,
   DateChooseWrap: styled.div`
     display: flex;
     gap: 8px;
@@ -417,7 +419,7 @@ const S = {
     position: absolute;
     background-color: ${({ theme }) => theme.basic.whiteGray};
     max-height: 300px;
-    top: 247px;
+    top: 282px;
     padding: 16px;
     border-radius: 8px;
     display: flex;
@@ -862,6 +864,73 @@ function StatisticsStatus() {
     }
   }, [traySelectText, selectData]);
 
+  const { data: staticsListDownload } = useStaticsListDownload({
+    year: selectYear,
+    month: selectMonth,
+    dateRange:
+      dateRange.startDate === null || dateRange.endDate === null
+        ? ""
+        : YYYYMMDDDash(dateRange.startDate) + "||" + YYYYMMDDDash(dateRange.endDate),
+    farmHouseId: selectData.farmHouseId,
+    farmHouseName: selectData.farmHouseName,
+    cropName: selectData.cropName,
+    trayTotal: selectData.trayTotal,
+    successFn: () => {},
+    errorFn: (err) => {
+      alert(err);
+    },
+  });
+
+  console.log("!!!!!!!!!!!!!!!!!");
+  console.log("선택한 연도", selectYear);
+  console.log("선택한 월", selectMonth);
+  console.log(
+    "사용자선택 날짜",
+    dateRange.startDate === null || dateRange.endDate === null
+      ? ""
+      : YYYYMMDDDash(dateRange.startDate) + "||" + YYYYMMDDDash(dateRange.endDate),
+  );
+  console.log("농장 아이디", selectData.farmHouseId);
+  console.log("농장 이름", selectData.farmHouseName);
+  console.log("작물 이름", selectData.cropName);
+  console.log("트레이", selectData.trayTotal);
+  console.log("!!!!!!!!!!!!!!!!!");
+  console.log("1", staticsListDownload);
+
+  // 엑셀 다운로드 버튼
+  const handleExcelClick = useCallback(() => {
+    try {
+      if (staticsListDownload === undefined) {
+        return;
+      }
+      console.log("====================");
+      console.log("선택한 연도", selectYear);
+      console.log("선택한 월", selectMonth);
+      console.log(
+        "사용자선택 날짜",
+        dateRange.startDate === null || dateRange.endDate === null
+          ? ""
+          : YYYYMMDDDash(dateRange.startDate) + "||" + YYYYMMDDDash(dateRange.endDate),
+      );
+      console.log("농장 아이디", selectData.farmHouseId);
+      console.log("농장 이름", selectData.farmHouseName);
+      console.log("작물 이름", selectData.cropName);
+      console.log("트레이", selectData.trayTotal);
+      console.log("====================");
+
+      console.log("2", staticsListDownload);
+
+      const url = window.URL.createObjectURL(new Blob([staticsListDownload.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "planter_work_list.csv");
+      document.body.appendChild(link);
+      link.click();
+    } catch (err) {
+      alert("엑셀 내려받기에 실패하였습니다. 잠시 후 다시 시도해주세요.");
+    }
+  }, [staticsListDownload]);
+
   return (
     <S.Wrap>
       <S.InfoBlock>
@@ -926,14 +995,14 @@ function StatisticsStatus() {
           </div>
         </div>
         <div>
-          {/* {staticsList.length !== 0 && (
+          {staticsList.length !== 0 && (
             <div className="button-wrap">
-              <S.ExcelButton>
+              <S.ExcelButton onClick={handleExcelClick}>
                 <ExcelIcon width={20} height={25} />
                 <p>엑셀 내려받기</p>
               </S.ExcelButton>
             </div>
-          )} */}
+          )}
         </div>
       </S.InfoBlock>
       <S.ContentList>
