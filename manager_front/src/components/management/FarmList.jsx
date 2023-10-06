@@ -753,7 +753,7 @@ function FarmList() {
                 </div>
                 <p className="table-text name">{data?.producer_name}</p>
                 <p className="table-text farm_number">
-                  {data?.nursery_number === null ? <p>-</p> : data?.nursery_number}
+                  {(data?.nursery_number === null || data?.nursery_number === "")? <p>-</p> : data?.nursery_number}
                 </p>
                 <p className="table-text address" id={`address${index}`}>
                   {data?.address.split("||")[1] + " " + data?.address.split("||")[2]}
