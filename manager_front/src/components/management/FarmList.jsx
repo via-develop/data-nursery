@@ -182,22 +182,22 @@ const S = {
     }
 
     .header-table {
-      width: 143px;
+      width: 140px;
     }
     .header-table-third {
-      width: 167px;
+      width: 170px;
     }
     .header-table-fourth {
-      width: 270px;
+      width: 263px;
     }
     .header-table-fifth {
-      width: 104px;
+      width: 93px;
     }
     .header-table-sixth {
-      width: 234px;
+      width: 251px;
     }
     .header-table-eighth {
-      width: 167px;
+      width: 154px;
     }
 
     .table-first {
@@ -210,7 +210,7 @@ const S = {
       width: 200px;
     }
     .table-text {
-      width: 163px;
+      width: 167px;
     }
     .table-eighth {
       width: 59px;
