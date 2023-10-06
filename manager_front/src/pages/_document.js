@@ -25,7 +25,7 @@ export default class MyDocument extends Document {
       <Html lang="en">
         <Head>
           {styleTags}
-          <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests" />
+          {/* <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests" /> */}
         </Head>
         <body>
           <div id="default-alert" />
