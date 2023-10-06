@@ -182,22 +182,22 @@ const S = {
     }
 
     .header-table {
-      width: 130px;
+      width: 143px;
     }
     .header-table-third {
-      width: 175px;
+      width: 167px;
     }
     .header-table-fourth {
-      width: 240px;
+      width: 270px;
     }
     .header-table-fifth {
-      width: 131px;
+      width: 104px;
     }
     .header-table-sixth {
-      width: 182px;
+      width: 234px;
     }
     .header-table-eighth {
-      width: 154px;
+      width: 167px;
     }
 
     .table-first {
