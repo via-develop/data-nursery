@@ -3,6 +3,7 @@ from starlette.responses import JSONResponse
 from sqlalchemy import case
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import func
+from sqlalchemy.exc import IntegrityError
 import bcrypt
 from datetime import datetime, timedelta
 
@@ -314,13 +315,14 @@ async def create_farm_house(
         return JSONResponse(
             status_code=404, content=dict(msg="DUPLICATED_FARM_HOUSE_NAME")
         )
-    dup_check_farm_house_nursery_number = get_(
-        db, models.FarmHouse, nursery_number=nursery_number
-    )
-    if dup_check_farm_house_nursery_number != None:
-        return JSONResponse(
-            status_code=404, content=dict(msg="DUPLICATED_FARM_HOUSE_NURSERY_NUMBER")
+    if nursery_number is not None:
+        dup_check_farm_house_nursery_number = get_(
+            db, models.FarmHouse, nursery_number=nursery_number
         )
+        if dup_check_farm_house_nursery_number != None:
+            return JSONResponse(
+                status_code=404, content=dict(msg="DUPLICATED_FARM_HOUSE_NURSERY_NUMBER")
+            )
     dup_check_farm_house_id = get_(db, models.FarmHouse, farm_house_id=farm_house_id)
     if dup_check_farm_house_id != None:
         return JSONResponse(
@@ -528,13 +530,24 @@ def update_farm_house_info(
     if not farmhouse:
         return JSONResponse(status_code=404, content=dict(msg="FARMHOUSE_NOT_FOUND"))
 
-    for field in farmhouse_data.__dict__:
-        if getattr(farmhouse_data, field) is not None:
-            setattr(farmhouse, field, getattr(farmhouse_data, field))
+    try:
+        for field in farmhouse_data.__dict__:
+            if getattr(farmhouse_data, field) is not None:
+                setattr(farmhouse, field, getattr(farmhouse_data, field))
 
-    db.commit()
-    db.refresh(farmhouse)
-
+        db.commit()
+        db.refresh(farmhouse)
+    except IntegrityError as e:
+        if "nursery_number" in e.params:
+            return JSONResponse(
+                status_code=400, content=dict(msg="DUPLICATED_NURSERY_NUMBER")
+            )
+        else:
+            return JSONResponse(
+                status_code=400, content=dict(msg="HAS_DUPLICATED_VALUES")
+            )
+    except Exception:
+        return JSONResponse(status_code=400, content=dict(msg="UPDATED_FAILED"))
     return JSONResponse(status_code=200, content=dict(msg="UPDATE_SUCCESS"))
 
 
