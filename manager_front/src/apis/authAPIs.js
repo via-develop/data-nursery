@@ -60,7 +60,7 @@ export const updateFarmhouseAPI = async (data) => {
     });
     return res.data;
   } catch (error) {
-    console.log(error)
+    console.log(error);
     throw new Error(error.response?.status || "농가를 수정하는데 실패하였습니다. 잠시 후 다시 시도해주세요.");
   }
 };

@@ -84,7 +84,7 @@ const S = {
     }
   `,
   StatusBlock: styled.div`
-    /* cursor: pointer; */
+    cursor: pointer;
     border-radius: 8px;
     padding: 20px 16px 20px 24px;
     width: fit-content;
@@ -218,7 +218,7 @@ function OperationStatus({ currentDate }) {
   );
 
   const { data: planterToday } = usePlanterRealTimeToday({
-    // planterId:33,
+    // planterId:15,
     planterId: selectPlanterId,
     successFn: (res) => {
       // setOperationList((prev) => [...prev, ...res.planter]);
@@ -273,8 +273,7 @@ function OperationStatus({ currentDate }) {
               <S.StatusBlock
                 key={`map${index}`}
                 className={data?.planter_status === "ON" ? "statusOn" : "statusOff"}
-                // onClick={() => handelRealTimeDetailClick(data)}
-              >
+                onClick={() => handelRealTimeDetailClick(data)}>
                 {data?.planter_status === "ON" ? (
                   <StatusOnIcon width={68} height={68} />
                 ) : (

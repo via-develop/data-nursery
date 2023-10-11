@@ -4,13 +4,15 @@ import { useRecoilState } from "recoil";
 
 import useInvalidateQueries from "@src/hooks/queries/common/useInvalidateQueries";
 import { NumberCommaFormatting } from "@src/utils/Formatting";
-// import GraphTodayProduction from "@components/dashboard/GraphTodayProduction.jsx";
+import GraphTodayProductionNoWork from "./GraphTodayProductionNoWork";
+import GraphTodayProduction from "./GraphTodayProduction";
 
 import XIcon from "@images/common/icon-x.svg";
 import StatusOnIcon from "@images/dashboard/operation_status_on.svg";
 import StatusOffIcon from "@images/dashboard/operation_status_off.svg";
 import BarIcon from "@images/dashboard/icon-bar.svg";
 import PlantIcon from "@images/dashboard/plant-icon.svg";
+import CropsNoIcon from "@images/setting/crops-no-img.svg";
 // import { isDefaultAlertShowState } from "@src/states/isDefaultAlertShowState";
 
 const S = {
@@ -146,7 +148,7 @@ const S = {
       background-color: ${({ theme }) => theme.basic.whiteGray};
       border-radius: 8px;
       height: 24px;
-      width: 80px;
+      padding: 8px 12px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -306,8 +308,75 @@ function RealTimeDetailModal({ realTimeModalOpen, setRealTimeModalOpen, planterT
     setRealTimeModalOpen({ open: false, data: undefined });
   }, []);
 
-  console.log("realTimeModalOpen", realTimeModalOpen);
+  console.log("===============");
   console.log("!! planterToday", planterToday);
+  console.log("===============");
+
+  const planterToday1 = [
+    {
+      crop_img: null,
+      crop_name: "체리",
+      last_pws_created_at: "2023-10-10T07:05:11.411041+00:00",
+      last_pws_status: "WORKING",
+      output: 100,
+      output_updated_at: "2023-10-10T10:51:10.827699+00:00",
+      pw_id: 4,
+    },
+    {
+      crop_img: null,
+      crop_name: "수박",
+      last_pws_created_at: "2023-10-10T10:05:11.411041+00:00",
+      last_pws_status: "WORKING",
+      output: 700,
+      output_updated_at: "2023-10-10T12:51:10.827699+00:00",
+      pw_id: 4,
+    },
+    {
+      crop_img: null,
+      crop_name: "수박",
+      last_pws_created_at: "2023-10-10T10:05:11.411041+00:00",
+      last_pws_status: "WORKING",
+      output: 1000,
+      output_updated_at: "2023-10-10T17:51:10.827699+00:00",
+      pw_id: 4,
+    },
+    {
+      crop_img: null,
+      crop_name: "수박",
+      last_pws_created_at: "2023-10-10T10:05:11.411041+00:00",
+      last_pws_status: "WORKING",
+      output: 2000,
+      output_updated_at: "2023-10-10T23:51:10.827699+00:00",
+      pw_id: 4,
+    },
+    {
+      crop_img: null,
+      crop_name: "청포도",
+      last_pws_created_at: "2023-10-10T08:42:34.133742+00:00",
+      last_pws_status: "DONE",
+      output: 1000,
+      output_updated_at: "2023-09-18T08:42:26.706647+00:00",
+      pw_id: 3,
+    },
+    {
+      crop_img: null,
+      crop_name: "복숭아",
+      last_pws_created_at: "2023-10-10T11:42:34.133742+00:00",
+      last_pws_status: "DONE",
+      output: 1000,
+      output_updated_at: "2023-09-18T11:42:26.706647+00:00",
+      pw_id: 3,
+    },
+  ];
+
+  const workingArr = planterToday1?.filter((item) => item.last_pws_status === "WORKING");
+  const doneArr = planterToday1?.filter((item) => item.last_pws_status === "DONE");
+
+  workingArr.sort((a, b) => new Date(a.output_updated_at) - new Date(b.output_updated_at));
+  doneArr.sort((a, b) => new Date(a.output_updated_at) - new Date(b.output_updated_at));
+
+  console.log("workingArr", workingArr);
+  console.log("doneArr", doneArr);
 
   return (
     <S.Wrap>
@@ -343,7 +412,15 @@ function RealTimeDetailModal({ realTimeModalOpen, setRealTimeModalOpen, planterT
               <BarIcon width={5} height={28} />
               <p>오늘의 생산량</p>
             </div>
-            {/* <GraphTodayProduction /> */}
+            {realTimeModalOpen.data.planter_status === "ON" ? (
+              <>
+                <GraphTodayProduction workingArr={workingArr} />
+              </>
+            ) : (
+              <>
+                <GraphTodayProductionNoWork />
+              </>
+            )}
           </div>
           <S.Line />
           <div className="graph-inner-right">
@@ -356,12 +433,16 @@ function RealTimeDetailModal({ realTimeModalOpen, setRealTimeModalOpen, planterT
               {realTimeModalOpen.data.planter_status === "ON" ? (
                 <div className="create-ing">
                   <div className="create-ing-product">
-                    <p>사진</p>
+                    {workingArr[workingArr.length - 1].crop_img === null ? (
+                      <CropsNoIcon width={84} height={84} />
+                    ) : (
+                      process.env.NEXT_PUBLIC_END_POINT + workingArr[workingArr.length - 1].crop_img
+                    )}
                     <div className="create-ing-text">
                       <div className="create-time">
-                        <p>17:30 ~</p>
+                        <p>{workingArr[workingArr.length - 1].output_updated_at?.split("T")[1]?.slice(0, 5)}~</p>
                       </div>
-                      <p>토마토</p>
+                      <p>{workingArr[workingArr.length - 1].crop_name}</p>
                     </div>
                   </div>
                   <div className="production-count">
@@ -388,14 +469,24 @@ function RealTimeDetailModal({ realTimeModalOpen, setRealTimeModalOpen, planterT
                 <S.ListBlockWrap>
                   <div className="list-inner">
                     {realTimeModalOpen.data.planter_status === "ON" ? (
-                      <S.ListBlock>
-                        <p className="text-one">08:00</p>
-                        <div className="text-img-wrap">
-                          <div>이미지</div>
-                          <p className="text-two">수박</p>
-                        </div>
-                        <p className="text-three">3000</p>
-                      </S.ListBlock>
+                      <>
+                        {doneArr?.map((data, index) => {
+                          return (
+                            <S.ListBlock key={`map${index}`}>
+                              <p className="text-one">{data.output_updated_at?.split("T")[1]?.slice(0, 5)}</p>
+                              <div className="text-img-wrap">
+                                {data.crop_img === null ? (
+                                  <CropsNoIcon width={32} height={32} />
+                                ) : (
+                                  <>{process.env.NEXT_PUBLIC_END_POINT + data.crop_img}</>
+                                )}
+                                <p className="text-two">{data.crop_name}</p>
+                              </div>
+                              <p className="text-three">{data.output}</p>
+                            </S.ListBlock>
+                          );
+                        })}
+                      </>
                     ) : (
                       <div className="work-none">
                         <PlantIcon width={41} height={43} />
