@@ -219,9 +219,6 @@ function EditFarmModal({ editModalOpen, setEditModalOpen, setPage, farmList, set
         address: editAddressCode + "||" + editAddress + "||" + editAddressData,
       },
     });
-    setFarmList([]);
-    setPage(1);
-    closeModal();
   }, [
     editModalOpen,
     editName,
@@ -268,6 +265,8 @@ function EditFarmModal({ editModalOpen, setEditModalOpen, setPage, farmList, set
         okClick: null,
       });
       closeModal();
+      setFarmList([]);
+      setPage(1);
       invalidateQueries([farmAllListKey]);
     },
     (error) => {
