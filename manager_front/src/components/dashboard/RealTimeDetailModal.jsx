@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect,useCallback } from "react";
 import styled from "styled-components";
 import { useRecoilState } from "recoil";
 
@@ -136,6 +136,12 @@ const S = {
       display: flex;
       gap: 10px;
       align-items: center;
+
+      .working-crop-img {
+        width: 84px;
+        height: 84px;
+        border-radius: 84px;
+      }
     }
     .create-ing-text {
       display: flex;
@@ -284,6 +290,12 @@ const S = {
       align-items: center;
       gap: 16px;
     }
+
+    .done-crop-img {
+      width: 32px;
+      height: 32px;
+      border-radius: 32px;
+    }
   `,
   Line: styled.div`
     background-color: ${({ theme }) => theme.basic.recOutline};
@@ -301,206 +313,159 @@ const S = {
 };
 
 function RealTimeDetailModal({ realTimeModalOpen, setRealTimeModalOpen, planterToday }) {
+  useEffect(()=>{
+    if (!planterToday) {
+      return;
+    }
+  },[planterToday]);
+  
   // const invalidateQueries = useInvalidateQueries();
   // const [isDefaultAlertShow, setIsDefaultAlertShowState] = useRecoilState(isDefaultAlertShowState);
-
+  
   const closeModal = useCallback(() => {
     setRealTimeModalOpen({ open: false, data: undefined });
-  }, []);
+  }, [realTimeModalOpen]);
+  
+  const workingArr = planterToday?.filter((item) => item.last_pws_status === "WORKING");
+  const doneArr = planterToday?.filter((item) => item.last_pws_status === "DONE");
+  
+  planterToday?.sort((a, b) => new Date(a.output_updated_at) - new Date(b.output_updated_at));
+  workingArr?.sort((a, b) => new Date(a.output_updated_at) - new Date(b.output_updated_at));
+  doneArr?.sort((a, b) => new Date(a.output_updated_at) - new Date(b.output_updated_at));
 
-  console.log("===============");
-  console.log("!! planterToday", planterToday);
-  console.log("===============");
-
-  const planterToday1 = [
-    {
-      crop_img: null,
-      crop_name: "체리",
-      last_pws_created_at: "2023-10-10T07:05:11.411041+00:00",
-      last_pws_status: "WORKING",
-      output: 100,
-      output_updated_at: "2023-10-10T10:51:10.827699+00:00",
-      pw_id: 4,
-    },
-    {
-      crop_img: null,
-      crop_name: "수박",
-      last_pws_created_at: "2023-10-10T10:05:11.411041+00:00",
-      last_pws_status: "WORKING",
-      output: 700,
-      output_updated_at: "2023-10-10T12:51:10.827699+00:00",
-      pw_id: 4,
-    },
-    {
-      crop_img: null,
-      crop_name: "수박",
-      last_pws_created_at: "2023-10-10T10:05:11.411041+00:00",
-      last_pws_status: "WORKING",
-      output: 1000,
-      output_updated_at: "2023-10-10T17:51:10.827699+00:00",
-      pw_id: 4,
-    },
-    {
-      crop_img: null,
-      crop_name: "수박",
-      last_pws_created_at: "2023-10-10T10:05:11.411041+00:00",
-      last_pws_status: "WORKING",
-      output: 2000,
-      output_updated_at: "2023-10-10T23:51:10.827699+00:00",
-      pw_id: 4,
-    },
-    {
-      crop_img: null,
-      crop_name: "청포도",
-      last_pws_created_at: "2023-10-10T08:42:34.133742+00:00",
-      last_pws_status: "DONE",
-      output: 1000,
-      output_updated_at: "2023-09-18T08:42:26.706647+00:00",
-      pw_id: 3,
-    },
-    {
-      crop_img: null,
-      crop_name: "복숭아",
-      last_pws_created_at: "2023-10-10T11:42:34.133742+00:00",
-      last_pws_status: "DONE",
-      output: 1000,
-      output_updated_at: "2023-09-18T11:42:26.706647+00:00",
-      pw_id: 3,
-    },
-  ];
-
-  const workingArr = planterToday1?.filter((item) => item.last_pws_status === "WORKING");
-  const doneArr = planterToday1?.filter((item) => item.last_pws_status === "DONE");
-
-  workingArr.sort((a, b) => new Date(a.output_updated_at) - new Date(b.output_updated_at));
-  doneArr.sort((a, b) => new Date(a.output_updated_at) - new Date(b.output_updated_at));
-
-  console.log("workingArr", workingArr);
-  console.log("doneArr", doneArr);
-
-  return (
-    <S.Wrap>
-      <S.WrapInner>
-        <S.TitleWrap>
-          <div className="x-icon" onClick={closeModal}>
-            <XIcon width={24} height={24} />
-          </div>
-        </S.TitleWrap>
-        <S.TitleBlock>
-          <div className="left-inner">
-            {realTimeModalOpen.data.planter_status === "ON" ? (
-              <StatusOnIcon width={68} height={68} />
-            ) : (
-              <StatusOffIcon width={68} height={68} />
-            )}
-            <p>{realTimeModalOpen.data.farm_house_name}</p>
-          </div>
-          <div className="right-inner">
-            <p className="detail-date">2023.08.18</p>
-            <p className="detail-count">
-              {NumberCommaFormatting(
-                realTimeModalOpen.data.planter_output === null ? 0 : realTimeModalOpen.data.planter_output,
-              )}
-              개
-            </p>
-            {realTimeModalOpen.data.planter_status === "ON" && <p className="detail-ing">진행중</p>}
-          </div>
-        </S.TitleBlock>
-        <S.GraphWrap>
-          <div className="graph-inner-left">
-            <div className="graph-title">
-              <BarIcon width={5} height={28} />
-              <p>오늘의 생산량</p>
+  return !!planterToday &&(
+      <S.Wrap>
+        <S.WrapInner>
+          <S.TitleWrap>
+            <div className="x-icon" onClick={closeModal}>
+              <XIcon width={24} height={24} />
             </div>
-            {realTimeModalOpen.data.planter_status === "ON" ? (
-              <>
-                <GraphTodayProduction workingArr={workingArr} />
-              </>
-            ) : (
-              <>
-                <GraphTodayProductionNoWork />
-              </>
-            )}
-          </div>
-          <S.Line />
-          <div className="graph-inner-right">
-            <div className="graph-title">
-              <BarIcon width={5} height={28} />
-              <p>생산목록</p>
-            </div>
-            <S.Proceeding>
-              <p>진행중</p>
+          </S.TitleWrap>
+          <S.TitleBlock>
+            <div className="left-inner">
               {realTimeModalOpen.data.planter_status === "ON" ? (
-                <div className="create-ing">
-                  <div className="create-ing-product">
-                    {workingArr[workingArr.length - 1].crop_img === null ? (
-                      <CropsNoIcon width={84} height={84} />
-                    ) : (
-                      process.env.NEXT_PUBLIC_END_POINT + workingArr[workingArr.length - 1].crop_img
-                    )}
-                    <div className="create-ing-text">
-                      <div className="create-time">
-                        <p>{workingArr[workingArr.length - 1].output_updated_at?.split("T")[1]?.slice(0, 5)}~</p>
+                <StatusOnIcon width={68} height={68} />
+              ) : (
+                <StatusOffIcon width={68} height={68} />
+              )}
+              <p>{realTimeModalOpen.data.farm_house_name}</p>
+            </div>
+            <div className="right-inner">
+              <p className="detail-date">2023.08.18</p>
+              <p className="detail-count">
+                {NumberCommaFormatting(
+                  realTimeModalOpen.data.planter_output === null ? 0 : realTimeModalOpen.data.planter_output,
+                )}
+                개
+              </p>
+              {realTimeModalOpen.data.planter_status === "ON" && <p className="detail-ing">진행중</p>}
+            </div>
+          </S.TitleBlock>
+          <S.GraphWrap>
+            <div className="graph-inner-left">
+              <div className="graph-title">
+                <BarIcon width={5} height={28} />
+                <p>오늘의 생산량</p>
+              </div>
+              {realTimeModalOpen.data.planter_status === "ON" ? (
+                <>
+                  <GraphTodayProduction planterToday={planterToday} />
+                </>
+              ) : (
+                <>
+                  <GraphTodayProductionNoWork />
+                </>
+              )}
+            </div>
+            <S.Line />
+            <div className="graph-inner-right">
+              <div className="graph-title">
+                <BarIcon width={5} height={28} />
+                <p>생산목록</p>
+              </div>
+              <S.Proceeding>
+                <p>진행중</p>
+                {realTimeModalOpen.data.planter_status === "ON" && workingArr?.length !== 0 ? (
+                  <div className="create-ing">
+                    <div className="create-ing-product">
+                      {workingArr[0]?.crop_img === null ? (
+                        <CropsNoIcon width={84} height={84} />
+                      ) : (
+                        <img
+                          src={process.env.NEXT_PUBLIC_END_POINT + workingArr[0].crop_img}
+                          className="working-crop-img"
+                        />
+                      )}
+
+                      <div className="create-ing-text">
+                        <div className="create-time">
+                          <p>{workingArr[0].output_updated_at?.split("T")[1]?.slice(0, 5)}~</p>
+                        </div>
+                        <p>{workingArr[0].crop_name}</p>
                       </div>
-                      <p>{workingArr[workingArr.length - 1].crop_name}</p>
+                    </div>
+                    <div className="production-count">
+                      {/* <p className="num">{NumberCommaFormatting(workingArr[0].output)}</p> */}
+                      <p className="num">{workingArr[0].output}</p>
+                      <p className="unit">개</p>
                     </div>
                   </div>
-                  <div className="production-count">
-                    <p className="num">{NumberCommaFormatting(54000)}</p>
-                    <p className="unit">개</p>
+                ) : (
+                  <div className="work-none">
+                    <PlantIcon width={41} height={43} />
+                    <p>현재 진행중인 작업이 없습니다.</p>
                   </div>
-                </div>
-              ) : (
-                <div className="work-none">
-                  <PlantIcon width={41} height={43} />
-                  <p>현재 진행중인 작업이 없습니다.</p>
-                </div>
-              )}
-            </S.Proceeding>
-            <S.Complete>
-              <p className="complete-title">작업완료</p>
-              <S.Line2 />
-              <div className="list-wrap">
-                <div className="list-head">
-                  <p>완료시간</p>
-                  <p>작물명</p>
-                  <p>총 파종량</p>
-                </div>
-                <S.ListBlockWrap>
-                  <div className="list-inner">
-                    {realTimeModalOpen.data.planter_status === "ON" ? (
-                      <>
-                        {doneArr?.map((data, index) => {
-                          return (
-                            <S.ListBlock key={`map${index}`}>
-                              <p className="text-one">{data.output_updated_at?.split("T")[1]?.slice(0, 5)}</p>
-                              <div className="text-img-wrap">
-                                {data.crop_img === null ? (
-                                  <CropsNoIcon width={32} height={32} />
-                                ) : (
-                                  <>{process.env.NEXT_PUBLIC_END_POINT + data.crop_img}</>
-                                )}
-                                <p className="text-two">{data.crop_name}</p>
-                              </div>
-                              <p className="text-three">{data.output}</p>
-                            </S.ListBlock>
-                          );
-                        })}
-                      </>
-                    ) : (
-                      <div className="work-none">
-                        <PlantIcon width={41} height={43} />
-                        <p>오늘 완료된 작업이 없습니다.</p>
-                      </div>
-                    )}
+                )}
+              </S.Proceeding>
+              <S.Complete>
+                <p className="complete-title">작업완료</p>
+                <S.Line2 />
+                <div className="list-wrap">
+                  <div className="list-head">
+                    <p>완료시간</p>
+                    <p>작물명</p>
+                    <p>총 파종량</p>
                   </div>
-                </S.ListBlockWrap>
-              </div>
-            </S.Complete>
-          </div>
-        </S.GraphWrap>
-      </S.WrapInner>
-    </S.Wrap>
+                  <S.ListBlockWrap>
+                    <div className="list-inner">
+                      {realTimeModalOpen.data.planter_status === "ON" && doneArr?.length !== 0 ? (
+                        <>
+                          {doneArr?.map((data, index) => {
+                            return (
+                              <S.ListBlock key={`map${index}`}>
+                                <p className="text-one">{data.output_updated_at?.split("T")[1]?.slice(0, 5)}</p>
+                                <div className="text-img-wrap">
+                                  {data.crop_img === null ? (
+                                    <CropsNoIcon width={32} height={32} />
+                                  ) : (
+                                    <>
+                                      <img
+                                        src={process.env.NEXT_PUBLIC_END_POINT + data.crop_img}
+                                        className="done-crop-img"
+                                      />
+                                    </>
+                                  )}
+                                  <p className="text-two">{data.crop_name}</p>
+                                </div>
+                                <p className="text-three">{data.output}</p>
+                              </S.ListBlock>
+                            );
+                          })}
+                        </>
+                      ) : (
+                        <div className="work-none">
+                          <PlantIcon width={41} height={43} />
+                          <p>오늘 완료된 작업이 없습니다.</p>
+                        </div>
+                      )}
+                    </div>
+                  </S.ListBlockWrap>
+                </div>
+              </S.Complete>
+            </div>
+          </S.GraphWrap>
+        </S.WrapInner>
+      </S.Wrap>
   );
 }
 

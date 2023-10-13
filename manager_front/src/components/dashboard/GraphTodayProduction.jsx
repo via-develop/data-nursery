@@ -17,7 +17,15 @@ const S = {
   `,
 };
 
-function GraphTodayProduction({ workingArr }) {
+function GraphTodayProduction({ planterToday }) {
+  useEffect(()=>{
+    if (!planterToday) {
+      return;
+    }
+  },[planterToday]);
+
+
+
   const graphRef = useRef(null);
   let graphInstance = null;
 
@@ -28,20 +36,20 @@ function GraphTodayProduction({ workingArr }) {
 
   // 생산량 배열
   const workingGraphArr = [];
-  for (const item of workingArr) {
+  for (const item of planterToday) {
     workingGraphArr.push(item.output);
   }
 
   // 생산량 시간 배열
   const timeGraphArr = [];
-  for (const item of workingArr) {
+  for (const item of planterToday) {
     timeGraphArr.push(item.output_updated_at);
   }
 
   // 생산량 + 시간 배열
   const workingGraphTimeArr = useMemo(() => {
     const data = [];
-    for (let i = 0; i < workingArr.length; i++) {
+    for (let i = 0; i < planterToday.length; i++) {
       data.push({ x: timeGraphArr[i], y: workingGraphArr[i] });
     }
     return data;
@@ -157,7 +165,6 @@ function GraphTodayProduction({ workingArr }) {
               bodyColor: "#fff",
               callbacks: {
                 title: function (context) {
-                  console.log(context);
                   return context[0].raw.x.split("T")[1].slice(0, 5);
                 },
                 beforeBody: function (context) {

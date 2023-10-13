@@ -212,7 +212,6 @@ function AddFarmSaveModal({
       invalidateQueries([farmAllListKey]);
     },
     (error) => {
-      console.log(error);
       setIsDefaultAlertShowState({
         isShow: true,
         type: "error",
