@@ -1,4 +1,4 @@
-import React, { useEffect,useCallback } from "react";
+import React, { useEffect, useCallback } from "react";
 import styled from "styled-components";
 import { useRecoilState } from "recoil";
 
@@ -313,27 +313,28 @@ const S = {
 };
 
 function RealTimeDetailModal({ realTimeModalOpen, setRealTimeModalOpen, planterToday }) {
-  useEffect(()=>{
+  useEffect(() => {
     if (!planterToday) {
       return;
     }
-  },[planterToday]);
-  
+  }, [planterToday]);
+
   // const invalidateQueries = useInvalidateQueries();
   // const [isDefaultAlertShow, setIsDefaultAlertShowState] = useRecoilState(isDefaultAlertShowState);
-  
+
   const closeModal = useCallback(() => {
     setRealTimeModalOpen({ open: false, data: undefined });
   }, [realTimeModalOpen]);
-  
+
   const workingArr = planterToday?.filter((item) => item.last_pws_status === "WORKING");
   const doneArr = planterToday?.filter((item) => item.last_pws_status === "DONE");
-  
+
   planterToday?.sort((a, b) => new Date(a.output_updated_at) - new Date(b.output_updated_at));
   workingArr?.sort((a, b) => new Date(a.output_updated_at) - new Date(b.output_updated_at));
   doneArr?.sort((a, b) => new Date(a.output_updated_at) - new Date(b.output_updated_at));
 
-  return !!planterToday &&(
+  return (
+    !!planterToday && (
       <S.Wrap>
         <S.WrapInner>
           <S.TitleWrap>
@@ -466,6 +467,7 @@ function RealTimeDetailModal({ realTimeModalOpen, setRealTimeModalOpen, planterT
           </S.GraphWrap>
         </S.WrapInner>
       </S.Wrap>
+    )
   );
 }
 

@@ -192,6 +192,7 @@ function OperationStatus({ currentDate }) {
   const [operationListPage, setOperationListPage] = useState(1);
   const [operationList, setOperationList] = useState([]);
   const [selectPlanterId, setSelectPlanterId] = useState("");
+  // const [valueList,setValueList] = useState();
 
   // inView : 요소가 뷰포트에 진입했는지 여부
   const { ref, inView, entry } = useInView({
@@ -202,7 +203,10 @@ function OperationStatus({ currentDate }) {
     page: operationListPage,
     size: 20,
     successFn: (res) => {
-      setOperationList((prev) => [...prev, ...res.planter]);
+      const resultList = operationList.concat(res.planter);
+      // setOperationList((prev) => [...prev, ...res.planter]);
+      const valueList = [...new Set(resultList)];
+      setOperationList(valueList);
     },
     errorFn: (err) => {
       alert(err);
@@ -218,11 +222,8 @@ function OperationStatus({ currentDate }) {
   );
 
   const { data: planterToday } = usePlanterRealTimeToday({
-    // planterId:15,
     planterId: selectPlanterId,
-    successFn: (res) => {
-      // setOperationList((prev) => [...prev, ...res.planter]);
-    },
+    successFn: (res) => {},
     errorFn: (err) => {
       alert(err);
     },
@@ -232,8 +233,8 @@ function OperationStatus({ currentDate }) {
     if (!planterOperationStatus) {
       return;
     }
+
     const intervalId = setInterval(() => {
-      // planterOperationStatus
       invalidateQueries([PlanterRealTimeKey]);
     }, 30000); // 30초마다 업데이트
 
@@ -260,68 +261,70 @@ function OperationStatus({ currentDate }) {
   });
 
   return (
-    <S.Wrap>
-      <S.TitleWrap>
-        <BarIcon width={5} height={28} />
-        <p className="title">실시간 가동현황</p>
-        <p className="status-date">{currentDate}</p>
-      </S.TitleWrap>
-      <S.ContentWrap>
-        {operationList.map((data, index) => {
-          return (
-            <>
-              <S.StatusBlock
-                key={`map${index}`}
-                className={data?.planter_status === "ON" ? "statusOn" : "statusOff"}
-                onClick={() => handelRealTimeDetailClick(data)}>
-                {data?.planter_status === "ON" ? (
-                  <StatusOnIcon width={68} height={68} />
-                ) : (
-                  <StatusOffIcon width={68} height={68} />
-                )}
-                <div className="block-text-wrap">
-                  <p className={data?.planter_status === "ON" ? "block-title-on" : "block-title-off"}>
-                    {" "}
-                    {data?.farm_house_name}
-                  </p>
-                  <div className="block-count-wrap">
-                    <p
-                      id={`status-num${index}`}
-                      className={data?.planter_status === "ON" ? "block-count-on" : "block-count-off"}>
-                      {CountPlusFormatting(data?.planter_output)}
+    operationList && (
+      <S.Wrap>
+        <S.TitleWrap>
+          <BarIcon width={5} height={28} />
+          <p className="title">실시간 가동현황</p>
+          <p className="status-date">{currentDate}</p>
+        </S.TitleWrap>
+        <S.ContentWrap>
+          {operationList.map((data, index) => {
+            return (
+              <>
+                <S.StatusBlock
+                  key={`map${index}`}
+                  className={data?.planter_status === "ON" ? "statusOn" : "statusOff"}
+                  onClick={() => handelRealTimeDetailClick(data)}>
+                  {data?.planter_status === "ON" ? (
+                    <StatusOnIcon width={68} height={68} />
+                  ) : (
+                    <StatusOffIcon width={68} height={68} />
+                  )}
+                  <div className="block-text-wrap">
+                    <p className={data?.planter_status === "ON" ? "block-title-on" : "block-title-off"}>
+                      {" "}
+                      {data?.farm_house_name}
                     </p>
-                    <p className="block-unit">개</p>
-                  </div>
-                </div>
-                <S.StatusCountTooltip
-                  anchorId={`status-num${index}`}
-                  place="bottom"
-                  content={
-                    <div className="text-wrap">
-                      <p className="tooltip-title">{data?.farm_house_name}</p>
-                      <div className="count-wrap">
-                        <p className="count">{NumberCommaFormatting(data?.planter_output)}</p>
-                        <p className="unit">개</p>
-                      </div>
+                    <div className="block-count-wrap">
+                      <p
+                        id={`status-num${index}`}
+                        className={data?.planter_status === "ON" ? "block-count-on" : "block-count-off"}>
+                        {CountPlusFormatting(data?.planter_output)}
+                      </p>
+                      <p className="block-unit">개</p>
                     </div>
-                  }
-                />
-              </S.StatusBlock>
-            </>
-          );
-        })}
-        <div ref={ref} />
-      </S.ContentWrap>
-      {realTimeModalOpen.open && (
-        <div className="modal-wrap">
-          <RealTimeDetailModal
-            realTimeModalOpen={realTimeModalOpen}
-            setRealTimeModalOpen={setRealTimeModalOpen}
-            planterToday={planterToday}
-          />
-        </div>
-      )}
-    </S.Wrap>
+                  </div>
+                  <S.StatusCountTooltip
+                    anchorId={`status-num${index}`}
+                    place="bottom"
+                    content={
+                      <div className="text-wrap">
+                        <p className="tooltip-title">{data?.farm_house_name}</p>
+                        <div className="count-wrap">
+                          <p className="count">{NumberCommaFormatting(data?.planter_output)}</p>
+                          <p className="unit">개</p>
+                        </div>
+                      </div>
+                    }
+                  />
+                </S.StatusBlock>
+              </>
+            );
+          })}
+          <div ref={ref} />
+        </S.ContentWrap>
+        {realTimeModalOpen.open && (
+          <div className="modal-wrap">
+            <RealTimeDetailModal
+              realTimeModalOpen={realTimeModalOpen}
+              setRealTimeModalOpen={setRealTimeModalOpen}
+              planterToday={planterToday}
+            />
+          </div>
+        )}
+      </S.Wrap>
+    )
   );
 }
 

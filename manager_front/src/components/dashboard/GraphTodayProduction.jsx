@@ -18,13 +18,11 @@ const S = {
 };
 
 function GraphTodayProduction({ planterToday }) {
-  useEffect(()=>{
+  useEffect(() => {
     if (!planterToday) {
       return;
     }
-  },[planterToday]);
-
-
+  }, [planterToday]);
 
   const graphRef = useRef(null);
   let graphInstance = null;
