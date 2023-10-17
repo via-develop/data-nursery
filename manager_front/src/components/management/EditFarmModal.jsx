@@ -212,7 +212,7 @@ function EditFarmModal({ editModalOpen, setEditModalOpen, setPage, farmList, set
     updateFarmhouseMutate({
       data: {
         id: editModalOpen.data.id,
-        nursery_number: editNurseryNumber,
+        nursery_number: editNurseryNumber === "" ? null : editNurseryNumber,
         name: editFarmName,
         producer_name: editName,
         phone: editPhone,

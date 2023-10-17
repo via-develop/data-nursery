@@ -534,10 +534,12 @@ def update_farm_house_info(
         for field in farmhouse_data.__dict__:
             if getattr(farmhouse_data, field) is not None:
                 setattr(farmhouse, field, getattr(farmhouse_data, field))
-
+        if farmhouse_data.nursery_number == None:
+            setattr(farmhouse, "nursery_number", None)
         db.commit()
         db.refresh(farmhouse)
     except IntegrityError as e:
+        print(e)
         if "nursery_number" in e.params:
             return JSONResponse(
                 status_code=400, content=dict(msg="DUPLICATED_NURSERY_NUMBER")
