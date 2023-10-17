@@ -99,7 +99,7 @@ export const getStatics = async (
   try {
     const res = await axios.get(
       process.env.NEXT_PUBLIC_END_POINT +
-        `/api/admin/planter/planter-work/statics?year=${year}&month=${month}&date_range=${dateRange}&farm_house_id=${farmHouseId}&farmhouse_name=${farmHouseName}&crop_name=${cropName}&crop_kind_order_type=${cropKindOrderType}&tray_total=${trayTotal}&order_quantity_order_type=${orderQuantityOrderType}&planter_output_order_type=${planterOutputOrderType}&sowing_date_order_type=${sowingDateOrderType}&is_shipment_completed_order_type=${isShipmentCompletedOrderType}&page=${page}`,
+        `/api/admin/planter/planter-work/statics?year=${year}&month=${month}&date_range=${dateRange}&farm_house_id=${farmHouseId}&farmhouse_name=${farmHouseName}&crop_name=${cropName}&crop_kind_order_type=${cropKindOrderType}&tray_total=${trayTotal}&order_quantity_order_type=${orderQuantityOrderType}&planter_output_order_type=${planterOutputOrderType}&sowing_date_order_type=${sowingDateOrderType}&is_shipment_completed_order_type=${isShipmentCompletedOrderType}&page=${page}&size=100`,
       {
         withCredentials: true,
       },
