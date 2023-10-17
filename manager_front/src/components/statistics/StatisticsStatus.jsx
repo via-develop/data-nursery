@@ -566,6 +566,8 @@ function StatisticsStatus() {
       setMonthList(GetMonthList(data));
       setYearModalOpen(false);
       // 통계현황 정보 다시 불러오기 위해 쿼리키 삭제
+      setStaticsList([]);
+      setPage(1);
       invalidateQueries([staticsKey]);
     },
     [selectYear],
@@ -577,6 +579,8 @@ function StatisticsStatus() {
       setSelectMonth(data);
       setMonthModalOpen(false);
       // 통계현황 정보 다시 불러오기 위해 쿼리키 삭제
+      setStaticsList([]);
+      setPage(1);
       invalidateQueries([staticsKey]);
     },
     [selectMonth, monthModalOpen],

@@ -94,7 +94,7 @@ export const getStatics = async (
   planterOutputOrderType,
   sowingDateOrderType,
   isShipmentCompletedOrderType,
-  page,
+  page
 ) => {
   try {
     const res = await axios.get(
