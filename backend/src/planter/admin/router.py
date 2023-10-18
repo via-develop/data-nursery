@@ -166,11 +166,11 @@ def get_admin_dashboard_realtime_planter(
 
 
 @router.get(
-    "/dashboard/real-time/{planter_id}",
+    "/dashboard/real-time/{planter_id}/{date_range}",
     description="관리자 개요 페이지 실시간 가동현황 중 파종기의 오늘 작업 목록 확인",
 )
 def get_admin_dashboard_planter_today_work(
-    request: Request, planter_id: int, db: Session = Depends(get_db)
+    request: Request, planter_id: int, date_range: str = None, db: Session = Depends(get_db)
 ):
     get_current_user("99", request.cookies, db)
 
@@ -179,7 +179,17 @@ def get_admin_dashboard_planter_today_work(
         return JSONResponse(status_code=404, content=dict(msg="NOT_FOUNRD_PLANTER"))
 
     target_timezone = timezone("Asia/Seoul")
-    target_date = datetime.now(tz=target_timezone).date()
+    # target_date = datetime.now(tz=target_timezone).date()
+    start_date, end_date = date_range.split("||")
+    start_year, start_month, start_day = start_date.split("-")
+    end_year, end_month, end_day = end_date.split("-")
+    
+    target_start_date = datetime(
+        int(start_year), int(start_month), int(start_day), tzinfo=target_timezone
+    ).date()
+    target_end_date = datetime(
+        int(end_year), int(end_month), int(end_day), tzinfo=target_timezone
+    ).date()
 
     pw = aliased(planterModels.PlanterWork)
     pws = aliased(planterModels.PlanterWorkStatus)
@@ -189,27 +199,36 @@ def get_admin_dashboard_planter_today_work(
             pws.planter_work_id,
             func.max(pws.id).label("last_pws_id"),
         )
-        .filter(
-            pws.is_del == False,
-            extract(
-                "year",
-                func.timezone("Asia/Seoul", pws.created_at),
-            )
-            == target_date.year,
-            extract(
-                "month",
-                func.timezone("Asia/Seoul", pws.created_at),
-            )
-            == target_date.month,
-            extract(
-                "day",
-                func.timezone("Asia/Seoul", pws.created_at),
-            )
-            == target_date.day,
-        )
-        .group_by(pws.planter_work_id)
-        .subquery()
     )
+    
+    if target_start_date == target_end_date:
+        last_pws_subq = last_pws_subq.filter(
+                pws.is_del == False,
+                extract(
+                    "year",
+                    func.timezone("Asia/Seoul", pws.created_at),
+                )
+                == target_date.year,
+                extract(
+                    "month",
+                    func.timezone("Asia/Seoul", pws.created_at),
+                )
+                == target_date.month,
+                extract(
+                    "day",
+                    func.timezone("Asia/Seoul", pws.created_at),
+                )
+                == target_date.day,
+            )
+    else:
+        last_pws_subq = last_pws_subq.filter(
+            func.timezone("Asia/Seoul", pws.created_at)
+            >= target_start_date,
+            func.timezone("Asia/Seoul", pws.created_at)
+            <= target_end_date,
+        )
+            
+    last_pws_subq = last_pws_subq.group_by(pws.planter_work_id).subquery()
 
     working_pw_bq = (
         db.query(
