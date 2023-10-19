@@ -6,7 +6,7 @@ import { registerables } from "chart.js";
 
 const S = {
   Wrap: styled.div`
-    height: 687px;
+    height: 832px;
     width: 100%;
     display: flex;
     flex-direction: column;

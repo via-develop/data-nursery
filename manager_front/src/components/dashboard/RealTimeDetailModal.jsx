@@ -1,11 +1,14 @@
-import React, { useEffect, useCallback } from "react";
+import React, { useEffect, useCallback, useState } from "react";
 import styled from "styled-components";
 import { useRecoilState } from "recoil";
 
-import useInvalidateQueries from "@src/hooks/queries/common/useInvalidateQueries";
+// import useInvalidateQueries from "@src/hooks/queries/common/useInvalidateQueries";
 import { NumberCommaFormatting } from "@src/utils/Formatting";
 import GraphTodayProductionNoWork from "./GraphTodayProductionNoWork";
 import GraphTodayProduction from "./GraphTodayProduction";
+import { YYYYMMDDSlash } from "@src/utils/Formatting";
+
+import DatePickerMain from "@components/statistics/DatePickerMain";
 
 import XIcon from "@images/common/icon-x.svg";
 import StatusOnIcon from "@images/dashboard/operation_status_on.svg";
@@ -13,6 +16,7 @@ import StatusOffIcon from "@images/dashboard/operation_status_off.svg";
 import BarIcon from "@images/dashboard/icon-bar.svg";
 import PlantIcon from "@images/dashboard/plant-icon.svg";
 import CropsNoIcon from "@images/setting/crops-no-img.svg";
+import PickerIcon from "@images/statistics/date-picker-icon.svg";
 // import { isDefaultAlertShowState } from "@src/states/isDefaultAlertShowState";
 
 const S = {
@@ -24,8 +28,8 @@ const S = {
     display: flex;
   `,
   WrapInner: styled.div`
-    width: 1502px;
-    height: 1004px;
+    width: 1500px;
+    height: 1099px;
     background-color: #fff;
     border-radius: 8px;
     padding: 16px 16px 40px 32px;
@@ -51,6 +55,8 @@ const S = {
     padding: 20px 24px;
     align-items: center;
     justify-content: space-between;
+    margin-right: 16px;
+    margin-bottom: 48px;
 
     .left-inner {
       display: flex;
@@ -88,9 +94,37 @@ const S = {
       }
     }
   `,
+  WorkDateWrap: styled.div`
+    display: flex;
+    gap: 24px;
+    /* margin-top:48px; */
+    align-items: center;
+
+    p {
+      color: ${({ theme }) => theme.basic.gray60};
+      ${({ theme }) => theme.textStyle.h5Bold};
+    }
+
+    .title-wrap {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .title-circle {
+      width: 7px;
+      height: 7px;
+      border-radius: 20px;
+      background-color: ${({ theme }) => theme.basic.gray30};
+    }
+  `,
+  BorderLine: styled.div`
+    /* width: 100%; */
+    height: 1px;
+    border: 2px solid ${({ theme }) => theme.basic.gray20};
+    margin: 20px 16px 48px 0px;
+  `,
   GraphWrap: styled.div`
     display: flex;
-    margin-top: 48px;
     width: 100%;
     height: 100%;
     justify-content: space-between;
@@ -100,6 +134,7 @@ const S = {
     }
     .graph-inner-right {
       width: 100%;
+      margin-right: 16px;
     }
     .graph-title {
       display: flex;
@@ -310,6 +345,23 @@ const S = {
     background-color: ${({ theme }) => theme.basic.recOutline};
     margin: 16px 0px;
   `,
+  ClickPicker: styled.div`
+    padding: 6px 12px 6px 16px;
+    border: 1px solid ${({ theme }) => theme.basic.recOutline};
+    border-radius: 8px;
+    background-color: ${({ theme }) => theme.blackWhite.white};
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 248px;
+    height: 36px;
+    cursor: pointer;
+
+    p {
+      color: ${({ theme }) => theme.basic.gray60};
+      ${({ theme }) => theme.textStyle.h7Reguler}
+    }
+  `,
 };
 
 function RealTimeDetailModal({ realTimeModalOpen, setRealTimeModalOpen, planterToday }) {
@@ -332,6 +384,21 @@ function RealTimeDetailModal({ realTimeModalOpen, setRealTimeModalOpen, planterT
   planterToday?.sort((a, b) => new Date(a.output_updated_at) - new Date(b.output_updated_at));
   workingArr?.sort((a, b) => new Date(a.output_updated_at) - new Date(b.output_updated_at));
   doneArr?.sort((a, b) => new Date(a.output_updated_at) - new Date(b.output_updated_at));
+
+  const [dateRange, setDateRange] = useState({
+    startDate: new Date(),
+    endDate: new Date(),
+  });
+
+  //달력 모달 오픈
+  const [pickerOpen, setPickerOpen] = useState(false);
+
+  //달력 클릭
+  const handlePickerClick = useCallback(() => {
+    setPickerOpen(true);
+  }, [pickerOpen]);
+
+  console.log("dateRange", dateRange);
 
   return (
     !!planterToday && (
@@ -362,11 +429,31 @@ function RealTimeDetailModal({ realTimeModalOpen, setRealTimeModalOpen, planterT
               {realTimeModalOpen.data.planter_status === "ON" && <p className="detail-ing">진행중</p>}
             </div>
           </S.TitleBlock>
+          {realTimeModalOpen.data.planter_status === "ON" && (
+            <>
+              <S.WorkDateWrap>
+                <div className="title-wrap">
+                  <div class="title-circle" />
+                  <p>작업기간 선택</p>
+                </div>
+                <div className="date-wrap">
+                  <S.ClickPicker onClick={handlePickerClick}>
+                    <p>
+                      {YYYYMMDDSlash(dateRange.startDate)} ~ {YYYYMMDDSlash(dateRange.endDate)}
+                    </p>
+                    <PickerIcon width={19} height={19} />
+                  </S.ClickPicker>
+                </div>
+              </S.WorkDateWrap>
+              <S.BorderLine />
+            </>
+          )}
+
           <S.GraphWrap>
             <div className="graph-inner-left">
               <div className="graph-title">
                 <BarIcon width={5} height={28} />
-                <p>오늘의 생산량</p>
+                <p>생산량</p>
               </div>
               {realTimeModalOpen.data.planter_status === "ON" ? (
                 <>
@@ -466,6 +553,19 @@ function RealTimeDetailModal({ realTimeModalOpen, setRealTimeModalOpen, planterT
             </div>
           </S.GraphWrap>
         </S.WrapInner>
+        {pickerOpen && (
+          <div className="modal-wrap">
+            <DatePickerMain
+              pickerOpen={pickerOpen}
+              setPickerOpen={setPickerOpen}
+              setDateRange={(calendarStartDate, calendarEndDate) => {
+                setDateRange({ startDate: calendarStartDate, endDate: calendarEndDate });
+              }}
+              startDate={dateRange.startDate}
+              endDate={dateRange.endDate}
+            />
+          </div>
+        )}
       </S.Wrap>
     )
   );

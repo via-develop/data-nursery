@@ -9,7 +9,7 @@ import "chartjs-adapter-moment";
 
 const S = {
   Wrap: styled.div`
-    height: 687px;
+    height: 737px;
     width: 100%;
     display: flex;
     flex-direction: column;
