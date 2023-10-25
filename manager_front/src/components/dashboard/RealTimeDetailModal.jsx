@@ -1,8 +1,6 @@
 import React, { useEffect, useCallback, useState } from "react";
 import styled from "styled-components";
-import { useRecoilState } from "recoil";
 
-// import useInvalidateQueries from "@src/hooks/queries/common/useInvalidateQueries";
 import { NumberCommaFormatting } from "@src/utils/Formatting";
 import GraphTodayProductionNoWork from "./GraphTodayProductionNoWork";
 import GraphTodayProduction from "./GraphTodayProduction";
@@ -17,7 +15,6 @@ import BarIcon from "@images/dashboard/icon-bar.svg";
 import PlantIcon from "@images/dashboard/plant-icon.svg";
 import CropsNoIcon from "@images/setting/crops-no-img.svg";
 import PickerIcon from "@images/statistics/date-picker-icon.svg";
-// import { isDefaultAlertShowState } from "@src/states/isDefaultAlertShowState";
 
 const S = {
   Wrap: styled.div`
@@ -97,7 +94,6 @@ const S = {
   WorkDateWrap: styled.div`
     display: flex;
     gap: 24px;
-    /* margin-top:48px; */
     align-items: center;
 
     p {
@@ -118,7 +114,6 @@ const S = {
     }
   `,
   BorderLine: styled.div`
-    /* width: 100%; */
     height: 1px;
     border: 2px solid ${({ theme }) => theme.basic.gray20};
     margin: 20px 16px 48px 0px;
@@ -364,19 +359,20 @@ const S = {
   `,
 };
 
-function RealTimeDetailModal({ realTimeModalOpen, setRealTimeModalOpen, planterToday }) {
+function RealTimeDetailModal({ realTimeModalOpen, setRealTimeModalOpen, planterToday, dateRange, setDateRange }) {
   useEffect(() => {
     if (!planterToday) {
       return;
     }
   }, [planterToday]);
 
-  // const invalidateQueries = useInvalidateQueries();
-  // const [isDefaultAlertShow, setIsDefaultAlertShowState] = useRecoilState(isDefaultAlertShowState);
-
   const closeModal = useCallback(() => {
     setRealTimeModalOpen({ open: false, data: undefined });
-  }, [realTimeModalOpen]);
+    setDateRange({
+      startDate: new Date(),
+      endDate: new Date(),
+    })
+  }, [realTimeModalOpen,dateRange]);
 
   const workingArr = planterToday?.filter((item) => item.last_pws_status === "WORKING");
   const doneArr = planterToday?.filter((item) => item.last_pws_status === "DONE");
@@ -385,11 +381,6 @@ function RealTimeDetailModal({ realTimeModalOpen, setRealTimeModalOpen, planterT
   workingArr?.sort((a, b) => new Date(a.output_updated_at) - new Date(b.output_updated_at));
   doneArr?.sort((a, b) => new Date(a.output_updated_at) - new Date(b.output_updated_at));
 
-  const [dateRange, setDateRange] = useState({
-    startDate: new Date(),
-    endDate: new Date(),
-  });
-
   //달력 모달 오픈
   const [pickerOpen, setPickerOpen] = useState(false);
 
@@ -397,8 +388,6 @@ function RealTimeDetailModal({ realTimeModalOpen, setRealTimeModalOpen, planterT
   const handlePickerClick = useCallback(() => {
     setPickerOpen(true);
   }, [pickerOpen]);
-
-  console.log("dateRange", dateRange);
 
   return (
     !!planterToday && (
@@ -493,7 +482,6 @@ function RealTimeDetailModal({ realTimeModalOpen, setRealTimeModalOpen, planterT
                       </div>
                     </div>
                     <div className="production-count">
-                      {/* <p className="num">{NumberCommaFormatting(workingArr[0].output)}</p> */}
                       <p className="num">{workingArr[0].output}</p>
                       <p className="unit">개</p>
                     </div>

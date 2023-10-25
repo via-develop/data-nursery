@@ -4,9 +4,9 @@ import { useInView } from "react-intersection-observer";
 
 import { PlanterRealTimeKey } from "@src/utils/query-keys/PlanterQueryKeys";
 import useInvalidateQueries from "@src/hooks/queries/common/useInvalidateQueries";
-
 import usePlanterRealTime from "@src/hooks/queries/planter/usePlanterRealTime";
-import usePlanterRealTimeToday from "@src/hooks/queries/planter/usePlanterRealTimeToday";
+import usePlanterRealTimeDateRange from "@src/hooks/queries/planter/usePlanterRealTimeDateRange";
+import { YYYYMMDDDash } from "@src/utils/Formatting";
 
 import { Tooltip } from "react-tooltip";
 import { NumberCommaFormatting, CountPlusFormatting } from "@src/utils/Formatting";
@@ -194,6 +194,11 @@ function OperationStatus({ currentDate }) {
   const [selectPlanterId, setSelectPlanterId] = useState("");
   // const [valueList,setValueList] = useState();
 
+  const [dateRange, setDateRange] = useState({
+    startDate: new Date(),
+    endDate: new Date(),
+  });
+
   // inView : 요소가 뷰포트에 진입했는지 여부
   const { ref, inView, entry } = useInView({
     threshold: 0, // 요소가 얼마나 노출되었을때 inView를 true로 변경할지 (0~1 사이의 값)
@@ -221,8 +226,9 @@ function OperationStatus({ currentDate }) {
     [selectPlanterId],
   );
 
-  const { data: planterToday } = usePlanterRealTimeToday({
+  const { data: planterToday } = usePlanterRealTimeDateRange({
     planterId: selectPlanterId,
+    dateRange: YYYYMMDDDash(dateRange.startDate) + "||" + YYYYMMDDDash(dateRange.endDate),
     successFn: (res) => {},
     errorFn: (err) => {
       alert(err);
@@ -259,6 +265,8 @@ function OperationStatus({ currentDate }) {
     open: false,
     data: undefined,
   });
+
+  console.log("selectPlanterId", selectPlanterId);
 
   return (
     operationList && (
@@ -320,6 +328,8 @@ function OperationStatus({ currentDate }) {
               realTimeModalOpen={realTimeModalOpen}
               setRealTimeModalOpen={setRealTimeModalOpen}
               planterToday={planterToday}
+              dateRange={dateRange}
+              setDateRange={setDateRange}
             />
           </div>
         )}

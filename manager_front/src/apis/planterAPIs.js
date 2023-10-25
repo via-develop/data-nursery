@@ -165,17 +165,34 @@ export const deleteMultipleTrayAPI = async (data) => {
   }
 };
 
-//개요페이지 : 실시간 가동현황 중 파종기의 오늘 작업 목록 확인
-export const getDashboardRealTimeTodayAPI = async (planterId) => {
+// //개요페이지 : 실시간 가동현황 중 파종기의 오늘 작업 목록 확인
+// export const getDashboardRealTimeTodayAPI = async (planterId) => {
+//   try {
+//     const res = await axios.get(
+//       process.env.NEXT_PUBLIC_END_POINT + `/api/admin/planter/dashboard/real-time/${planterId}`,
+//       {
+//         withCredentials: true,
+//       },
+//     );
+//     return res.data;
+//   } catch (err) {
+//     throw new Error(err.response?.status || "오늘의 작업목록을 불러오는데 실패하였습니다. 잠시 후 다시 시도해주세요.");
+//   }
+// };
+
+//개요페이지 : 실시간 가동현황 중 파종기의 선택한 날짜 작업목록 확인
+export const getDashboardRealTimeDateRangeAPI = async (planterId, dateRange) => {
   try {
     const res = await axios.get(
-      process.env.NEXT_PUBLIC_END_POINT + `/api/admin/planter/dashboard/real-time/${planterId}`,
+      process.env.NEXT_PUBLIC_END_POINT + `/api/admin/planter/dashboard/real-time/${planterId}/${dateRange}`,
       {
         withCredentials: true,
       },
     );
     return res.data;
   } catch (err) {
-    throw new Error(err.response?.status || "오늘의 작업목록을 불러오는데 실패하였습니다. 잠시 후 다시 시도해주세요.");
+    throw new Error(
+      err.response?.status || "선택한 날짜의 작업목록을 불러오는데 실패하였습니다. 잠시 후 다시 시도해주세요.",
+    );
   }
 };

@@ -6,4 +6,4 @@ export const PlanterOperatingTimeKey = "PlanterOperatingTimeKey";
 export const PlanterRealTimeKey = "PlanterRealTimeKey";
 export const trayTotalListKey = "trayTotalListKey";
 export const trayListKey = "trayListKey";
-export const PlanterRealTimeTodayKey = "PlanterRealTimeTodayKey";
+export const PlanterRealTimeDateRangeKey = "PlanterRealTimeDateRangeKey";

@@ -208,17 +208,17 @@ def get_admin_dashboard_planter_today_work(
                     "year",
                     func.timezone("Asia/Seoul", pws.created_at),
                 )
-                == target_date.year,
+                == end_year,
                 extract(
                     "month",
                     func.timezone("Asia/Seoul", pws.created_at),
                 )
-                == target_date.month,
+                == end_month,
                 extract(
                     "day",
                     func.timezone("Asia/Seoul", pws.created_at),
                 )
-                == target_date.day,
+                == end_day,
             )
     else:
         last_pws_subq = last_pws_subq.filter(
