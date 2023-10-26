@@ -226,7 +226,7 @@ function OperationStatus({ currentDate }) {
     [selectPlanterId],
   );
 
-  const { data: planterToday } = usePlanterRealTimeDateRange({
+  const { data: planterDateRange } = usePlanterRealTimeDateRange({
     planterId: selectPlanterId,
     dateRange: YYYYMMDDDash(dateRange.startDate) + "||" + YYYYMMDDDash(dateRange.endDate),
     successFn: (res) => {},
@@ -265,8 +265,6 @@ function OperationStatus({ currentDate }) {
     open: false,
     data: undefined,
   });
-
-  console.log("selectPlanterId", selectPlanterId);
 
   return (
     operationList && (
@@ -327,7 +325,7 @@ function OperationStatus({ currentDate }) {
             <RealTimeDetailModal
               realTimeModalOpen={realTimeModalOpen}
               setRealTimeModalOpen={setRealTimeModalOpen}
-              planterToday={planterToday}
+              planterDateRange={planterDateRange}
               dateRange={dateRange}
               setDateRange={setDateRange}
             />

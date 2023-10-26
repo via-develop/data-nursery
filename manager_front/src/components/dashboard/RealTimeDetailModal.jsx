@@ -359,12 +359,12 @@ const S = {
   `,
 };
 
-function RealTimeDetailModal({ realTimeModalOpen, setRealTimeModalOpen, planterToday, dateRange, setDateRange }) {
+function RealTimeDetailModal({ realTimeModalOpen, setRealTimeModalOpen, planterDateRange, dateRange, setDateRange }) {
   useEffect(() => {
-    if (!planterToday) {
+    if (!planterDateRange) {
       return;
     }
-  }, [planterToday]);
+  }, [planterDateRange]);
 
   const closeModal = useCallback(() => {
     setRealTimeModalOpen({ open: false, data: undefined });
@@ -374,10 +374,10 @@ function RealTimeDetailModal({ realTimeModalOpen, setRealTimeModalOpen, planterT
     })
   }, [realTimeModalOpen,dateRange]);
 
-  const workingArr = planterToday?.filter((item) => item.last_pws_status === "WORKING");
-  const doneArr = planterToday?.filter((item) => item.last_pws_status === "DONE");
+  const workingArr = planterDateRange?.filter((item) => item.last_pws_status === "WORKING");
+  const doneArr = planterDateRange?.filter((item) => item.last_pws_status === "DONE");
 
-  planterToday?.sort((a, b) => new Date(a.output_updated_at) - new Date(b.output_updated_at));
+  planterDateRange?.sort((a, b) => new Date(a.output_updated_at) - new Date(b.output_updated_at));
   workingArr?.sort((a, b) => new Date(a.output_updated_at) - new Date(b.output_updated_at));
   doneArr?.sort((a, b) => new Date(a.output_updated_at) - new Date(b.output_updated_at));
 
@@ -389,8 +389,31 @@ function RealTimeDetailModal({ realTimeModalOpen, setRealTimeModalOpen, planterT
     setPickerOpen(true);
   }, [pickerOpen]);
 
+  const [dateTime, setDateTime] = useState();
+
+  useEffect(() => {
+    // 웹 워커 생성
+    const worker = new Worker("worker.js");
+
+    // 웹 워커로부터 메시지를 수신하는 이벤트 핸들러
+    worker.onmessage = (event) => {
+      // setKoreanTime(event.data);
+      const { date } = event.data;
+      setDateTime(date);
+    };
+    // 컴포넌트 언마운트 시 웹 워커 정리
+    return () => {
+      worker.terminate();
+      worker.postMessage("getKoreanTime");
+    };
+  }, [dateTime]);
+
+  console.log("planterDateRange",planterDateRange)
+  
+
   return (
-    !!planterToday && (
+    !!planterDateRange && 
+    (
       <S.Wrap>
         <S.WrapInner>
           <S.TitleWrap>
@@ -408,7 +431,7 @@ function RealTimeDetailModal({ realTimeModalOpen, setRealTimeModalOpen, planterT
               <p>{realTimeModalOpen.data.farm_house_name}</p>
             </div>
             <div className="right-inner">
-              <p className="detail-date">2023.08.18</p>
+              <p className="detail-date">{dateTime}</p>
               <p className="detail-count">
                 {NumberCommaFormatting(
                   realTimeModalOpen.data.planter_output === null ? 0 : realTimeModalOpen.data.planter_output,
@@ -446,7 +469,7 @@ function RealTimeDetailModal({ realTimeModalOpen, setRealTimeModalOpen, planterT
               </div>
               {realTimeModalOpen.data.planter_status === "ON" ? (
                 <>
-                  <GraphTodayProduction planterToday={planterToday} />
+                  <GraphTodayProduction planterDateRange={planterDateRange} />
                 </>
               ) : (
                 <>

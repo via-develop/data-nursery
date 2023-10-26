@@ -17,12 +17,12 @@ const S = {
   `,
 };
 
-function GraphTodayProduction({ planterToday }) {
+function GraphTodayProduction({ planterDateRange }) {
   useEffect(() => {
-    if (!planterToday) {
+    if (!planterDateRange) {
       return;
     }
-  }, [planterToday]);
+  }, [planterDateRange]);
 
   const graphRef = useRef(null);
   let graphInstance = null;
@@ -34,20 +34,20 @@ function GraphTodayProduction({ planterToday }) {
 
   // 생산량 배열
   const workingGraphArr = [];
-  for (const item of planterToday) {
+  for (const item of planterDateRange) {
     workingGraphArr.push(item.output);
   }
 
   // 생산량 시간 배열
   const timeGraphArr = [];
-  for (const item of planterToday) {
+  for (const item of planterDateRange) {
     timeGraphArr.push(item.output_updated_at);
   }
 
   // 생산량 + 시간 배열
   const workingGraphTimeArr = useMemo(() => {
     const data = [];
-    for (let i = 0; i < planterToday.length; i++) {
+    for (let i = 0; i < planterDateRange.length; i++) {
       data.push({ x: timeGraphArr[i], y: workingGraphArr[i] });
     }
     return data;

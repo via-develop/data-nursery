@@ -151,6 +151,7 @@ const S = {
     border-radius: 8px;
     padding: 16px 40px;
     cursor: pointer;
+    border: 1px solid ${({ theme }) => theme.primery.primery};
 
     p {
       color: #fff;
