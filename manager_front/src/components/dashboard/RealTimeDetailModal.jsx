@@ -371,8 +371,8 @@ function RealTimeDetailModal({ realTimeModalOpen, setRealTimeModalOpen, planterD
     setDateRange({
       startDate: new Date(),
       endDate: new Date(),
-    })
-  }, [realTimeModalOpen,dateRange]);
+    });
+  }, [realTimeModalOpen, dateRange]);
 
   const workingArr = planterDateRange?.filter((item) => item.last_pws_status === "WORKING");
   const doneArr = planterDateRange?.filter((item) => item.last_pws_status === "DONE");
@@ -408,12 +408,8 @@ function RealTimeDetailModal({ realTimeModalOpen, setRealTimeModalOpen, planterD
     };
   }, [dateTime]);
 
-  console.log("planterDateRange",planterDateRange)
-  
-
   return (
-    !!planterDateRange && 
-    (
+    !!planterDateRange && (
       <S.Wrap>
         <S.WrapInner>
           <S.TitleWrap>
