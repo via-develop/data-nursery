@@ -5,6 +5,9 @@ from datetime import datetime, timedelta
 from utils.database import get_db, engine
 import src.planter.models as planterModels
 
+from fastapi import Request
+from src.planter.admin.router import get_smart_farm_data
+
 Schedule = BackgroundScheduler(timezone="Asia/Seoul")
 
 
@@ -80,6 +83,9 @@ def update_planter_status_to_off():
         )
         db.execute(save_data)
         db.commit()
+        
+def post_smart_farm():
+    get_smart_farm_data(Request, None, next(get_db()))
 
 
 # Schedule.add_job(
@@ -102,4 +108,12 @@ Schedule.add_job(
     "interval",
     minutes=30,
     id="update_planter_status_to_off",
+)
+
+Schedule.add_job(
+    post_smart_farm,
+    "cron",
+    hour="0",
+    minute="0",
+    id="post_smart_farm",
 )

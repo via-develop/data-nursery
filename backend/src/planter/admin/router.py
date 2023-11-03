@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from pytz import timezone
 from collections import defaultdict
 import pandas as pd
-
+import requests
 
 import src.auth.models as authModels
 import src.planter.models as planterModels
@@ -1081,3 +1081,153 @@ def delete_multiple_planter_trays(
     db.commit()
 
     return JSONResponse(status_code=200, content=dict(msg="SUCCESS"))
+
+
+@router.get(
+    "/smart-farm-data",
+    status_code=200,
+    description="스마트팜 코리아에 전송할 데이터",
+)
+def get_smart_farm_data(request: Request, check_date: str = None, db: Session = Depends(get_db)):
+    target_timezone = timezone("Asia/Seoul")
+    
+    if check_date == None: # 확인하고자 하는 날짜가 빈값이면 전날
+        target_date = datetime.now(tz=target_timezone) - timedelta(days=1)
+        target_date = target_date.date()
+        
+    else: # 확인하고자 하는 날짜가 있을 경우
+        end_year, end_month, end_day = check_date.split("-")
+        
+        target_date = datetime(
+            int(end_year), int(end_month), int(end_day), tzinfo=target_timezone
+        ).date()
+        
+    # print("@@@@@@")
+    # print(target_date)
+    # print("@@@@@@")
+    
+    pw = aliased(planterModels.PlanterWork)
+    pws = aliased(planterModels.PlanterWorkStatus)
+    
+    recent_status_subquery = (
+        db.query(
+            pws.planter_work_id,
+            func.max(pws.id).label("last_pws_id"),
+            func.max(pws.updated_at).label("last_pws_updated"),
+        )
+        .filter(pws.is_del == False)
+        .group_by(pws.planter_work_id)
+        .subquery()
+    )
+    
+    planter_works_with_recent_done_status = (
+        db.query(pw, recent_status_subquery.c.last_pws_updated)
+        .join(recent_status_subquery, recent_status_subquery.c.planter_work_id == pw.id)
+        .join(
+            pws,
+            (pws.planter_work_id == recent_status_subquery.c.planter_work_id)
+            & (pws.id == recent_status_subquery.c.last_pws_id),
+        )
+        .filter(
+            pw.is_del == False,
+            pws.status == "DONE",
+            func.Date(
+                func.timezone("Asia/Seoul", recent_status_subquery.c.last_pws_updated)
+            )
+            == target_date,
+            # < target_date,
+        )
+        .order_by(pw.updated_at.desc())
+    )
+    
+    url = 'http://smartfarmkorea.net/Agree_WS/webservices/ImprvmService'
+    # headers = {'Content-Type': 'application/xml'}
+    headers = {'Content-Type': 'application/xml', 'charset': 'utf-8'}
+    # headers = {'Content-Type': 'application/xml; charset=utf-8'}
+    # headers = {'Content-Type': 'application/xml', 'Accept-Charset': 'utf-8'}
+
+    fatr_code_type = ["SP", "CO", "SQ", "TR"]
+
+    result_data = []
+    
+    try:
+        for planter_work in (
+            planter_works_with_recent_done_status.all()
+            # planter_works_with_recent_done_status.limit(1).all()
+        ):
+            planter_work_result = planter_work[0]
+            planter_work_status_date = planter_work[1]
+                
+            for fatr_code in fatr_code_type:
+                xml = """<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:auto="http://auto.webservice.itis.epis.org/">
+                    <soapenv:Header/>
+                    <soapenv:Body>
+                        <auto:sendAutoMessage>
+                            <!--Optional:-->
+                            <arg0>
+                                <!--Optional:-->"""
+                xml += "<facilityId>" + str(planter_work_result.planter_work__planter.planter_farm_house.farm_house_id) + "</facilityId>"
+                # xml += "<facilityId>PF_0021350_01</facilityId>"
+                xml += "<!--Optional:-->"
+                xml += "<fatrCode>" + str(fatr_code) + "</fatrCode>"
+                xml += """<!--Optional:-->
+                        <fldCode>HF</fldCode>
+                        <!--Optional:-->"""
+                xml += "<itemCode>" + str(planter_work_result.planter_work__crop.crop_code) + "</itemCode>"
+                xml += """<!--Optional:-->
+                        <makerId>helper58</makerId>
+                        <!--Optional:-->"""
+                xml += "<measDate>" + str(planter_work_status_date.strftime("%Y-%m-%d %H:%M:%S")) + "</measDate>"
+                xml += """<!--Optional:-->
+                        <measFacilityId></measFacilityId>
+                        <!--Optional:-->
+                        <measPlaceId></measPlaceId>
+                        <!--Optional:-->
+                        <measSecgmentId></measSecgmentId>
+                        <!--Optional:-->
+                        <regDate></regDate>
+                        <!--Optional:-->
+                        <sectCode>PD</sectCode>
+                        <!--Optional:-->
+                        <senId>1</senId>
+                        <!--Optional:-->"""
+                        
+                if fatr_code == "SP": # 품종명
+                    # xml += "<senVal>" + str(planter_work_result.crop_kind.encode(encoding='UTF-8')) + "</senVal>"
+                    xml += "<senVal>" + str(planter_work_result.crop_kind) + "</senVal>"
+                elif fatr_code == "CO": # 주문자명
+                    # xml += "<senVal>" + str("고객".encode(encoding='UTF-8')) + "</senVal>"
+                    xml += "<senVal>고객</senVal>"
+                elif fatr_code == "SQ": # 파종생산수량
+                    xml += "<senVal>" + str(planter_work_result.seed_quantity) + "</senVal>"
+                else: # 트레이수량
+                    xml += "<senVal>" + str(planter_work_result.planter_work__planter_tray.total) + "</senVal>"
+                
+                xml += "<!--Optional:-->"
+                xml += "<serlNo>" + str(planter_work_result.planter_work__planter.serial_number) + "</serlNo>"
+                xml += """</arg0>
+                        </auto:sendAutoMessage>
+                        </soapenv:Body>
+                        </soapenv:Envelope>"""
+                        
+                # print("==========")
+                # print(xml)
+                # print("==========")
+                        
+                result_data.append(xml)
+            
+                r = requests.post(url, data=xml, headers=headers)
+                
+                # print("!!!!!!!!!!!!")
+                # print(r)
+                # print("!!!!!!!!!!!!")
+
+        return result_data
+    except Exception as e:
+        # logger.error(f"[BranchViewets] national manager create branch error : {serializer.errors}")
+        # print("+++++++++")
+        # print(e)
+        # print("+++++++++")
+        return JSONResponse(
+            status_code=400, content=dict(msg=e)
+        )
