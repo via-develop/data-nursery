@@ -5,6 +5,7 @@ import { Tooltip } from "react-tooltip";
 import useFarmAllList from "@src/hooks/queries/auth/useFarmAllList";
 import { farmAllListKey } from "@src/utils/query-keys/AuthQueryKeys";
 import useInvalidateQueries from "@src/hooks/queries/common/useInvalidateQueries";
+import useFarmAllListDownload from "@src/hooks/queries/auth/useFarmAllListDownload";
 
 import colorArray from "@components/common/ListColor";
 
@@ -16,12 +17,12 @@ import DeleteModal from "./DeleteModal";
 import EditFarmModal from "./EditFarmModal";
 import EditPasswordModal from "./EditPasswordModal";
 
-// import ExcelIcon from "@images/management/excel-icon.svg";
+import ExcelIcon from "@images/management/excel-icon.svg";
 import AddIcon from "@images/management/add-icon.svg";
 import CheckBoxOff from "@images/common/check-icon-off.svg";
 import CheckBoxOn from "@images/common/check-icon-on.svg";
-import UpArrow from "@images/common/order-by-up-icon.svg";
-import DownArrow from "@images/common/order-by-down-icon.svg";
+import DownArrow from "@images/common/order-by-up-icon.svg";
+import UpArrow from "@images/common/order-by-down-icon.svg";
 import OptionDot from "@images/common/option-dot-icon.svg";
 import FarmIcon from "@images/management/icon-farm.svg";
 import DeleteIcon from "@images/setting/icon-delete.svg";
@@ -75,31 +76,31 @@ const S = {
     }
   `,
 
-  // ExcelButton: styled.div`
-  //   cursor: pointer;
-  //   gap: 16px;
-  //   display: flex;
-  //   justify-content: center;
-  //   align-items: center;
-  //   padding: 16px 24px;
-  //   border: 1px solid #5899fb;
-  //   background-color: #fff;
-  //   border-radius: 8px;
-  //   box-shadow: 4px 4px 16px 0px rgba(89, 93, 107, 0.1);
+  ExcelButton: styled.div`
+    cursor: pointer;
+    gap: 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 16px 24px;
+    border: 1px solid #5899fb;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 4px 4px 16px 0px rgba(89, 93, 107, 0.1);
 
-  //   p {
-  //     color: #5899fb;
-  //     ${({ theme }) => theme.textStyle.h6Bold}
-  //   }
+    p {
+      color: #5899fb;
+      ${({ theme }) => theme.textStyle.h6Bold}
+    }
 
-  //   &:hover {
-  //     border: 1px solid ${({ theme }) => theme.basic.btnAction};
-  //   }
-  //   &:active {
-  //     border: 1px solid ${({ theme }) => theme.basic.btnAction};
-  //     background-color: ${({ theme }) => theme.basic.lightSky};
-  //   }
-  // `,
+    &:hover {
+      border: 1px solid ${({ theme }) => theme.basic.btnAction};
+    }
+    &:active {
+      border: 1px solid ${({ theme }) => theme.basic.btnAction};
+      background-color: ${({ theme }) => theme.basic.lightSky};
+    }
+  `,
   AddButton: styled.div`
     cursor: pointer;
     gap: 16px;
@@ -142,6 +143,14 @@ const S = {
       svg {
         cursor: pointer;
       }
+
+      .order-none-icon {
+        width: 24px;
+        height: 24px;
+        margin-bottom: 5px;
+        ${({ theme }) => theme.textStyle.h3Bold}
+        color: ${({ theme }) => theme.basic.gray50};
+      }
     }
     p {
       ${({ theme }) => theme.textStyle.h7Reguler};
@@ -173,19 +182,22 @@ const S = {
     }
 
     .header-table {
-      width: 120px;
-    }
-    .header-table-second {
       width: 140px;
     }
     .header-table-third {
-      width: 200px;
+      width: 170px;
     }
     .header-table-fourth {
-      width: 130px;
+      width: 263px;
+    }
+    .header-table-fifth {
+      width: 93px;
+    }
+    .header-table-sixth {
+      width: 251px;
     }
     .header-table-eighth {
-      width: 160px;
+      width: 154px;
     }
 
     .table-first {
@@ -198,10 +210,10 @@ const S = {
       width: 200px;
     }
     .table-text {
-      width: 120px;
+      width: 167px;
     }
     .table-eighth {
-      width: 90px;
+      width: 59px;
     }
 
     .address {
@@ -231,7 +243,7 @@ const S = {
     }
 
     .farm_number {
-      width: 132px;
+      width: 187px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -357,8 +369,9 @@ const S = {
 
 function FarmList() {
   const invalidateQueries = useInvalidateQueries();
-  const [isNameOrderBy, setIsNameOrderBy] = useState(0);
-  const [isStateOrderBy, setIsStateOrderBy] = useState(0);
+  const [isFarmhouseIdOrder, setIsFarmHouseIdOrder] = useState(1);
+  const [isNameOrderBy, setIsNameOrderBy] = useState(2);
+  const [isStateOrderBy, setIsStateOrderBy] = useState(2);
 
   // 페이지네이션
   const [page, setPage] = useState(1);
@@ -366,33 +379,10 @@ function FarmList() {
   //농가목록 데이터
   const [farmList, setFarmList] = useState([]);
 
-  // 농가명 정렬
-  const sortByFarmName = useCallback(() => {
-    if (isNameOrderBy === 0) {
-      setIsNameOrderBy(1);
-    } else {
-      setIsNameOrderBy(0);
-    }
-    setFarmList([]);
-    setPage(1);
-    invalidateQueries([farmAllListKey]);
-  }, [isNameOrderBy, farmAllListKey]);
-
-  // 상태 정렬
-  const sortByStatus = useCallback(() => {
-    if (isStateOrderBy === 0) {
-      setIsStateOrderBy(1);
-    } else {
-      setIsStateOrderBy(0);
-    }
-    setFarmList([]);
-    setPage(1);
-    invalidateQueries([farmAllListKey]);
-  }, [isStateOrderBy]);
-
   const [isAddDataClick, setIsAddDataClick] = useState(false); // 더보기 클릭 여부
 
   const { data: farmhouseList } = useFarmAllList({
+    farmhouseIdOrder: isFarmhouseIdOrder,
     nameOrder: isNameOrderBy,
     statusOrder: isStateOrderBy,
     page: page,
@@ -405,6 +395,13 @@ function FarmList() {
         setIsAddDataClick(false);
       }
     },
+    errorFn: (err) => {
+      alert(err);
+    },
+  });
+
+  const { data: farmhouseListDownload } = useFarmAllListDownload({
+    successFn: () => {},
     errorFn: (err) => {
       alert(err);
     },
@@ -477,10 +474,22 @@ function FarmList() {
     setAddFarmModalOpen(true);
   }, [addFarmModalOpen]);
 
-  // // 엑셀 다운로드 버튼
-  // const handleExcelClick = useCallback(() => {
-  //   alert("엑셀 다운로드 클릭");
-  // }, []);
+  // 엑셀 다운로드 버튼
+  const handleExcelClick = useCallback(() => {
+    try {
+      if (farmhouseListDownload === undefined) {
+        return;
+      }
+      const url = window.URL.createObjectURL(new Blob([farmhouseListDownload.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "farmhouse_list.csv");
+      document.body.appendChild(link);
+      link.click();
+    } catch (err) {
+      alert("엑셀 내려받기에 실패하였습니다. 잠시 후 다시 시도해주세요.");
+    }
+  }, [farmhouseListDownload]);
 
   const [checkArray, setCheckArray] = useState([]);
 
@@ -531,10 +540,10 @@ function FarmList() {
             <p className="info-sub">농가 목록 추가, 수정, 삭제, QR코드 관리</p>
           </div>
           <div className="button-wrap">
-            {/* <S.ExcelButton onClick={handleExcelClick}>
+            <S.ExcelButton onClick={handleExcelClick}>
               <ExcelIcon width={20} height={25} />
               <p>엑셀 내려받기</p>
-            </S.ExcelButton> */}
+            </S.ExcelButton>
             <S.AddButton onClick={handleAddFarmModalClick}>
               <AddIcon width={24} height={24} />
               <p>농가 추가</p>
@@ -566,22 +575,144 @@ function FarmList() {
           {checkArray.length === 0 ? (
             <>
               <p className="header-table">파종기 S/N</p>
-              <p className="header-table-second">농가 ID</p>
+              <div className="header-table-third arrow-wrap">
+                <p>농가 ID</p>
+                {isFarmhouseIdOrder === 0 && (
+                  <DownArrow
+                    width={24}
+                    height={24}
+                    onClick={() => {
+                      setFarmList([]);
+                      setPage(1);
+                      setIsFarmHouseIdOrder(1);
+                      setIsNameOrderBy(2);
+                      setIsStateOrderBy(2);
+                      invalidateQueries([farmAllListKey]);
+                    }}
+                  />
+                )}
+                {isFarmhouseIdOrder === 1 && (
+                  <UpArrow
+                    width={24}
+                    height={24}
+                    onClick={() => {
+                      setFarmList([]);
+                      setPage(1);
+                      setIsFarmHouseIdOrder(2);
+                      setIsNameOrderBy(2);
+                      setIsStateOrderBy(2);
+                      invalidateQueries([farmAllListKey]);
+                    }}
+                  />
+                )}
+                {isFarmhouseIdOrder === 2 && (
+                  <p
+                    className="order-none-icon"
+                    onClick={() => {
+                      setFarmList([]);
+                      setPage(1);
+                      setIsFarmHouseIdOrder(0);
+                      setIsNameOrderBy(2);
+                      setIsStateOrderBy(2);
+                      invalidateQueries([farmAllListKey]);
+                    }}>
+                    -
+                  </p>
+                )}
+              </div>
               <div className="header-table-third arrow-wrap">
                 <p>농가명</p>
-                <div className="icon-wrap" onClick={sortByFarmName}>
-                  {isNameOrderBy ? <UpArrow width={24} height={24} /> : <DownArrow width={24} height={24} />}
-                </div>
+                {isNameOrderBy === 0 && (
+                  <DownArrow
+                    width={24}
+                    height={24}
+                    onClick={() => {
+                      setFarmList([]);
+                      setPage(1);
+                      setIsFarmHouseIdOrder(2);
+                      setIsNameOrderBy(1);
+                      setIsStateOrderBy(2);
+                      invalidateQueries([farmAllListKey]);
+                    }}
+                  />
+                )}
+                {isNameOrderBy === 1 && (
+                  <UpArrow
+                    width={24}
+                    height={24}
+                    onClick={() => {
+                      setFarmList([]);
+                      setPage(1);
+                      setIsFarmHouseIdOrder(2);
+                      setIsNameOrderBy(2);
+                      setIsStateOrderBy(2);
+                      invalidateQueries([farmAllListKey]);
+                    }}
+                  />
+                )}
+                {isNameOrderBy === 2 && (
+                  <p
+                    className="order-none-icon"
+                    onClick={() => {
+                      setFarmList([]);
+                      setPage(1);
+                      setIsFarmHouseIdOrder(2);
+                      setIsNameOrderBy(0);
+                      setIsStateOrderBy(2);
+                      invalidateQueries([farmAllListKey]);
+                    }}>
+                    -
+                  </p>
+                )}
               </div>
               <p className="header-table-fourth">생산자명</p>
-              <p className="header-table">육묘업등록번호</p>
-              <p className="header-table">주소</p>
+              <p className="header-table-fifth">육묘업등록번호</p>
+              <p className="header-table-sixth">주소</p>
               <p className="header-table">연락처</p>
               <div className="header-table-eighth arrow-wrap">
                 <p>상태</p>
-                <div className="icon-wrap" onClick={sortByStatus}>
-                  {isStateOrderBy ? <UpArrow width={24} height={24} /> : <DownArrow width={24} height={24} />}
-                </div>
+                {isStateOrderBy === 0 && (
+                  <DownArrow
+                    width={24}
+                    height={24}
+                    onClick={() => {
+                      setFarmList([]);
+                      setPage(1);
+                      setIsFarmHouseIdOrder(2);
+                      setIsStateOrderBy(1);
+                      setIsNameOrderBy(2);
+                      invalidateQueries([farmAllListKey]);
+                    }}
+                  />
+                )}
+                {isStateOrderBy === 1 && (
+                  <UpArrow
+                    width={24}
+                    height={24}
+                    onClick={() => {
+                      setFarmList([]);
+                      setPage(1);
+                      setIsFarmHouseIdOrder(2);
+                      setIsStateOrderBy(2);
+                      setIsNameOrderBy(2);
+                      invalidateQueries([farmAllListKey]);
+                    }}
+                  />
+                )}
+                {isStateOrderBy === 2 && (
+                  <p
+                    className="order-none-icon"
+                    onClick={() => {
+                      setFarmList([]);
+                      setPage(1);
+                      setIsFarmHouseIdOrder(2);
+                      setIsStateOrderBy(0);
+                      setIsNameOrderBy(2);
+                      invalidateQueries([farmAllListKey]);
+                    }}>
+                    -
+                  </p>
+                )}
               </div>
               <p></p>
             </>
@@ -621,7 +752,9 @@ function FarmList() {
                   <p className="farm_name">{data?.name}</p>
                 </div>
                 <p className="table-text name">{data?.producer_name}</p>
-                <p className="table-text farm_number">{data?.nursery_number}</p>
+                <p className="table-text farm_number">
+                  {data?.nursery_number === null || data?.nursery_number === "" ? <p>-</p> : data?.nursery_number}
+                </p>
                 <p className="table-text address" id={`address${index}`}>
                   {data?.address.split("||")[1] + " " + data?.address.split("||")[2]}
                 </p>

@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Depends, Request, UploadFile, File, Form
 from starlette.responses import JSONResponse
+from sqlalchemy import case
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import func
+from sqlalchemy.exc import IntegrityError
 import bcrypt
 from datetime import datetime, timedelta
 
@@ -313,13 +315,14 @@ async def create_farm_house(
         return JSONResponse(
             status_code=404, content=dict(msg="DUPLICATED_FARM_HOUSE_NAME")
         )
-    dup_check_farm_house_nursery_number = get_(
-        db, models.FarmHouse, nursery_number=nursery_number
-    )
-    if dup_check_farm_house_nursery_number != None:
-        return JSONResponse(
-            status_code=404, content=dict(msg="DUPLICATED_FARM_HOUSE_NURSERY_NUMBER")
+    if nursery_number is not None:
+        dup_check_farm_house_nursery_number = get_(
+            db, models.FarmHouse, nursery_number=nursery_number
         )
+        if dup_check_farm_house_nursery_number != None:
+            return JSONResponse(
+                status_code=404, content=dict(msg="DUPLICATED_FARM_HOUSE_NURSERY_NUMBER")
+            )
     dup_check_farm_house_id = get_(db, models.FarmHouse, farm_house_id=farm_house_id)
     if dup_check_farm_house_id != None:
         return JSONResponse(
@@ -398,12 +401,13 @@ async def create_farm_house(
     "/farmhouse/list",
     status_code=200,
     response_model=schemas.PageFarmHouseResponse,
-    description="name_order == 0 : 농가이름 오름차순, name_order == 1 : 농가이름 내림차순<br/>status_order == 0 : 파종기 상태 오름차순 (OFF -> ON -> PUASE), status_order == 1 : 파종기 상태 내림차순 (PUASE -> ON -> OFF)<br/>page : 요청할 페이지 번호<br/>size : 한 페이지에 보여줄 갯수",
+    description="farmhouse_id_order == 0 : 농가ID 오름차순, farmhouse_id_order == 1 : 농가ID 내림차순<br/>name_order == 0 : 농가이름 오름차순, name_order == 1 : 농가이름 내림차순<br/>status_order == 0 : 파종기 상태 오름차순 (OFF -> PUASE -> ON), status_order == 1 : 파종기 상태 내림차순 (ON -> PAUSE -> OFF)<br/>page : 요청할 페이지 번호<br/>size : 한 페이지에 보여줄 갯수",
 )
 def get_farm_house_list(
     request: Request,
-    name_order: int = 0,
-    status_order: int = 1,
+    farmhouse_id_order: int = None,
+    name_order: int = None,
+    status_order: int = None,
     db: Session = Depends(get_db),
     page: int = 1,  # 페이지 번호
     size: int = 8,  # 한 페이지에 보여줄 게시물 갯수
@@ -436,15 +440,34 @@ def get_farm_house_list(
             subquery.c.max_status_id == planterModels.PlanterStatus.id,
         )
         .filter(models.FarmHouse.is_del == False)
-        .order_by(
-            planterModels.PlanterStatus.status.asc()
-            if status_order == 0
-            else planterModels.PlanterStatus.status.desc(),
-            models.FarmHouse.name.asc()
-            if name_order == 0
-            else models.FarmHouse.name.desc(),
-        )
     )
+
+    if farmhouse_id_order == 0:
+        farm_houses = farm_houses.order_by(models.FarmHouse.farm_house_id.asc())
+    elif farmhouse_id_order == 1:
+        farm_houses = farm_houses.order_by(models.FarmHouse.farm_house_id.desc())
+    if name_order == 0:
+        farm_houses = farm_houses.order_by(models.FarmHouse.name.asc())
+    elif name_order == 1:
+        farm_houses = farm_houses.order_by(models.FarmHouse.name.desc())
+    if status_order == 0:
+        farm_houses = farm_houses.order_by(
+            case(
+                (planterModels.PlanterStatus.status == "OFF", 0),
+                (planterModels.PlanterStatus.status == "PAUSE", 1),
+                (planterModels.PlanterStatus.status == "ON", 2),
+                else_=3,
+            ).asc()
+        )
+    elif status_order == 1:
+        farm_houses = farm_houses.order_by(
+            case(
+                (planterModels.PlanterStatus.status == "OFF", 0),
+                (planterModels.PlanterStatus.status == "PAUSE", 1),
+                (planterModels.PlanterStatus.status == "ON", 2),
+                else_=3,
+            ).desc()
+        )
 
     total = farm_houses.count()
 
@@ -507,13 +530,26 @@ def update_farm_house_info(
     if not farmhouse:
         return JSONResponse(status_code=404, content=dict(msg="FARMHOUSE_NOT_FOUND"))
 
-    for field in farmhouse_data.__dict__:
-        if getattr(farmhouse_data, field) is not None:
-            setattr(farmhouse, field, getattr(farmhouse_data, field))
-
-    db.commit()
-    db.refresh(farmhouse)
-
+    try:
+        for field in farmhouse_data.__dict__:
+            if getattr(farmhouse_data, field) is not None:
+                setattr(farmhouse, field, getattr(farmhouse_data, field))
+        if farmhouse_data.nursery_number == None:
+            setattr(farmhouse, "nursery_number", None)
+        db.commit()
+        db.refresh(farmhouse)
+    except IntegrityError as e:
+        print(e)
+        if "nursery_number" in e.params:
+            return JSONResponse(
+                status_code=400, content=dict(msg="DUPLICATED_NURSERY_NUMBER")
+            )
+        else:
+            return JSONResponse(
+                status_code=400, content=dict(msg="HAS_DUPLICATED_VALUES")
+            )
+    except Exception:
+        return JSONResponse(status_code=400, content=dict(msg="UPDATED_FAILED"))
     return JSONResponse(status_code=200, content=dict(msg="UPDATE_SUCCESS"))
 
 

@@ -1,6 +1,7 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import styled from "styled-components";
 
+// import domtoimage from 'dom-to-image';
 import { saveAs } from "file-saver";
 
 import XIcon from "@images/common/icon-x.svg";
@@ -145,11 +146,55 @@ function QrDownloadModal({ qrDownloadModalOpen, setQrDownloadModalOpen }) {
   }, []);
 
   const qrImage = process.env.NEXT_PUBLIC_END_POINT + qrDownloadModalOpen?.data?.planter?.qrcode;
-  // const qrImage = "https://b.datanursery.kr" + qrDownloadModalOpen?.data?.planter?.qrcode;
+
+  // const [base64Image, setBase64Image] = useState(null);
 
   const qrCodeDownloadClick = useCallback(() => {
+    // #1 (미리보기)
+    // 이미지파일이 열림
     let url = qrImage;
     saveAs(url, qrDownloadModalOpen?.data?.planter?.serial_number + "-qrcode");
+
+    /////////////////////////////////
+
+    // #base64 변환1
+
+    // URL 형식의 이미지
+    // const imageUrl = `process.env.NEXT_PUBLIC_END_POINT + qrDownloadModalOpen?.data?.planter?.qrcode`;
+
+    // // 변환 안되는 오류
+    // // XMLHttpRequest를 사용하여 이미지 가져오기
+    // const xhr = new XMLHttpRequest();
+    // xhr.open("GET", imageUrl, true);
+    // xhr.responseType = "blob";
+
+    // xhr.onload = function () {
+    //   if (xhr.status === 200) {
+    //     // Blob을 가져왔습니다.
+    //     const blob = xhr.response;
+
+    //     // Blob을 Base64로 변환하기
+    //     const reader = new FileReader();
+    //     reader.onloadend = function () {
+    //       const base64Data = reader.result;
+    //       // 여기서 base64Data를 사용하거나 저장할 수 있습니다.
+    //       setBase64Image(base64Data);
+    //     };
+    //     reader.readAsDataURL(blob);
+
+    //   }
+    // };
+    // xhr.send();
+
+    ////////////////////////////
+
+    // // base64형식으로 하면 다운로드됨
+    // const filename = "qrcode.png";
+
+    // const link = document.createElement("a");
+    // link.href = base64Image; // base64형식으로
+    // link.download = filename;
+    // link.click();
   }, [qrImage]);
 
   return (
@@ -167,7 +212,7 @@ function QrDownloadModal({ qrDownloadModalOpen, setQrDownloadModalOpen }) {
           <div className="input-inner">
             <p className="title-info">농가명</p>
             <div className="input-wrap">
-              <input value={qrDownloadModalOpen.data.name} />
+              <input value={qrDownloadModalOpen.data.name} disabled />
             </div>
           </div>
         </S.InputWrap>

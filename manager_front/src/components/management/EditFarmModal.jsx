@@ -94,6 +94,9 @@ const S = {
         ${({ theme }) => theme.textStyle.h6Bold};
         color: ${({ theme }) => theme.basic.gray50};
       }
+      input:focus-visible {
+        outline: none;
+      }
     }
     .input-wrap {
       width: 100%;
@@ -193,6 +196,7 @@ function EditFarmModal({ editModalOpen, setEditModalOpen, setPage, farmList, set
   const invalidateQueries = useInvalidateQueries();
   const [isDefaultAlertShow, setIsDefaultAlertShowState] = useRecoilState(isDefaultAlertShowState);
 
+  const [editNurseryNumber, setEditNurseryNumber] = useState(editModalOpen.data.nursery_number);
   const [editFarmName, setEditFarmName] = useState(editModalOpen.data.name);
   const [editName, setEditName] = useState(editModalOpen.data.producer_name);
   const [editPhone, setEditPhone] = useState(editModalOpen.data.phone);
@@ -208,16 +212,23 @@ function EditFarmModal({ editModalOpen, setEditModalOpen, setPage, farmList, set
     updateFarmhouseMutate({
       data: {
         id: editModalOpen.data.id,
+        nursery_number: editNurseryNumber === "" ? null : editNurseryNumber,
         name: editFarmName,
         producer_name: editName,
         phone: editPhone,
         address: editAddressCode + "||" + editAddress + "||" + editAddressData,
       },
     });
-    setFarmList([]);
-    setPage(1);
-    closeModal();
-  }, [editModalOpen, editName, editFarmName, editAddressCode, editAddress, editAddressData, farmList]);
+  }, [
+    editModalOpen,
+    editName,
+    editNurseryNumber,
+    editFarmName,
+    editAddressCode,
+    editAddress,
+    editAddressData,
+    farmList,
+  ]);
 
   const open = useDaumPostcodePopup("https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js");
 
@@ -254,6 +265,8 @@ function EditFarmModal({ editModalOpen, setEditModalOpen, setPage, farmList, set
         okClick: null,
       });
       closeModal();
+      setFarmList([]);
+      setPage(1);
       invalidateQueries([farmAllListKey]);
     },
     (error) => {
@@ -288,12 +301,16 @@ function EditFarmModal({ editModalOpen, setEditModalOpen, setPage, farmList, set
             <input value={editModalOpen.data.planter.serial_number} disabled />
           </div>
           <p className="title-info">육묘업 등록번호</p>
-          <div className="input-wrap-off">
-            <input value={editModalOpen.data.nursery_number} disabled />
+          <div className="input-wrap">
+            <input
+              placeholder="육묘업등록번호를 입력하세요."
+              value={editNurseryNumber}
+              onChange={(e) => setEditNurseryNumber(e.target.value)}
+            />
           </div>
           <p className="title-info">농가ID</p>
           <div className="input-wrap-off">
-            <input value={editModalOpen.data.farm_house_id} />
+            <input value={editModalOpen.data.farm_house_id} disabled />
           </div>
           <p className="title-info">농가명</p>
           <div className="input-wrap">

@@ -181,15 +181,6 @@ const S = {
     margin-top: -19px;
     display: flex;
     justify-content: space-around;
-
-    .chrome-picker {
-      /* height: 363px; */
-    }
-    /* height: 238px; */
-
-    /* position: absolute;
-    top: 180px;
-    left: 55px; */
   `,
 };
 

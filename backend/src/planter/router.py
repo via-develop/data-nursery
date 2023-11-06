@@ -418,7 +418,12 @@ def craete_planter_tray(
     "/tray/list", status_code=200, response_model=schemas.MultiplePlanterTrayResponse
 )
 def planter_tray_list(db: Session = Depends(get_db)):
-    planter_trays = db.query(models.PlanterTray).filter_by(is_del=False).all()
+    planter_trays = (
+        db.query(models.PlanterTray)
+        .filter_by(is_del=False)
+        .order_by(models.PlanterTray.total)
+        .all()
+    )
 
     # planter_tray_list = [
     #     {"id": tray.id, "width": tray.width, "height": tray.height, "total": tray.total}

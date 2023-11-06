@@ -1,79 +1,59 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import styled from "styled-components";
 
 import Chart from "chart.js/auto";
 import { registerables } from "chart.js";
 
-import usePlanterCrop from "@src/hooks/queries/planter/usePlanterCrop";
+// import "chartjs-adapter-date-fns";
+import "chartjs-adapter-moment";
 
 const S = {
   Wrap: styled.div`
-    height: 340px;
+    height: 737px;
     width: 100%;
     display: flex;
     flex-direction: column;
     gap: 37px;
   `,
-  Legend: styled.div`
-    text-align: right;
-    padding-right: 15px;
-
-    p {
-      font-size: 12px;
-      font-weight: 400;
-      line-height: 16px;
-      color: "#737F8F";
-    }
-    .legend-inner {
-      display: flex;
-      justify-content: end;
-      align-items: center;
-      gap: 8px;
-    }
-    .legend-color {
-      width: 18px;
-      height: 4px;
-      display: flex;
-      align-items: center;
-      border-radius: 3px;
-    }
-    .inner {
-      display: flex;
-      justify-content: end;
-      align-items: center;
-      gap: 8px;
-    }
-  `,
 };
 
-function GraphCropProductionMonth() {
-  const { data: planterCrops } = usePlanterCrop({
-    queryType: "month",
-    successFn: () => {},
-    errorFn: (err) => {
-      alert(err);
-    },
-  });
-
-  //범례에서 사용할 배열
-  const nameColorArray =
-    !!planterCrops &&
-    Object.keys(planterCrops).map((key) => ({
-      name: key,
-      color: planterCrops[key][0].color,
-    }));
+function GraphTodayProduction({ planterDateRange }) {
+  useEffect(() => {
+    if (!planterDateRange) {
+      return;
+    }
+  }, [planterDateRange]);
 
   const graphRef = useRef(null);
   let graphInstance = null;
 
-  useEffect(() => {
-    if (!planterCrops) {
-      return;
+  const monthDay = [];
+  for (let i = 1; i <= 30; i++) {
+    monthDay.push(i);
+  }
+
+  // 생산량 배열
+  const workingGraphArr = [];
+  for (const item of planterDateRange) {
+    workingGraphArr.push(item.output);
+  }
+
+  // 생산량 시간 배열
+  const timeGraphArr = [];
+  for (const item of planterDateRange) {
+    timeGraphArr.push(item.output_updated_at);
+  }
+
+  // 생산량 + 시간 배열
+  const workingGraphTimeArr = useMemo(() => {
+    const data = [];
+    for (let i = 0; i < planterDateRange.length; i++) {
+      data.push({ x: timeGraphArr[i], y: workingGraphArr[i] });
     }
+    return data;
+  }, [workingGraphArr, timeGraphArr]);
 
-    // 라벨 배열을 생성
-    const labels = Array.from({ length: 12 }, (_, i) => i + 1);
-
+  useEffect(() => {
     const graphCtx = graphRef.current?.getContext("2d");
 
     const annotationline = {
@@ -100,25 +80,23 @@ function GraphCropProductionMonth() {
       graphInstance = new Chart(graphCtx, {
         type: "line",
         data: {
-          labels: labels,
-          datasets: Object.keys(planterCrops).map((key) => ({
-            label: key,
-            data: labels.map((month) => {
-              // key에 해당하는 데이터를 라벨과 매칭
-              const dayData = planterCrops[key].find((item) => item.month === month);
-              return dayData ? dayData.output : 0;
-            }),
-            borderColor: planterCrops[key][0].color, // key에 해당하는 첫 번째 데이터의 color를 사용
-            pointBackgroundColor: planterCrops[key][0].color, // key에 해당하는 첫 번째 데이터의 color를 사용
-            pointBorderColor: "#4F5B6C",
-            borderWidth: 3,
-            fill: false,
-            lineTension: 0.6,
-            pointHoverRadius: 6,
-            pointRadius: 0,
-            pointHoverBorderWidth: 5,
-            pointHoverBackgroundColor: "#fff",
-          })),
+          // labels: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24], // 오늘 날짜의 일수를 라벨로 사용
+          datasets: [
+            {
+              // data: workingGraphArr,
+              data: workingGraphTimeArr,
+              borderColor: "#FB97A3",
+              pointBackgroundColor: "#FB97A3",
+              pointBorderColor: "#4F5B6C",
+              borderWidth: 3,
+              fill: false,
+              lineTension: 0.6,
+              pointHoverRadius: 6,
+              pointRadius: 0,
+              pointHoverBorderWidth: 5,
+              pointHoverBackgroundColor: "#fff",
+            },
+          ],
         },
         plugins: [annotationline],
         options: {
@@ -126,18 +104,23 @@ function GraphCropProductionMonth() {
             padding: {
               left: 20,
               right: 20,
+              top: 50,
             },
           },
           maintainAspectRatio: false, //그래프 크기를 조절하기 위해서
           scales: {
             x: {
+              type: "time",
+              time: {
+                unit: "hour",
+              },
               grid: {
                 drawOnChartArea: false,
               },
               title: {
                 display: true,
                 align: "end",
-                text: "월",
+                text: "시",
               },
             },
             y: {
@@ -145,11 +128,11 @@ function GraphCropProductionMonth() {
                 drawOnChartArea: false,
               },
               position: "left",
-              // title: {
-              //   display: true,
-              //   align: "end",
-              //   text: "개 (단위 : 만)",
-              // },
+              title: {
+                display: true,
+                align: "end",
+                text: "개 (단위 : 천)",
+              },
               beginAtZero: true,
               ticks: {
                 stepSize: 10,
@@ -180,7 +163,7 @@ function GraphCropProductionMonth() {
               bodyColor: "#fff",
               callbacks: {
                 title: function (context) {
-                  return context[0].dataset.label;
+                  return context[0].raw.x.split("T")[1].slice(0, 5);
                 },
                 beforeBody: function (context) {
                   return context[0].formattedValue + "개";
@@ -205,11 +188,11 @@ function GraphCropProductionMonth() {
     return () => {
       destroyChart(); // 컴포넌트가 unmount될 때 차트 파괴
     };
-  }, [planterCrops]);
+  }, []);
 
   return (
     <S.Wrap>
-      <S.Legend>
+      {/* <S.Legend>
         <div className="legend-inner">
           {!!nameColorArray &&
             nameColorArray?.map((data, index) => {
@@ -221,10 +204,10 @@ function GraphCropProductionMonth() {
               );
             })}
         </div>
-      </S.Legend>
+      </S.Legend> */}
       <canvas ref={graphRef} />
     </S.Wrap>
   );
 }
 
-export default GraphCropProductionMonth;
+export default GraphTodayProduction;

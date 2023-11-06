@@ -44,6 +44,7 @@ const S = {
     padding: 64px 0px 24px 0px;
     border-radius: 8px;
     border: 1px solid #c2d6e1;
+    min-height: 446px;
   `,
 };
 

@@ -3,10 +3,10 @@ import { useQuery } from "@tanstack/react-query";
 import { getAllFarmListAPI } from "@apis/authAPIs";
 import { farmAllListKey } from "@src/utils/query-keys/AuthQueryKeys";
 
-export default function useFarmAllList({ nameOrder, statusOrder, page, size, successFn, errorFn }) {
+export default function useFarmAllList({ farmhouseIdOrder, nameOrder, statusOrder, page, size, successFn, errorFn }) {
   return useQuery(
-    [farmAllListKey, nameOrder, statusOrder, page, size],
-    () => getAllFarmListAPI(nameOrder, statusOrder, page, size),
+    [farmAllListKey, farmhouseIdOrder, nameOrder, statusOrder, page, size],
+    () => getAllFarmListAPI(farmhouseIdOrder, nameOrder, statusOrder, page, size),
     {
       staleTime: 10 * (60 * 1000), // 10 mins
       cacheTime: 15 * (60 * 1000), // 15 mins

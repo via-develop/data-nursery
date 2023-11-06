@@ -9,10 +9,12 @@ import usePlanterFarm from "@src/hooks/queries/planter/usePlanterFarm";
 const S = {
   Wrap: styled.div`
     padding: 0px 40px;
+    width: 100%;
 
     .scrollBox {
       max-height: 300px;
       overflow-y: auto;
+      width: 100%;
 
       &::-webkit-scrollbar {
         display: block !important;
@@ -28,7 +30,18 @@ const S = {
       }
     }
     .scrollBoxBody {
+      width: 98%;
+
+      .canvas-top {
+        width: 100%;
+      }
+    }
+    .box {
       width: 100%;
+      .canvas-bottom {
+        width: 100%;
+        height: 45px;
+      }
     }
   `,
 };
@@ -117,12 +130,11 @@ function GraphFarmHouseProductionMonth() {
         },
         plugins: [horizontalBackgroundPlugin],
         options: {
-          maintainAspectRatio: false,
+          maintainAspectRatio: false, // 그래프 크기를 조절하기 위해서
           indexAxis: "y", // 그래프 가로형
           interaction: {
             intersect: false, // 툴팁 데이터위에 hover했을때만 나오게 하는것 false
           },
-          responsive: false, // 그래프 크기를 조절하기 위해서
           scales: {
             x: {
               grid: {
@@ -209,7 +221,6 @@ function GraphFarmHouseProductionMonth() {
               },
             },
           },
-          responsive: false, // 그래프 크기를 조절하기 위해서
           plugins: {
             legend: {
               display: false,
@@ -243,11 +254,11 @@ function GraphFarmHouseProductionMonth() {
     <S.Wrap>
       <div className="scrollBox">
         <div className="scrollBoxBody">
-          <canvas ref={graphRef} height={450} width={530} />
+          <canvas ref={graphRef} className="canvas-top" />
         </div>
       </div>
       <div className="box">
-        <canvas ref={graphUnitRef} height={45} width={530} />
+        <canvas ref={graphUnitRef} className="canvas-bottom" />
       </div>
     </S.Wrap>
   );

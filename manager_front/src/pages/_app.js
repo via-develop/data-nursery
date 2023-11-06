@@ -36,16 +36,19 @@ export default function App({ Component, pageProps }) {
               <GlobalStyle />
               <Head>
                 <title>Data Nursery - Admin</title>
-                {/* <meta name="description" content="대한민국 NO.1 자동파종기 관리 시스템"/>
-                <meta property="og:type" content="website" />
-                <meta property="og:site_name" content="Data Nursery - Admin" />
-                <meta property="og:locale" content="ko_KR" />
-                <meta property="og:image:width" content="800" />
-                <meta property="og:image:height" content="401" />
-                <meta property="og:url" content="https://admin.datanursery.kr/login" />
-                <meta property="og:title" content="Data Nursery - Admin" />
-                <meta property="og:image" content="/images/og/og-img-kakao.svg" />
-                <meta name="viewport" content="width=device-width, initial-scale=1.0,maximum-scale=1.0,user-scalable=0" /> */}
+                <meta name="description" content="대한민국 NO.1 자동파종기 관리 시스템"></meta>
+                <link rel="icon" href="/favicon.ico" />
+
+                {/* <meta property="og:url" content="https://datanursery.kr" />
+                  <meta property="og:type" content="website" />
+                  <meta property="og:site_name" content="Data Nursery" />
+                  <meta property="og:title" content="Data Nursery" />
+                  <meta property="og:description" content="대한민국 NO.1 자동파종기 관리 시스템" />
+                  <meta property="og:image" content="/images/common/og-image.svg" /> */}
+                <meta
+                  name="viewport"
+                  content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"
+                />
               </Head>
               <Component {...pageProps} />
             </ThemeProvider>

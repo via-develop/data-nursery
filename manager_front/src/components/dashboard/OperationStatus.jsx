@@ -4,13 +4,16 @@ import { useInView } from "react-intersection-observer";
 
 import { PlanterRealTimeKey } from "@src/utils/query-keys/PlanterQueryKeys";
 import useInvalidateQueries from "@src/hooks/queries/common/useInvalidateQueries";
+import usePlanterRealTime from "@src/hooks/queries/planter/usePlanterRealTime";
+import usePlanterRealTimeDateRange from "@src/hooks/queries/planter/usePlanterRealTimeDateRange";
+import { YYYYMMDDDash } from "@src/utils/Formatting";
 
 import { Tooltip } from "react-tooltip";
 import { NumberCommaFormatting, CountPlusFormatting } from "@src/utils/Formatting";
+import RealTimeDetailModal from "./RealTimeDetailModal";
 import BarIcon from "@images/dashboard/icon-bar.svg";
 import StatusOnIcon from "@images/dashboard/operation_status_on.svg";
 import StatusOffIcon from "@images/dashboard/operation_status_off.svg";
-import usePlanterRealTime from "@src/hooks/queries/planter/usePlanterRealTime";
 
 const S = {
   Wrap: styled.div`
@@ -23,6 +26,16 @@ const S = {
     gap: 28px;
     display: flex;
     flex-direction: column;
+
+    .modal-wrap {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #00000040;
+      z-index: 1;
+    }
   `,
   TitleWrap: styled.div`
     display: flex;
@@ -71,6 +84,7 @@ const S = {
     }
   `,
   StatusBlock: styled.div`
+    cursor: pointer;
     border-radius: 8px;
     padding: 20px 16px 20px 24px;
     width: fit-content;
@@ -82,7 +96,7 @@ const S = {
       flex-direction: column;
       gap: 8px;
       justify-content: center;
-      cursor: default;
+      /* cursor: default; */
     }
     .block-count-wrap {
       display: flex;
@@ -177,6 +191,13 @@ function OperationStatus({ currentDate }) {
 
   const [operationListPage, setOperationListPage] = useState(1);
   const [operationList, setOperationList] = useState([]);
+  const [selectPlanterId, setSelectPlanterId] = useState("");
+  // const [valueList,setValueList] = useState();
+
+  const [dateRange, setDateRange] = useState({
+    startDate: new Date(),
+    endDate: new Date(),
+  });
 
   // inView : 요소가 뷰포트에 진입했는지 여부
   const { ref, inView, entry } = useInView({
@@ -187,8 +208,28 @@ function OperationStatus({ currentDate }) {
     page: operationListPage,
     size: 20,
     successFn: (res) => {
-      setOperationList((prev) => [...prev, ...res.planter]);
+      const resultList = operationList.concat(res.planter);
+      // setOperationList((prev) => [...prev, ...res.planter]);
+      const valueList = [...new Set(resultList)];
+      setOperationList(valueList);
     },
+    errorFn: (err) => {
+      alert(err);
+    },
+  });
+
+  const handelRealTimeDetailClick = useCallback(
+    (data) => {
+      setRealTimeModalOpen({ open: true, data: data });
+      setSelectPlanterId(data.planter);
+    },
+    [selectPlanterId],
+  );
+
+  const { data: planterDateRange } = usePlanterRealTimeDateRange({
+    planterId: selectPlanterId,
+    dateRange: YYYYMMDDDash(dateRange.startDate) + "||" + YYYYMMDDDash(dateRange.endDate),
+    successFn: (res) => {},
     errorFn: (err) => {
       alert(err);
     },
@@ -198,8 +239,8 @@ function OperationStatus({ currentDate }) {
     if (!planterOperationStatus) {
       return;
     }
+
     const intervalId = setInterval(() => {
-      // planterOperationStatus
       invalidateQueries([PlanterRealTimeKey]);
     }, 30000); // 30초마다 업데이트
 
@@ -219,57 +260,79 @@ function OperationStatus({ currentDate }) {
     }
   }, [planterOperationStatus, operationListPage, operationList]);
 
+  //실시간가동현황 모달 오픈
+  const [realTimeModalOpen, setRealTimeModalOpen] = useState({
+    open: false,
+    data: undefined,
+  });
+
   return (
-    <S.Wrap>
-      <S.TitleWrap>
-        <BarIcon width={5} height={28} />
-        <p className="title">실시간 가동현황</p>
-        <p className="status-date">{currentDate}</p>
-      </S.TitleWrap>
-      <S.ContentWrap>
-        {planterOperationStatus?.planter?.map((data, index) => {
-          return (
-            <>
-              <S.StatusBlock key={`map${index}`} className={data?.planter_status === "ON" ? "statusOn" : "statusOff"}>
-                {data?.planter_status === "ON" ? (
-                  <StatusOnIcon width={68} height={68} />
-                ) : (
-                  <StatusOffIcon width={68} height={68} />
-                )}
-                <div className="block-text-wrap">
-                  <p className={data?.planter_status === "ON" ? "block-title-on" : "block-title-off"}>
-                    {" "}
-                    {data?.farm_house_name}
-                  </p>
-                  <div className="block-count-wrap">
-                    <p
-                      id={`status-num${index}`}
-                      className={data?.planter_status === "ON" ? "block-count-on" : "block-count-off"}>
-                      {CountPlusFormatting(data?.planter_output)}
+    operationList && (
+      <S.Wrap>
+        <S.TitleWrap>
+          <BarIcon width={5} height={28} />
+          <p className="title">실시간 가동현황</p>
+          <p className="status-date">{currentDate}</p>
+        </S.TitleWrap>
+        <S.ContentWrap>
+          {operationList.map((data, index) => {
+            return (
+              <>
+                <S.StatusBlock
+                  key={`map${index}`}
+                  className={data?.planter_status === "ON" ? "statusOn" : "statusOff"}
+                  onClick={() => handelRealTimeDetailClick(data)}>
+                  {data?.planter_status === "ON" ? (
+                    <StatusOnIcon width={68} height={68} />
+                  ) : (
+                    <StatusOffIcon width={68} height={68} />
+                  )}
+                  <div className="block-text-wrap">
+                    <p className={data?.planter_status === "ON" ? "block-title-on" : "block-title-off"}>
+                      {" "}
+                      {data?.farm_house_name}
                     </p>
-                    <p className="block-unit">개</p>
-                  </div>
-                </div>
-                <S.StatusCountTooltip
-                  anchorId={`status-num${index}`}
-                  place="bottom"
-                  content={
-                    <div className="text-wrap">
-                      <p className="tooltip-title">{data?.farm_house_name}</p>
-                      <div className="count-wrap">
-                        <p className="count">{NumberCommaFormatting(data?.planter_output)}</p>
-                        <p className="unit">개</p>
-                      </div>
+                    <div className="block-count-wrap">
+                      <p
+                        id={`status-num${index}`}
+                        className={data?.planter_status === "ON" ? "block-count-on" : "block-count-off"}>
+                        {CountPlusFormatting(data?.planter_output)}
+                      </p>
+                      <p className="block-unit">개</p>
                     </div>
-                  }
-                />
-              </S.StatusBlock>
-            </>
-          );
-        })}
-        <div ref={ref} />
-      </S.ContentWrap>
-    </S.Wrap>
+                  </div>
+                  <S.StatusCountTooltip
+                    anchorId={`status-num${index}`}
+                    place="bottom"
+                    content={
+                      <div className="text-wrap">
+                        <p className="tooltip-title">{data?.farm_house_name}</p>
+                        <div className="count-wrap">
+                          <p className="count">{NumberCommaFormatting(data?.planter_output)}</p>
+                          <p className="unit">개</p>
+                        </div>
+                      </div>
+                    }
+                  />
+                </S.StatusBlock>
+              </>
+            );
+          })}
+          <div ref={ref} />
+        </S.ContentWrap>
+        {realTimeModalOpen.open && (
+          <div className="modal-wrap">
+            <RealTimeDetailModal
+              realTimeModalOpen={realTimeModalOpen}
+              setRealTimeModalOpen={setRealTimeModalOpen}
+              planterDateRange={planterDateRange}
+              dateRange={dateRange}
+              setDateRange={setDateRange}
+            />
+          </div>
+        )}
+      </S.Wrap>
+    )
   );
 }
 
