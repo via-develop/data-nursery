@@ -83,7 +83,8 @@ def update_planter_status_to_off():
         )
         db.execute(save_data)
         db.commit()
-        
+
+
 def post_smart_farm():
     get_smart_farm_data(Request, None, next(get_db()))
 
@@ -110,10 +111,10 @@ Schedule.add_job(
     id="update_planter_status_to_off",
 )
 
-Schedule.add_job(
-    post_smart_farm,
-    "cron",
-    hour="0",
-    minute="0",
-    id="post_smart_farm",
-)
+# Schedule.add_job(
+#     post_smart_farm,
+#     "cron",
+#     hour="0",
+#     minute="0",
+#     id="post_smart_farm",
+# )
