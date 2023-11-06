@@ -1101,10 +1101,6 @@ def get_smart_farm_data(request: Request, check_date: str = None, db: Session = 
         target_date = datetime(
             int(end_year), int(end_month), int(end_day), tzinfo=target_timezone
         ).date()
-        
-    # print("@@@@@@")
-    # print(target_date)
-    # print("@@@@@@")
     
     pw = aliased(planterModels.PlanterWork)
     pws = aliased(planterModels.PlanterWorkStatus)
@@ -1156,7 +1152,7 @@ def get_smart_farm_data(request: Request, check_date: str = None, db: Session = 
             # planter_works_with_recent_done_status.limit(1).all()
         ):
             planter_work_result = planter_work[0]
-            planter_work_status_date = planter_work[1]
+            planter_work_status_date = planter_work[1].astimezone(timezone("Asia/Seoul"))
                 
             for fatr_code in fatr_code_type:
                 xml = """<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:auto="http://auto.webservice.itis.epis.org/">
@@ -1210,24 +1206,13 @@ def get_smart_farm_data(request: Request, check_date: str = None, db: Session = 
                         </soapenv:Body>
                         </soapenv:Envelope>"""
                         
-                # print("==========")
-                # print(xml)
-                # print("==========")
-                        
                 result_data.append(xml)
             
                 r = requests.post(url, data=xml, headers=headers)
-                
-                # print("!!!!!!!!!!!!")
-                # print(r)
-                # print("!!!!!!!!!!!!")
 
         return result_data
     except Exception as e:
         # logger.error(f"[BranchViewets] national manager create branch error : {serializer.errors}")
-        # print("+++++++++")
-        # print(e)
-        # print("+++++++++")
         return JSONResponse(
             status_code=400, content=dict(msg=e)
         )
