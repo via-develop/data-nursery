@@ -1153,62 +1153,63 @@ def get_smart_farm_data(request: Request, check_date: str = None, db: Session = 
         ):
             planter_work_result = planter_work[0]
             planter_work_status_date = planter_work[1].astimezone(timezone("Asia/Seoul"))
-                
-            for fatr_code in fatr_code_type:
-                xml = """<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:auto="http://auto.webservice.itis.epis.org/">
-                    <soapenv:Header/>
-                    <soapenv:Body>
-                        <auto:sendAutoMessage>
-                            <!--Optional:-->
-                            <arg0>
-                                <!--Optional:-->"""
-                xml += "<facilityId>" + str(planter_work_result.planter_work__planter.planter_farm_house.farm_house_id) + "</facilityId>"
-                # xml += "<facilityId>PF_0021350_01</facilityId>"
-                xml += "<!--Optional:-->"
-                xml += "<fatrCode>" + str(fatr_code) + "</fatrCode>"
-                xml += """<!--Optional:-->
-                        <fldCode>HF</fldCode>
-                        <!--Optional:-->"""
-                xml += "<itemCode>" + str(planter_work_result.planter_work__crop.crop_code) + "</itemCode>"
-                xml += """<!--Optional:-->
-                        <makerId>helper58</makerId>
-                        <!--Optional:-->"""
-                xml += "<measDate>" + str(planter_work_status_date.strftime("%Y-%m-%d %H:%M:%S")) + "</measDate>"
-                xml += """<!--Optional:-->
-                        <measFacilityId></measFacilityId>
-                        <!--Optional:-->
-                        <measPlaceId></measPlaceId>
-                        <!--Optional:-->
-                        <measSecgmentId></measSecgmentId>
-                        <!--Optional:-->
-                        <regDate></regDate>
-                        <!--Optional:-->
-                        <sectCode>PD</sectCode>
-                        <!--Optional:-->
-                        <senId>1</senId>
-                        <!--Optional:-->"""
-                        
-                if fatr_code == "SP": # 품종명
-                    # xml += "<senVal>" + str(planter_work_result.crop_kind.encode(encoding='UTF-8')) + "</senVal>"
-                    xml += "<senVal>" + str(planter_work_result.crop_kind) + "</senVal>"
-                elif fatr_code == "CO": # 주문자명
-                    # xml += "<senVal>" + str("고객".encode(encoding='UTF-8')) + "</senVal>"
-                    xml += "<senVal>고객</senVal>"
-                elif fatr_code == "SQ": # 파종생산수량
-                    xml += "<senVal>" + str(planter_work_result.seed_quantity) + "</senVal>"
-                else: # 트레이수량
-                    xml += "<senVal>" + str(planter_work_result.planter_work__planter_tray.total) + "</senVal>"
-                
-                xml += "<!--Optional:-->"
-                xml += "<serlNo>" + str(planter_work_result.planter_work__planter.serial_number) + "</serlNo>"
-                xml += """</arg0>
-                        </auto:sendAutoMessage>
-                        </soapenv:Body>
-                        </soapenv:Envelope>"""
-                        
-                result_data.append(xml)
             
-                r = requests.post(url, data=xml, headers=headers)
+            if planter_work_result.seed_quantity != 0 and planter_work_result.seed_quantity != None:
+                for fatr_code in fatr_code_type:
+                    xml = """<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:auto="http://auto.webservice.itis.epis.org/">
+                        <soapenv:Header/>
+                        <soapenv:Body>
+                            <auto:sendAutoMessage>
+                                <!--Optional:-->
+                                <arg0>
+                                    <!--Optional:-->"""
+                    xml += "<facilityId>" + str(planter_work_result.planter_work__planter.planter_farm_house.farm_house_id) + "</facilityId>"
+                    # xml += "<facilityId>PF_0021350_01</facilityId>"
+                    xml += "<!--Optional:-->"
+                    xml += "<fatrCode>" + str(fatr_code) + "</fatrCode>"
+                    xml += """<!--Optional:-->
+                            <fldCode>HF</fldCode>
+                            <!--Optional:-->"""
+                    xml += "<itemCode>" + str(planter_work_result.planter_work__crop.crop_code) + "</itemCode>"
+                    xml += """<!--Optional:-->
+                            <makerId>helper58</makerId>
+                            <!--Optional:-->"""
+                    xml += "<measDate>" + str(planter_work_status_date.strftime("%Y-%m-%d %H:%M:%S")) + "</measDate>"
+                    xml += """<!--Optional:-->
+                            <measFacilityId></measFacilityId>
+                            <!--Optional:-->
+                            <measPlaceId></measPlaceId>
+                            <!--Optional:-->
+                            <measSecgmentId></measSecgmentId>
+                            <!--Optional:-->
+                            <regDate></regDate>
+                            <!--Optional:-->
+                            <sectCode>PD</sectCode>
+                            <!--Optional:-->
+                            <senId>1</senId>
+                            <!--Optional:-->"""
+                            
+                    if fatr_code == "SP": # 품종명
+                        # xml += "<senVal>" + str(planter_work_result.crop_kind.encode(encoding='UTF-8')) + "</senVal>"
+                        xml += "<senVal>" + str(planter_work_result.crop_kind) + "</senVal>"
+                    elif fatr_code == "CO": # 주문자명
+                        # xml += "<senVal>" + str("고객".encode(encoding='UTF-8')) + "</senVal>"
+                        xml += "<senVal>고객</senVal>"
+                    elif fatr_code == "SQ": # 파종생산수량
+                        xml += "<senVal>" + str(planter_work_result.seed_quantity) + "</senVal>"
+                    else: # 트레이수량
+                        xml += "<senVal>" + str(planter_work_result.planter_work__planter_tray.total) + "</senVal>"
+                    
+                    xml += "<!--Optional:-->"
+                    xml += "<serlNo>" + str(planter_work_result.planter_work__planter.serial_number) + "</serlNo>"
+                    xml += """</arg0>
+                            </auto:sendAutoMessage>
+                            </soapenv:Body>
+                            </soapenv:Envelope>"""
+                            
+                    result_data.append(xml)
+                    
+                    r = requests.post(url, data=xml, headers=headers)
 
         return result_data
     except Exception as e:
