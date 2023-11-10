@@ -10,6 +10,7 @@ const S = {
     justify-content: end;
     position: absolute;
     right: 60px;
+    /* right: -44px; */
     z-index: 1;
 
     .wrap-inner {

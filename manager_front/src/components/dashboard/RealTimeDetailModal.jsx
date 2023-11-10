@@ -479,7 +479,7 @@ function RealTimeDetailModal({ realTimeModalOpen, setRealTimeModalOpen, planterD
               </div>
               <S.Proceeding>
                 <p>진행중</p>
-                {realTimeModalOpen.data.planter_status === "ON" && workingArr?.length !== 0 ? (
+                {workingArr?.length !== 0 ? (
                   <div className="create-ing">
                     <div className="create-ing-product">
                       {workingArr[0]?.crop_img === null ? (
@@ -521,7 +521,7 @@ function RealTimeDetailModal({ realTimeModalOpen, setRealTimeModalOpen, planterD
                   </div>
                   <S.ListBlockWrap>
                     <div className="list-inner">
-                      {realTimeModalOpen.data.planter_status === "ON" && doneArr?.length !== 0 ? (
+                      {doneArr?.length !== 0 ? (
                         <>
                           {doneArr?.map((data, index) => {
                             return (

@@ -186,6 +186,7 @@ const S = {
     background-color: ${({ theme }) => theme.blackWhite.white};
     border-radius: 8px;
     height: 64px;
+    /* position: relative; */
 
     p {
       color: ${({ theme }) => theme.basic.gray50};
