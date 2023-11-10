@@ -437,25 +437,23 @@ function RealTimeDetailModal({ realTimeModalOpen, setRealTimeModalOpen, planterD
               {realTimeModalOpen.data.planter_status === "ON" && <p className="detail-ing">진행중</p>}
             </div>
           </S.TitleBlock>
-          {realTimeModalOpen.data.planter_status === "ON" && (
-            <>
-              <S.WorkDateWrap>
-                <div className="title-wrap">
-                  <div class="title-circle" />
-                  <p>작업기간 선택</p>
-                </div>
-                <div className="date-wrap">
-                  <S.ClickPicker onClick={handlePickerClick}>
-                    <p>
-                      {YYYYMMDDSlash(dateRange.startDate)} ~ {YYYYMMDDSlash(dateRange.endDate)}
-                    </p>
-                    <PickerIcon width={19} height={19} />
-                  </S.ClickPicker>
-                </div>
-              </S.WorkDateWrap>
-              <S.BorderLine />
-            </>
-          )}
+          <>
+            <S.WorkDateWrap>
+              <div className="title-wrap">
+                <div class="title-circle" />
+                <p>작업기간 선택</p>
+              </div>
+              <div className="date-wrap">
+                <S.ClickPicker onClick={handlePickerClick}>
+                  <p>
+                    {YYYYMMDDSlash(dateRange.startDate)} ~ {YYYYMMDDSlash(dateRange.endDate)}
+                  </p>
+                  <PickerIcon width={19} height={19} />
+                </S.ClickPicker>
+              </div>
+            </S.WorkDateWrap>
+            <S.BorderLine />
+          </>
 
           <S.GraphWrap>
             <div className="graph-inner-left">

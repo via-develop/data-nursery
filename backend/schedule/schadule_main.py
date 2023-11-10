@@ -113,7 +113,7 @@ Schedule.add_job(
 Schedule.add_job(
     post_smart_farm,
     "cron",
-    hour="0",
+    hour="1",
     minute="0",
     id="post_smart_farm",
 )
