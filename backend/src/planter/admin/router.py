@@ -1138,8 +1138,8 @@ def get_smart_farm_data(request: Request, check_date: str = None, db: Session = 
     
     url = 'http://smartfarmkorea.net/Agree_WS/webservices/ImprvmService'
     # headers = {'Content-Type': 'application/xml'}
-    headers = {'Content-Type': 'application/xml', 'charset': 'utf-8'}
-    # headers = {'Content-Type': 'application/xml; charset=utf-8'}
+    # headers = {'Content-Type': 'application/xml', 'charset': 'utf-8'}
+    headers = {'Content-Type': 'application/xml; charset=utf-8'}
     # headers = {'Content-Type': 'application/xml', 'Accept-Charset': 'utf-8'}
 
     fatr_code_type = ["SP", "CO", "SQ", "TR"]
