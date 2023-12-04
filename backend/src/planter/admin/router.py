@@ -201,6 +201,47 @@ def get_admin_dashboard_planter_today_work(
         )
     )
     
+    last_working_subq = last_pws_subq.group_by(pws.planter_work_id).subquery()
+        
+    working_pw_bq = (
+        db.query(
+            pw.id,
+            pws.status.label("last_pws_status"),
+            pws.created_at,
+            cropModels.Crop.name,
+            cropModels.Crop.image,
+            planterModels.PlanterOutput.output,
+            planterModels.PlanterOutput.updated_at,
+        )
+        .join(
+            last_working_subq,
+            last_working_subq.c.planter_work_id == pw.id,
+        )
+        .join(
+            pws,
+            (pws.planter_work_id == last_working_subq.c.planter_work_id)
+            & (pws.id == last_working_subq.c.last_pws_id),
+        )
+        .join(cropModels.Crop, cropModels.Crop.id == pw.crop_id)
+        .join(
+            planterModels.PlanterOutput,
+            planterModels.PlanterOutput.planter_work_id == pw.id,
+        )
+        .filter(
+            pw.is_del == False,
+            pw.planter_id == planter.id,
+            pws.status == "WORKING"
+            # pws.status.in_(["WORKING", "DONE"]),
+        )
+        .order_by(
+            case(
+                (pws.status == "WORKING", 2), (pws.status == "DONE", 1), else_=0
+            ).desc(),
+            pws.created_at.desc(),
+        )
+        .all()
+    )
+    
     if target_start_date == target_end_date:
         last_pws_subq = last_pws_subq.filter(
                 pws.is_del == False,
@@ -230,7 +271,7 @@ def get_admin_dashboard_planter_today_work(
             
     last_pws_subq = last_pws_subq.group_by(pws.planter_work_id).subquery()
 
-    working_pw_bq = (
+    done_pw_bq = (
         db.query(
             pw.id,
             pws.status.label("last_pws_status"),
@@ -257,7 +298,8 @@ def get_admin_dashboard_planter_today_work(
         .filter(
             pw.is_del == False,
             pw.planter_id == planter.id,
-            pws.status.in_(["WORKING", "DONE"]),
+            pws.status == "DONE"
+            # pws.status.in_(["WORKING", "DONE"]),
         )
         .order_by(
             case(
@@ -268,7 +310,7 @@ def get_admin_dashboard_planter_today_work(
         .all()
     )
 
-    result = [
+    working_result = [
         {
             "pw_id": pw_id,
             "last_pws_status": last_pws_status,
@@ -280,8 +322,21 @@ def get_admin_dashboard_planter_today_work(
         }
         for pw_id, last_pws_status, last_pws_created_at, crop_name, crop_img, output, output_updated_at in working_pw_bq
     ]
+    
+    result = [
+        {
+            "pw_id": pw_id,
+            "last_pws_status": last_pws_status,
+            "last_pws_created_at": last_pws_created_at,
+            "crop_name": crop_name,
+            "crop_img": crop_img,
+            "output": output,
+            "output_updated_at": output_updated_at,
+        }
+        for pw_id, last_pws_status, last_pws_created_at, crop_name, crop_img, output, output_updated_at in done_pw_bq
+    ]
 
-    return result
+    return working_result + result
 
 
 @router.get(

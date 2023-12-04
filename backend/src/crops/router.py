@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from utils.database import get_db
 from utils.db_shortcuts import get_current_user
 from utils.file_upload import single_file_uploader
+from utils.singletone import ModelSingleTone
 import src.crops.schemas as schemas
 import src.crops.models as models
 
@@ -42,6 +43,11 @@ async def crop_create(
 
 @router.get("/list", status_code=200, response_model=schemas.MultipleCropsResponse)
 def get_crop_list(db: Session = Depends(get_db)):
-    crops = db.query(models.Crop).filter_by(is_del=False).all()
+    crops = (
+        db.query(models.Crop)
+        .filter_by(is_del=False)
+        .order_by(models.Crop.created_at.desc())
+        .all()
+    )
 
     return {"crops": crops}

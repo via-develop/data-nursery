@@ -321,7 +321,8 @@ async def create_farm_house(
         )
         if dup_check_farm_house_nursery_number != None:
             return JSONResponse(
-                status_code=404, content=dict(msg="DUPLICATED_FARM_HOUSE_NURSERY_NUMBER")
+                status_code=404,
+                content=dict(msg="DUPLICATED_FARM_HOUSE_NURSERY_NUMBER"),
             )
     dup_check_farm_house_id = get_(db, models.FarmHouse, farm_house_id=farm_house_id)
     if dup_check_farm_house_id != None:
@@ -539,7 +540,6 @@ def update_farm_house_info(
         db.commit()
         db.refresh(farmhouse)
     except IntegrityError as e:
-        print(e)
         if "nursery_number" in e.params:
             return JSONResponse(
                 status_code=400, content=dict(msg="DUPLICATED_NURSERY_NUMBER")

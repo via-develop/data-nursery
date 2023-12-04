@@ -41,7 +41,9 @@ function GraphTodayProduction({ planterDateRange }) {
   // 생산량 시간 배열
   const timeGraphArr = [];
   for (const item of planterDateRange) {
-    timeGraphArr.push(item.output_updated_at);
+    const originalDate = new Date(item.output_updated_at);
+    originalDate.setHours(originalDate.getHours() + 9);
+    timeGraphArr.push(originalDate.toISOString());
   }
 
   // 생산량 + 시간 배열
@@ -80,17 +82,15 @@ function GraphTodayProduction({ planterDateRange }) {
       graphInstance = new Chart(graphCtx, {
         type: "line",
         data: {
-          // labels: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24], // 오늘 날짜의 일수를 라벨로 사용
           datasets: [
             {
-              // data: workingGraphArr,
               data: workingGraphTimeArr,
               borderColor: "#FB97A3",
               pointBackgroundColor: "#FB97A3",
               pointBorderColor: "#4F5B6C",
               borderWidth: 3,
               fill: false,
-              lineTension: 0.6,
+              lineTension: 0, //0과 가까울수록 직선 1과 가까울수록 곡선
               pointHoverRadius: 6,
               pointRadius: 0,
               pointHoverBorderWidth: 5,

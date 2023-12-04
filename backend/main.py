@@ -44,7 +44,8 @@ from schedule.schadule_main import Schedule
 # from src.planter import router as PlanterRouter
 
 # from utils.database import AppModelBase
-
+import joblib
+from utils.singletone import ModelSingleTone
 
 load_dotenv()
 
@@ -134,6 +135,10 @@ app.add_middleware(
     ],
 )
 
+@app.on_event("startup")
+def startup_event():
+    ModelSingleTone.instance().set_lgb_model()
+    print(ModelSingleTone.instance().get_crop_production(6.0, 1000.231))
 
 # 미들웨어
 @app.middleware("http")

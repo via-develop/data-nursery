@@ -6,6 +6,9 @@ import GraphTodayProductionNoWork from "./GraphTodayProductionNoWork";
 import GraphTodayProduction from "./GraphTodayProduction";
 import { YYYYMMDDSlash } from "@src/utils/Formatting";
 
+import useInvalidateQueries from "@src/hooks/queries/common/useInvalidateQueries";
+import { PlanterRealTimeDateRangeKey } from "@src/utils/query-keys/PlanterQueryKeys";
+
 import DatePickerMain from "@components/statistics/DatePickerMain";
 
 import XIcon from "@images/common/icon-x.svg";
@@ -360,10 +363,17 @@ const S = {
 };
 
 function RealTimeDetailModal({ realTimeModalOpen, setRealTimeModalOpen, planterDateRange, dateRange, setDateRange }) {
+  const invalidateQueries = useInvalidateQueries();
   useEffect(() => {
     if (!planterDateRange) {
       return;
     }
+
+    const intervalId = setInterval(() => {
+      invalidateQueries([PlanterRealTimeDateRangeKey]);
+    }, 30000); // 30초마다 업데이트
+
+    return () => clearInterval(intervalId);
   }, [planterDateRange]);
 
   const closeModal = useCallback(() => {
@@ -380,6 +390,32 @@ function RealTimeDetailModal({ realTimeModalOpen, setRealTimeModalOpen, planterD
   planterDateRange?.sort((a, b) => new Date(a.output_updated_at) - new Date(b.output_updated_at));
   workingArr?.sort((a, b) => new Date(a.output_updated_at) - new Date(b.output_updated_at));
   doneArr?.sort((a, b) => new Date(a.output_updated_at) - new Date(b.output_updated_at));
+
+  // 진행중 시간 kst로 변환
+  const kstWorkingArr = workingArr?.map((item) => {
+    const originalDate = new Date(item.output_updated_at);
+
+    // 9시간을 더함
+    originalDate.setHours(originalDate.getHours() + 9);
+
+    // 변경된 날짜를 ISO 문자열로 변환
+    const updatedOutput = originalDate.toISOString();
+
+    return { ...item, output_updated_at: updatedOutput };
+  });
+
+  // 완료시간 kst로 변환
+  const kstDoneArr = doneArr?.map((item) => {
+    const originalDate = new Date(item.output_updated_at);
+
+    // 9시간을 더함
+    originalDate.setHours(originalDate.getHours() + 9);
+
+    // 변경된 날짜를 ISO 문자열로 변환
+    const updatedOutput = originalDate.toISOString();
+
+    return { ...item, output_updated_at: updatedOutput };
+  });
 
   //달력 모달 오픈
   const [pickerOpen, setPickerOpen] = useState(false);
@@ -479,27 +515,27 @@ function RealTimeDetailModal({ realTimeModalOpen, setRealTimeModalOpen, planterD
               </div>
               <S.Proceeding>
                 <p>진행중</p>
-                {workingArr?.length !== 0 ? (
+                {kstWorkingArr?.length !== 0 ? (
                   <div className="create-ing">
                     <div className="create-ing-product">
-                      {workingArr[0]?.crop_img === null ? (
+                      {kstWorkingArr[0]?.crop_img === null ? (
                         <CropsNoIcon width={84} height={84} />
                       ) : (
                         <img
-                          src={process.env.NEXT_PUBLIC_END_POINT + workingArr[0].crop_img}
+                          src={process.env.NEXT_PUBLIC_END_POINT + kstWorkingArr[0].crop_img}
                           className="working-crop-img"
                         />
                       )}
 
                       <div className="create-ing-text">
                         <div className="create-time">
-                          <p>{workingArr[0].output_updated_at?.split("T")[1]?.slice(0, 5)}~</p>
+                          <p>{kstWorkingArr[0].output_updated_at?.split("T")[1]?.slice(0, 5)}~</p>
                         </div>
-                        <p>{workingArr[0].crop_name}</p>
+                        <p>{kstWorkingArr[0].crop_name}</p>
                       </div>
                     </div>
                     <div className="production-count">
-                      <p className="num">{workingArr[0].output}</p>
+                      <p className="num">{kstWorkingArr[0].output}</p>
                       <p className="unit">개</p>
                     </div>
                   </div>
@@ -521,9 +557,9 @@ function RealTimeDetailModal({ realTimeModalOpen, setRealTimeModalOpen, planterD
                   </div>
                   <S.ListBlockWrap>
                     <div className="list-inner">
-                      {doneArr?.length !== 0 ? (
+                      {kstDoneArr?.length !== 0 ? (
                         <>
-                          {doneArr?.map((data, index) => {
+                          {kstDoneArr?.map((data, index) => {
                             return (
                               <S.ListBlock key={`map${index}`}>
                                 <p className="text-one">{data.output_updated_at?.split("T")[1]?.slice(0, 5)}</p>

@@ -7,6 +7,7 @@ import ListIcon from "@images/common/icon-list.svg";
 import FarmIcon from "@images/common/icon-house.svg";
 import GraphIcon from "@images/common/w-icon-graph.svg";
 import SettingIcon from "@images/common/w-icon-setting.svg";
+import AiIcon from "@images/common/icon-ai.svg";
 
 const S = {
   Wrap: styled.aside`
@@ -16,6 +17,7 @@ const S = {
       display: flex;
       flex-direction: column;
       gap: 24px;
+      min-width: 218px;
     }
     .sidebar-text {
       color: #464f64;
@@ -30,15 +32,15 @@ const S = {
       padding: 10px;
       cursor: pointer;
       padding-left: 32px;
+      padding: 0px 30px 0px 32px;
       gap: 24px;
-      width: 198px;
       height: 64px;
     }
 
     .menu-item.active {
       background-color: #5899fb;
       color: white;
-      width: 198px;
+      padding: 0px 30px 0px 32px;
       height: 64px;
       border-radius: 8px;
 
@@ -93,8 +95,13 @@ function MainSideMenu() {
     },
     {
       path: "/statistics",
-      label: "통계현황",
+      label: "파종현황",
       icon: GraphIcon,
+    },
+    {
+      path: "/prediction",
+      label: "생산량 예측",
+      icon: AiIcon,
     },
     {
       path: "/setting",

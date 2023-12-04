@@ -66,24 +66,32 @@ function MainHeader() {
     errorFn: () => {},
   });
 
-  const [dateTime, setDateTime] = useState();
+  // const [dateTime, setDateTime] = useState();
 
-  useEffect(() => {
-    // 웹 워커 생성
-    const worker = new Worker("worker.js");
+  // useEffect(() => {
+  //   // 웹 워커 생성
+  //   const worker = new Worker("worker.js");
 
-    // 웹 워커로부터 메시지를 수신하는 이벤트 핸들러
-    worker.onmessage = (event) => {
-      // setKoreanTime(event.data);
-      const { date, time } = event.data;
-      setDateTime(date + " " + time);
-    };
-    // 컴포넌트 언마운트 시 웹 워커 정리
-    return () => {
-      worker.terminate();
-      worker.postMessage("getKoreanTime");
-    };
-  }, [dateTime]);
+  //   // 웹 워커로부터 메시지를 수신하는 이벤트 핸들러
+  //   worker.onmessage = (event) => {
+  //     // setKoreanTime(event.data);
+  //     const { date, time } = event.data;
+  //     setDateTime(date + " " + time);
+  //   };
+  //   // 컴포넌트 언마운트 시 웹 워커 정리
+  //   return () => {
+  //     worker.terminate();
+  //     worker.postMessage("getKoreanTime");
+  //   };
+  // }, [dateTime]);
+
+  const now = new Date();
+
+  let year = now.getFullYear();
+  let month = (now.getMonth() + 1).toString().padStart(2, "0"); // 월은 0부터 시작하므로 +1 해줌
+  let day = now.getDate().toString().padStart(2, "0");
+
+  const dateTime = `${year}.${month}.${day}`;
 
   const handleLogoutClick = useCallback(() => {
     setIsLogOut(true);

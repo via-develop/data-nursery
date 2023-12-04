@@ -27,6 +27,12 @@ CORS_ORIGINS="http://192.168.2.100:3000, http://localhost:3000"
 # root directory(~/data-nursery)에서 실행
 
 $ pip install -r backend/requirements/base.txt
+
+# Mac 에서 lightgbm 패키지 설치 오류 발생 시
+
+- 로컬에 OpenMP 설치
+- LightGBM은 기본적으로 로컬에 설치된 OpenMP를 찾아 동적으로 연결한다고 함
+$ brew install libomp
 ```
 
 <br/>

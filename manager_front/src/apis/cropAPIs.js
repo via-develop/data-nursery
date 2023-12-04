@@ -76,3 +76,33 @@ export const deleteMultipleCropAPI = async (data) => {
     throw new Error(error.response?.data?.message || "작물 삭제에 실패하였습니다. 잠시 후 다시 시도해주세요.");
   }
 };
+
+// 기간내 작물별 생산량 예측값 조회
+export const getCropPredictAPI = async (dateRange) => {
+  try {
+    const res = await axios.get(process.env.NEXT_PUBLIC_END_POINT + `/api/admin/crop/predict/output/${dateRange}`, {
+      withCredentials: true,
+    });
+    return res.data;
+  } catch (error) {
+    throw new Error(error.response?.status || "생산량 예측값을 가져오는데 실패하였습니다. 잠시 후 다시 시도해주세요.");
+  }
+};
+
+// 기간 내 선택 작물 날짜별 파종량 및 총 파종량
+export const getCropIdDetailAPI = async (cropId, dateRange) => {
+  try {
+    const res = await axios.get(
+      process.env.NEXT_PUBLIC_END_POINT + `/api/admin/crop/predict/output/detail/${cropId}/${dateRange}`,
+      {
+        withCredentials: true,
+      },
+    );
+    return res.data;
+  } catch (error) {
+    throw new Error(
+      error.response?.status ||
+        "선택 작물의 파종량 및 총 파종량을 가져오는데 실패하였습니다. 잠시 후 다시 시도해주세요.",
+    );
+  }
+};

@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { useInView } from "react-intersection-observer";
 
 import { PlanterRealTimeKey } from "@src/utils/query-keys/PlanterQueryKeys";
+import { PlanterRealTimeDateRangeKey } from "@src/utils/query-keys/PlanterQueryKeys";
 import useInvalidateQueries from "@src/hooks/queries/common/useInvalidateQueries";
 import usePlanterRealTime from "@src/hooks/queries/planter/usePlanterRealTime";
 import usePlanterRealTimeDateRange from "@src/hooks/queries/planter/usePlanterRealTimeDateRange";
@@ -204,14 +205,33 @@ function OperationStatus({ currentDate }) {
     threshold: 0, // 요소가 얼마나 노출되었을때 inView를 true로 변경할지 (0~1 사이의 값)
   });
 
-  const { data: planterOperationStatus } = usePlanterRealTime({
+  const { data: planterOperationStatus, refetch } = usePlanterRealTime({
     page: operationListPage,
     size: 20,
     successFn: (res) => {
-      const resultList = operationList.concat(res.planter);
+      // res.planter랑 operationList랑 중복된것 있는 배열 = a
+      // const resultList = operationList.concat(res.planter);
       // setOperationList((prev) => [...prev, ...res.planter]);
-      const valueList = [...new Set(resultList)];
-      setOperationList(valueList);
+
+      const resultList = operationList;
+      res.planter.map((planter) => {
+        if (resultList.some((oneData) => oneData.planter === planter.planter)) {
+          console.log(
+            "!!!!!!",
+            resultList.findIndex((oneData) => oneData.planter === planter.planter),
+          );
+          const index = resultList.findIndex((oneData) => oneData.planter === planter.planter);
+          // console.log("@@@",index)
+          resultList[index] = planter;
+        } else {
+          resultList.push(planter);
+        }
+      });
+
+      console.log("resultList", resultList);
+
+      // const valueList = [...new Set(resultList)]; // 중복된값 제거
+      setOperationList(resultList);
     },
     errorFn: (err) => {
       alert(err);
@@ -220,6 +240,7 @@ function OperationStatus({ currentDate }) {
 
   const handelRealTimeDetailClick = useCallback(
     (data) => {
+      invalidateQueries([PlanterRealTimeDateRangeKey]);
       setRealTimeModalOpen({ open: true, data: data });
       setSelectPlanterId(data.planter);
     },
@@ -241,11 +262,18 @@ function OperationStatus({ currentDate }) {
     }
 
     const intervalId = setInterval(() => {
-      invalidateQueries([PlanterRealTimeKey]);
-    }, 30000); // 30초마다 업데이트
+      for (let i = 1; i <= operationListPage; i++) {
+        setOperationListPage(i);
+        console.log("*****page", i);
+        console.log("operationListPage");
+        // console.log("resultList",resultList)
+        invalidateQueries([PlanterRealTimeKey]);
+        refetch();
+      }
+    }, 10000); // 30초마다 업데이트
 
     return () => clearInterval(intervalId);
-  }, [planterOperationStatus, PlanterRealTimeKey]);
+  }, [planterOperationStatus, PlanterRealTimeKey, operationListPage]);
 
   useEffect(() => {
     if (inView) {
