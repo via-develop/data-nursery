@@ -257,13 +257,19 @@ def get_crop_predct_output(
         elif value[1] == "호박":
             sowing_area = 5
 
-        # 파종량으로 파종면적(ha) 구하기
-        area_ha = round(round(int(value[4]) / sowing_area, 4) / 3025, 4)
-        if area_ha != 0:
-            # ha로 수확량 예측
-            ai_predict = ModelSingleTone.instance().get_crop_production(
-                value[0], area_ha
-            )
+        crop_output = int(value[4])
+
+        if crop_output != 0:
+            # 파종량으로 파종면적(ha) 구하기
+            area_ha = round(round(int(value[4]) / sowing_area, 4) / 3025, 4)
+
+            if area_ha != 0:
+                # ha로 수확량 예측
+                ai_predict = ModelSingleTone.instance().get_crop_production(
+                    value[0], area_ha
+                )
+        else:
+            ai_predict = 0
 
         result.append(
             {
