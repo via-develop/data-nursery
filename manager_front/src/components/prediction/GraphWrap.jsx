@@ -184,7 +184,7 @@ function GraphWrap({ planterChoose, sowingData, dateRange }) {
     <S.Wrap>
       <S.TitleWrap>
         <BarIcon width={5} height={28} />
-        <p>{planterChoose.crop_name} 파종량</p>
+        <p>{planterChoose.crop_name} 파종량 (단위 : 개)</p>
       </S.TitleWrap>
       <S.GraphCanvas>
         <canvas ref={graphRef} />

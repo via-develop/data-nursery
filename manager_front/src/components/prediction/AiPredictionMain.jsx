@@ -137,7 +137,7 @@ function AiPredictionMain({ setPlanterClick, planterChoose, setPlanterChoose, da
     <S.Wrap>
       <S.TitleHeader>
         <div className="title-text">
-          <p className="title">생산예측</p>
+          <p className="title">생산량 예측</p>
           <p className="sub-title">작물별 파종량 대비 생산량 AI 예측</p>
         </div>
         <S.ClickPicker onClick={handlePickerClick}>
