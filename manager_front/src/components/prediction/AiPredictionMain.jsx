@@ -173,7 +173,7 @@ function AiPredictionMain({ setPlanterClick, planterChoose, setPlanterChoose, da
                   {data.crop_name}
                 </p>
                 <p style={{ color: planterChoose.crop_id === data.crop_id ? "#5899FB" : "#737F8F" }}>
-                  {NumberCommaFormatting(data.ai_predict)}kg
+                  {NumberCommaFormatting(data.ai_predict)}t
                 </p>
               </S.PlanterText>
             </S.PlanterDetail>
