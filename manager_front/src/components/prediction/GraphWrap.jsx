@@ -36,11 +36,11 @@ function GraphWrap({ planterChoose, sowingData, dateRange }) {
   let graphInstance = null;
 
   useEffect(() => {
-    if (!sowingData) {
+    if (!sowingData && !planterChoose) {
       return;
     }
 
-    const dataArray = sowingData.crop_output.map((item) => item.output); // output 데이터 배열
+    const dataArray = sowingData?.crop_output?.map((item) => item?.output); // output 데이터 배열
 
     const dayLabel = []; //날짜 데이터 구하기 (시작날부터 종료날까지 날짜값 배열)
     const currentDate = new Date(dateRange.startDate);
@@ -178,7 +178,7 @@ function GraphWrap({ planterChoose, sowingData, dateRange }) {
     return () => {
       destroyChart(); // 컴포넌트가 unmount될 때 차트 파괴
     };
-  }, [dateRange, planterChoose]);
+  }, [dateRange, planterChoose, sowingData]);
 
   return (
     <S.Wrap>

@@ -8,7 +8,7 @@ export default function useCropIdDetail({ cropId, dateRange, successFn, errorFn 
     staleTime: 10 * (60 * 1000), // 10 mins
     cacheTime: 15 * (60 * 1000), // 15 mins
     retry: 0,
-    enabled: true,
+    enabled: !!cropId,
     refetchOnWindowFocus: false,
     refetchOnMount: "always",
     refetchOnReconnect: false,

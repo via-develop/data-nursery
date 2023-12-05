@@ -26,9 +26,6 @@ function Prediction() {
   // 어떤 작물 선택
   const [planterChoose, setPlanterChoose] = useState("");
 
-  // 오늘
-  // const today = new Date();
-
   // 날짜 선택
   const [dateRange, setDateRange] = useState({
     startDate: new Date(new Date().setMonth(new Date().getMonth() - 1)),
@@ -46,7 +43,7 @@ function Prediction() {
 
   // 기간 내 선택 작물 날짜별 파종량 및 총 파종량
   const { data: sowingData } = useCropIdDetail({
-    cropId: 1,
+    cropId: planterChoose?.crop_id,
     dateRange: YYYYMMDDDash(dateRange.startDate) + "||" + YYYYMMDDDash(dateRange.endDate),
     successFn: (res) => {},
     errorFn: (err) => {
