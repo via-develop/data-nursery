@@ -342,7 +342,15 @@ def get_crop_predct_output(
 
     crop_outputs = (
         db.query(
-            func.timezone("Asia/Seoul", planterModels.PlanterOutput.updated_at),
+            extract(
+                "month",
+                func.timezone("Asia/Seoul", planterModels.PlanterOutput.updated_at),
+            ).label("month"),
+            extract(
+                "day",
+                func.timezone("Asia/Seoul", planterModels.PlanterOutput.updated_at),
+            ).label("day"),
+            # func.timezone("Asia/Seoul", planterModels.PlanterOutput.updated_at),
             func.sum(planterModels.PlanterOutput.output),
         )
         .join(
@@ -361,8 +369,9 @@ def get_crop_predct_output(
             pw.is_del == False,
             pws.status.in_(["DONE"]),
         )
-        .group_by(planterModels.PlanterOutput.updated_at)
-        .order_by(planterModels.PlanterOutput.updated_at.asc())
+        # .group_by(planterModels.PlanterOutput.updated_at)
+        .group_by("month", "day")
+        # .order_by(planterModels.PlanterOutput.updated_at.asc())
         .all()
     )
 
@@ -372,7 +381,9 @@ def get_crop_predct_output(
     result = dict()
 
     for value in crop_outputs:
-        crop_output_per_date.append({"sowing_date": value[0], "output": value[1]})
+        crop_output_per_date.append(
+            {"sowing_date": f"{value[0]}-{value[1]}", "output": value[2]}
+        )
         total_output += value[1]
 
     result["crop_output"] = crop_output_per_date

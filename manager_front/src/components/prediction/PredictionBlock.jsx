@@ -61,7 +61,7 @@ function PrecitionBlock({ sowingData, planterData, planterChoose }) {
       </S.TitleWrap>
       <S.ContentWrap>
         <S.Block>
-          <p className="title">선택 기간 파종량 (단위 : kg)</p>
+          <p className="title">선택 기간 파종량 (단위 : 개)</p>
           <p className="content">{NumberCommaFormatting(sowingData?.total_output)}</p>
         </S.Block>
         <S.Block>
