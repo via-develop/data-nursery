@@ -29,7 +29,7 @@ const S = {
 function BarGraphAiWrap({ planterClick, planterChoose, dateRange, planterData, sowingData }) {
   return (
     <S.Wrap>
-      {planterClick ? (
+      {planterClick && planterData?.length !== 0 ? (
         <>
           <GraphWrap planterChoose={planterChoose} sowingData={sowingData} dateRange={dateRange} />
           <PredictionBlock planterData={planterData} sowingData={sowingData} planterChoose={planterChoose} />

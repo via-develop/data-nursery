@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import styled from "styled-components";
 
 import Chart from "chart.js/auto";
@@ -35,12 +35,28 @@ function GraphWrap({ planterChoose, sowingData, dateRange }) {
   const graphRef = useRef(null);
   let graphInstance = null;
 
+  const outputDateArray = sowingData?.crop_output?.map((item) => item?.output); // output 데이터 배열
+  const sowingDateArray = sowingData?.crop_output?.map(
+    (item) => new Date(item?.sowing_date).toISOString().split("T")[0],
+  ); // sowing_date 데이터 배열
+
+  // api로 가져온 파종량 데이터와 날짜 데이터를 합침
+  const graphData = useMemo(() => {
+    const arr = [];
+    for (let i = 0; i < outputDateArray?.length; i++) {
+      arr.push({
+        x: new Date(sowingDateArray[i]).toISOString().split("T")[0],
+        y: outputDateArray[i],
+      });
+    }
+    return arr;
+  }, [sowingDateArray, outputDateArray]);
+
+
   useEffect(() => {
     if (!sowingData && !planterChoose) {
       return;
     }
-
-    const dataArray = sowingData?.crop_output?.map((item) => item?.output); // output 데이터 배열
 
     const dayLabel = []; //날짜 데이터 구하기 (시작날부터 종료날까지 날짜값 배열)
     const currentDate = new Date(dateRange.startDate);
@@ -48,6 +64,25 @@ function GraphWrap({ planterChoose, sowingData, dateRange }) {
       dayLabel.push(currentDate.getDate());
       currentDate.setDate(currentDate.getDate() + 1);
     }
+
+    // 날짜 길이 대로 날짜 배열 생성
+    const startDate = new Date(dateRange.startDate);
+    const dateArray = Array.from({ length: dayLabel.length }, (_, index) => {
+      const currentDate = new Date(startDate);
+      currentDate.setDate(startDate.getDate() + index);
+      return currentDate.toISOString().split("T")[0]; // ISO 형식의 문자열로 변환
+    });
+
+    // 결과를 저장할 배열 초기화
+    const dataArray = Array(dateArray.length).fill(0);
+
+    // dateArray graphData 비교하면서 값을 저장
+    graphData.forEach((item) => {
+      const index = dateArray.indexOf(item.x);
+      if (index !== -1) {
+        dataArray[index] = item.y;
+      }
+    });
 
     const graphCtx = graphRef.current?.getContext("2d");
 
