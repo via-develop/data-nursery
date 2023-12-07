@@ -85,10 +85,8 @@ def update_planter_status_to_off():
         db.commit()
 
 
-# TODO: 다시 살리기
 def post_smart_farm():
-    # get_smart_farm_data(Request, None, next(get_db()))
-    pass
+    get_smart_farm_data(Request, None, next(get_db()))
 
 
 # Schedule.add_job(
