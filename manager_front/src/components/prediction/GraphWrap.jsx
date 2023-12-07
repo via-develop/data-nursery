@@ -52,7 +52,6 @@ function GraphWrap({ planterChoose, sowingData, dateRange }) {
     return arr;
   }, [sowingDateArray, outputDateArray]);
 
-
   useEffect(() => {
     if (!sowingData && !planterChoose) {
       return;

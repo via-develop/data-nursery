@@ -62,7 +62,9 @@ function PrecitionBlock({ sowingData, planterData, planterChoose }) {
       <S.ContentWrap>
         <S.Block>
           <p className="title">선택 기간 파종량 (단위 : 개)</p>
-          <p className="content">{sowingData?.total_output !== undefined && NumberCommaFormatting(sowingData?.total_output)}</p>
+          <p className="content">
+            {sowingData?.total_output !== undefined && NumberCommaFormatting(sowingData?.total_output)}
+          </p>
         </S.Block>
         <S.Block>
           <p className="title">AI 예측 파종량 (단위 : 톤)</p>
