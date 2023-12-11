@@ -56,4 +56,4 @@ class ModelSingleTone(SingletonInstane):
 
         pred = pred / n_split
 
-        return int(pred[0])
+        return round(pred[0], 5)
