@@ -188,13 +188,16 @@ const S = {
       width: 170px;
     }
     .header-table-fourth {
-      width: 263px;
+      /* width: 263px; */
+      width: 231px;
     }
     .header-table-fifth {
-      width: 93px;
+      /* width: 93px; */
+      width: 134px;
     }
     .header-table-sixth {
-      width: 251px;
+      /* width: 251px; */
+      width: 227px;
     }
     .header-table-eighth {
       width: 154px;

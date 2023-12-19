@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import styled from "styled-components";
 
 import useTrayList from "@src/hooks/queries/planter/useTrayList";
@@ -130,6 +130,10 @@ const S = {
     overflow-y: auto;
     padding-right: 24px;
 
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
     &::-webkit-scrollbar {
       display: block !important;
       width: 8px !important;
@@ -150,15 +154,6 @@ const S = {
       display: flex;
       justify-content: center;
       align-items: center;
-    }
-
-    .list-inner {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-    .option-modal-wrap {
-      position: relative;
     }
 
     .table-text-fir {
@@ -186,7 +181,6 @@ const S = {
     background-color: ${({ theme }) => theme.blackWhite.white};
     border-radius: 8px;
     height: 64px;
-    /* position: relative; */
 
     p {
       color: ${({ theme }) => theme.basic.gray50};
@@ -267,6 +261,7 @@ function TrayList({ userInfo }) {
     deleteId: undefined,
   });
 
+  // 체크박스
   const [checkArray, setCheckArray] = useState([]);
 
   // 트레이 목록 API
@@ -332,6 +327,27 @@ function TrayList({ userInfo }) {
     },
     [checkArray],
   );
+
+  // 옵션모달 위치 지정하기 위해
+  const [boxTop, setBoxTop] = useState("");
+  const [topData, setTopData] = useState("");
+
+  // 모달 클릭 위치잡기 : id는 컴포넌트의 id값
+  const boxClick = useCallback((id) => {
+    const box = document.getElementById(id);
+    const top = box.getBoundingClientRect().bottom;
+    setTopData(window.scrollY);
+    setBoxTop(top);
+  }, []);
+
+  // 옵션모달 켜져있을때 overflow 스크롤 되면 옵션모달 끄기
+  useEffect(() => {
+    const wrap = document.getElementById("tray-wrap");
+    wrap.addEventListener("scroll", () => {
+      setOptionModalOpen({ open: false, index: undefined, data: undefined });
+    });
+  }, [optionModalOpen]);
+
 
   return (
     <S.Wrap>
@@ -412,39 +428,41 @@ function TrayList({ userInfo }) {
                 </>
               )}
             </div>
-            <S.ListBlockWrap>
-              <div className="list-inner">
-                {trayList?.planter_trays.map((tray, index) => {
-                  return (
-                    <S.ListBlock
-                      key={`tray${tray.id}`}
-                      className={`table-row ${checkArray.includes(tray.id) ? "selected" : ""}`}>
-                      {checkArray.includes(tray.id) ? (
-                        <div className="check-img">
-                          {userInfo?.admin_user_info?.is_top_admin === true && (
-                            <CheckBoxOn width={24} height={24} onClick={() => toggleItem(true, tray.id)} />
-                          )}
-                        </div>
-                      ) : (
-                        <div className="check-img">
-                          {userInfo?.admin_user_info?.is_top_admin === true && (
-                            <CheckBoxOff width={24} height={24} onClick={() => toggleItem(false, tray.id)} />
-                          )}
-                        </div>
-                      )}
-                      <p className="table-text-fir">{index + 1}</p>
-                      <div className="table-text-sec icon-wrap">
-                        <TrayIcon width={24} height={24} />
-                        <p>{tray.total}</p>
+            <S.ListBlockWrap id="tray-wrap">
+              {trayList?.planter_trays.map((tray, index) => {
+                return (
+                  <S.ListBlock
+                    key={`tray${tray.id}`}
+                    className={`table-row ${checkArray.includes(tray.id) ? "selected" : ""}`}>
+                    {checkArray.includes(tray.id) ? (
+                      <div className="check-img">
+                        {userInfo?.admin_user_info?.is_top_admin === true && (
+                          <CheckBoxOn width={24} height={24} onClick={() => toggleItem(true, tray.id)} />
+                        )}
                       </div>
-                      <p className="table-text-thir">{tray.width}</p>
-                      <p className="table-text-four">{tray.height}</p>
-                      <div className="table-text-fiv option-modal-wrap">
+                    ) : (
+                      <div className="check-img">
+                        {userInfo?.admin_user_info?.is_top_admin === true && (
+                          <CheckBoxOff width={24} height={24} onClick={() => toggleItem(false, tray.id)} />
+                        )}
+                      </div>
+                    )}
+                    <p className="table-text-fir">{index + 1}</p>
+                    <div className="table-text-sec icon-wrap">
+                      <TrayIcon width={24} height={24} />
+                      <p>{tray.total}</p>
+                    </div>
+                    <p className="table-text-thir">{tray.width}</p>
+                    <p className="table-text-four">{tray.height}</p>
+                    <div className="table-text-fiv">
+                      <div>
                         {userInfo?.admin_user_info?.is_top_admin === true && (
                           <div
                             className="option-dot"
+                            id={`tray${index}`}
                             onClick={() => {
                               handleCropsOptionModalClick(index, tray);
+                              boxClick(`tray${index}`);
                             }}>
                             <OptionDot width={32} height={32} />
                           </div>
@@ -456,12 +474,14 @@ function TrayList({ userInfo }) {
                           setOptionModalOpen={setOptionModalOpen}
                           setEditTrayModalOpen={setEditTrayModalOpen}
                           setDeleteTrayModalOpen={setDeleteTrayModalOpen}
+                          boxTop={boxTop}
+                          topData={topData}
                         />
                       )}
-                    </S.ListBlock>
-                  );
-                })}
-              </div>
+                    </div>
+                  </S.ListBlock>
+                );
+              })}
             </S.ListBlockWrap>
           </>
         )}

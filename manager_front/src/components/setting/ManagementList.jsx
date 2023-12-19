@@ -104,13 +104,14 @@ const S = {
     }
 
     .header-table-first {
-      width: 250px;
+      width: 151px;
+      margin-left: 38px;
     }
     .header-table {
-      width: 160px;
+      width: 122px;
     }
     .header-table-fin {
-      width: 100px;
+      width: 72px;
     }
     .check-img {
       width: 24px;
@@ -145,9 +146,6 @@ const S = {
       gap: 10px;
     }
 
-    .option-modal-wrap {
-      position: relative;
-    }
     .table-first {
       width: 155px;
       margin-left: 50px;
@@ -233,6 +231,7 @@ function ManagementList({ userInfo }) {
     },
   });
 
+  // 옵션모달
   const [optionModalOpen, setOptionModalOpen] = useState({
     open: false,
     index: undefined,
@@ -328,6 +327,26 @@ function ManagementList({ userInfo }) {
     [checkArray],
   );
 
+  // 옵션모달 위치 지정하기 위해
+  const [boxTop, setBoxTop] = useState("");
+  const [topData, setTopData] = useState("");
+
+  // 모달 클릭 위치잡기 : id는 컴포넌트의 id값
+  const boxClick = useCallback((id) => {
+    const box = document.getElementById(id);
+    const top = box.getBoundingClientRect().bottom;
+    setTopData(window.scrollY);
+    setBoxTop(top);
+  }, []);
+
+  // 옵션모달 켜져있을때 overflow 스크롤 되면 옵션모달 끄기
+  useEffect(() => {
+    const wrap = document.getElementById("manage-wrap");
+    wrap.addEventListener("scroll", () => {
+      setOptionModalOpen({ open: false, index: undefined, data: undefined });
+    });
+  }, []);
+
   return (
     <S.Wrap>
       <S.TitleWrap>
@@ -395,7 +414,7 @@ function ManagementList({ userInfo }) {
             </>
           )}
         </div>
-        <S.ListBlockWrap>
+        <S.ListBlockWrap id="manage-wrap">
           <div className="list-inner">
             {managerList.map((data, index) => {
               return (
@@ -437,25 +456,31 @@ function ManagementList({ userInfo }) {
                   <p className="table-text">{data.admin_user_info.position}</p>
                   <p className="table-text">{data.user.name}</p>
                   <p className="table-text">{data.admin_user_info.phone}</p>
-                  <div className="option-modal-wrap table-thir">
-                    {userInfo?.admin_user_info?.is_top_admin === true && (
-                      <div
-                        className="option-dot"
-                        onClick={() => {
-                          handleOptionModalClick(index, data);
-                        }}>
-                        <OptionDot width={32} height={32} />
-                      </div>
+                  <div className="table-thir">
+                    <div>
+                      {userInfo?.admin_user_info?.is_top_admin === true && (
+                        <div
+                          className="option-dot"
+                          id={`data${index}`}
+                          onClick={() => {
+                            handleOptionModalClick(index, data);
+                            boxClick(`data${index}`);
+                          }}>
+                          <OptionDot width={32} height={32} />
+                        </div>
+                      )}
+                    </div>
+                    {index === optionModalOpen.index && (
+                      <OptionModal
+                        optionModalOpen={optionModalOpen}
+                        setOptionModalOpen={setOptionModalOpen}
+                        setEditManagerModalOpen={setEditManagerModalOpen}
+                        setDeleteManagerModalOpen={setDeleteManagerModalOpen}
+                        boxTop={boxTop}
+                        topData={topData}
+                      />
                     )}
                   </div>
-                  {index === optionModalOpen.index && (
-                    <OptionModal
-                      optionModalOpen={optionModalOpen}
-                      setOptionModalOpen={setOptionModalOpen}
-                      setEditManagerModalOpen={setEditManagerModalOpen}
-                      setDeleteManagerModalOpen={setDeleteManagerModalOpen}
-                    />
-                  )}
                 </S.ListBlock>
               );
             })}

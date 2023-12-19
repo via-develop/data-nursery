@@ -7,21 +7,17 @@ import DeleteIcon from "@images/common/delete-icon.svg";
 const S = {
   Wrap: styled.div`
     display: flex;
+    flex-direction: column;
     justify-content: end;
     position: absolute;
-    right: 68px;
-    z-index: 1;
+    right: 53px;
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 8px;
+    width: 111px;
+    box-shadow: 4px 4px 16px 0px rgba(89, 93, 107, 0.1);
+    border: 1px solid ${({ theme }) => theme.basic.recOutline};
 
-    .wrap-inner {
-      align-items: center;
-      position: absolute;
-      background-color: #fff;
-      border-radius: 8px;
-      padding: 8px;
-      width: 111px;
-      box-shadow: 4px 4px 16px 0px rgba(89, 93, 107, 0.1);
-      border: 1px solid ${({ theme }) => theme.basic.recOutline};
-    }
     .line {
       background-color: #fff;
       border-radius: 4px;
@@ -69,6 +65,8 @@ function ManagerOptionModal({
   setOptionModalOpen,
   setEditManagerModalOpen,
   setDeleteManagerModalOpen,
+  boxTop,
+  topData,
 }) {
   // 관리자 수정
   const handelEditClick = useCallback(() => {
@@ -83,23 +81,21 @@ function ManagerOptionModal({
   });
 
   return (
-    <S.Wrap>
-      <div className="wrap-inner">
-        <div className="line" onClick={handelEditClick}>
-          <div className="icon">
-            <EditIcon width={16} height={16} />
-          </div>
-          <p>수정</p>
+    <S.Wrap style={{ top: boxTop + topData - 10 }}>
+      <div className="line" onClick={handelEditClick}>
+        <div className="icon">
+          <EditIcon width={16} height={16} />
         </div>
-        {optionModalOpen.data.admin_user_info.is_top_admin === false && (
-          <div className="line" onClick={handleDeleteClick}>
-            <div className="icon">
-              <DeleteIcon width={16} height={16} />
-            </div>
-            <p>삭제</p>
-          </div>
-        )}
+        <p>수정</p>
       </div>
+      {optionModalOpen.data.admin_user_info.is_top_admin === false && (
+        <div className="line" onClick={handleDeleteClick}>
+          <div className="icon">
+            <DeleteIcon width={16} height={16} />
+          </div>
+          <p>삭제</p>
+        </div>
+      )}
     </S.Wrap>
   );
 }

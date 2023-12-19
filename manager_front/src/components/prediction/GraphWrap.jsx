@@ -57,11 +57,26 @@ function GraphWrap({ planterChoose, sowingData, dateRange }) {
       return;
     }
 
+    // 라벨용
     const dayLabel = []; //날짜 데이터 구하기 (시작날부터 종료날까지 날짜값 배열)
     const currentDate = new Date(dateRange.startDate);
     while (currentDate <= dateRange.endDate) {
       dayLabel.push(currentDate.getDate());
       currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    // 툴팁용 년 월 일 데이터
+    const dayLabelYMD = []; //날짜 데이터 구하기 (시작날부터 종료날까지 날짜값 배열)
+    const currentDate1 = new Date(dateRange.startDate);
+    while (currentDate1 <= dateRange.endDate) {
+      const dateObject = {
+        year: currentDate1.getFullYear(),
+        month: currentDate1.getMonth() + 1, // 월은 0부터 시작하므로 1을 더해줌
+        day: currentDate1.getDate(),
+      };
+
+      dayLabelYMD.push(dateObject);
+      currentDate1.setDate(currentDate1.getDate() + 1);
     }
 
     // 날짜 길이 대로 날짜 배열 생성
@@ -114,6 +129,7 @@ function GraphWrap({ planterChoose, sowingData, dateRange }) {
           labels: dayLabel,
           datasets: [
             {
+              label: dayLabelYMD,
               data: dataArray,
               backgroundColor: planterChoose.crop_color,
               hoverBackgroundColor: planterChoose.crop_color,
@@ -152,14 +168,6 @@ function GraphWrap({ planterChoose, sowingData, dateRange }) {
                 drawOnChartArea: false,
               },
               position: "left",
-              // title: {
-              //   display: true,
-              //   align: "end",
-              //   text: "개 (단위 : 만)",
-              // },
-              // ticks: {
-              //   stepSize: 10,
-              // },
             },
           },
           interaction: {
@@ -186,7 +194,11 @@ function GraphWrap({ planterChoose, sowingData, dateRange }) {
               bodyColor: "#fff",
               callbacks: {
                 title: function (context) {
-                  return context[0].label + "일";
+                  let index = context[0].dataIndex;
+                  let yyyy = context[0].dataset.label[index].year;
+                  let mm = context[0].dataset.label[index].month;
+                  let dd = context[0].dataset.label[index].day;
+                  return yyyy + "년 " + mm + "월 " + dd + "일";
                 },
                 beforeBody: function (context) {
                   return context[0].formattedValue + "개";
