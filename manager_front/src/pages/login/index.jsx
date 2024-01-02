@@ -184,21 +184,21 @@ function Login() {
   }, [loginInfo]);
 
   // enter 키 입력 시 실행
-  // const enterKeyUp = useCallback(() => {
-  //   if (window.event.keyCode === 13) {
-  //     if (loginInfo.login_id === "") {
-  //       alert("아이디를 입력해주세요.");
-  //       return;
-  //     }
+  const enterKeyUp = useCallback(() => {
+    if (window.event.keyCode === 13) {
+      if (loginInfo.login_id === "") {
+        alert("아이디를 입력해주세요.");
+        return;
+      }
 
-  //     if (loginInfo.password === "") {
-  //       alert("비밀번호를 입력해주세요.");
-  //       return;
-  //     }
+      if (loginInfo.password === "") {
+        alert("비밀번호를 입력해주세요.");
+        return;
+      }
 
-  //     tempLoginCheck();
-  //   }
-  // }, [loginInfo]);
+      tempLoginCheck();
+    }
+  }, [loginInfo]);
 
   return (
     <S.Wrap>
@@ -220,6 +220,9 @@ function Login() {
                 handleInputChange("login_id", e.target.value);
               }}
               placeholder="아이디를 입력해주세요"
+              onKeyUp={() => {
+                enterKeyUp();
+              }}
             />
           </S.InputWrap>
           <S.InputWrap>
@@ -233,6 +236,9 @@ function Login() {
                 handleInputChange("password", e.target.value);
               }}
               placeholder="비밀번호를 입력해주세요"
+              onKeyUp={() => {
+                enterKeyUp();
+              }}
             />
           </S.InputWrap>
         </S.InputButtonWrap>

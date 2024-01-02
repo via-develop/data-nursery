@@ -439,8 +439,10 @@ def get_crop_predct_output(
     result = dict()
 
     for value in crop_outputs:
+        sowing_date = datetime(int(value[0]), int(value[1]), int(value[2])).strftime("%Y-%m-%d")
         crop_output_per_date.append(
-            {"sowing_date": f"{value[0]}-{value[1]}-{value[2]}", "output": value[3]}
+            # {"sowing_date": f"{value[0]}-{value[1]}-{value[2]}", "output": value[3]}
+            {"sowing_date": sowing_date, "output": value[3]}
         )
         total_output += value[3]
 

@@ -97,7 +97,6 @@ const S = {
       flex-direction: column;
       gap: 8px;
       justify-content: center;
-      /* cursor: default; */
     }
     .block-count-wrap {
       display: flex;
@@ -193,7 +192,6 @@ function OperationStatus({ currentDate }) {
   const [operationListPage, setOperationListPage] = useState(1);
   const [operationList, setOperationList] = useState([]);
   const [selectPlanterId, setSelectPlanterId] = useState("");
-  // const [valueList,setValueList] = useState();
 
   const [dateRange, setDateRange] = useState({
     startDate: new Date(),
@@ -209,28 +207,23 @@ function OperationStatus({ currentDate }) {
     page: operationListPage,
     size: 20,
     successFn: (res) => {
-      // res.planter랑 operationList랑 중복된것 있는 배열 = a
-      // const resultList = operationList.concat(res.planter);
-      // setOperationList((prev) => [...prev, ...res.planter]);
+      
+      // 2페이지로 가면 1페이지에 있는 항목 30초마다 불러오지 못해서 1페이지부터 불러오기 위함
+      if (operationListPage != 1) {
+        setOperationListPage(1);
+      }
 
       const resultList = operationList;
+
       res.planter.map((planter) => {
         if (resultList.some((oneData) => oneData.planter === planter.planter)) {
-          console.log(
-            "!!!!!!",
-            resultList.findIndex((oneData) => oneData.planter === planter.planter),
-          );
           const index = resultList.findIndex((oneData) => oneData.planter === planter.planter);
-          // console.log("@@@",index)
           resultList[index] = planter;
         } else {
           resultList.push(planter);
         }
       });
 
-      console.log("resultList", resultList);
-
-      // const valueList = [...new Set(resultList)]; // 중복된값 제거
       setOperationList(resultList);
     },
     errorFn: (err) => {
@@ -264,9 +257,6 @@ function OperationStatus({ currentDate }) {
     const intervalId = setInterval(() => {
       for (let i = 1; i <= operationListPage; i++) {
         setOperationListPage(i);
-        console.log("*****page", i);
-        console.log("operationListPage");
-        // console.log("resultList",resultList)
         invalidateQueries([PlanterRealTimeKey]);
         refetch();
       }

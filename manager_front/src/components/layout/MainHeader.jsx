@@ -66,33 +66,22 @@ function MainHeader() {
     errorFn: () => {},
   });
 
-  // const [dateTime, setDateTime] = useState();
+  // 날짜 + 시간
+  const [currentTime, setCurrentTime] = useState("");
 
-  // useEffect(() => {
-  //   // 웹 워커 생성
-  //   const worker = new Worker("worker.js");
+  // worker 불러오기
+  useEffect(() => {
+    const clockWorker = new Worker("worker.js");
 
-  //   // 웹 워커로부터 메시지를 수신하는 이벤트 핸들러
-  //   worker.onmessage = (event) => {
-  //     // setKoreanTime(event.data);
-  //     const { date, time } = event.data;
-  //     setDateTime(date + " " + time);
-  //   };
-  //   // 컴포넌트 언마운트 시 웹 워커 정리
-  //   return () => {
-  //     worker.terminate();
-  //     worker.postMessage("getKoreanTime");
-  //   };
-  // }, [dateTime]);
+    clockWorker.onmessage = (event) => {
+      setCurrentTime(event.data);
+    };
+    return () => {
+      clockWorker.terminate();
+    };
+  }, []);
 
-  const now = new Date();
-
-  let year = now.getFullYear();
-  let month = (now.getMonth() + 1).toString().padStart(2, "0"); // 월은 0부터 시작하므로 +1 해줌
-  let day = now.getDate().toString().padStart(2, "0");
-
-  const dateTime = `${year}.${month}.${day}`;
-
+  // 로그아웃 클릭
   const handleLogoutClick = useCallback(() => {
     setIsLogOut(true);
   }, [isLogOut]);
@@ -100,7 +89,7 @@ function MainHeader() {
   return (
     <S.Wrap>
       <S.DateWrap>
-        <p>{dateTime}</p>
+        <p>{currentTime}</p>
       </S.DateWrap>
       <S.profileWrap>
         <ProfileIcon width={21} height={22} />

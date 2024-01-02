@@ -1,48 +1,23 @@
-// // 웹 워커 스크립트 (worker.js)
+// 웹 워커 스크립트 (worker.js)
 
-// // 현재 시간을 한국 시간으로 변환하는 함수
-// function getKoreanTime() {
-
-//   const now = new Date();
-
-//   let year = now.getFullYear();
-//   let month = (now.getMonth() + 1).toString().padStart(2, '0'); // 월은 0부터 시작하므로 +1 해줌
-//   let day = now.getDate().toString().padStart(2, '0');
-//   let hours = now.getHours().toString().padStart(2, '0');
-//   let minutes = now.getMinutes().toString().padStart(2, '0');
-
-//   const date = `${year}.${month}.${day}`;
-//   const time = `${hours}:${minutes}`;
-
-//   return { date, time };
-// }
-
-// // 메인 스레드로 데이터를 전송
-// function postKoreanTime() {
-//   const koreanTime = getKoreanTime();
-//   self.postMessage(koreanTime);
-
-//   // 1초마다 시간 업데이트하여 메인 스레드로 전송
-// setInterval(postKoreanTime, 1000);
-
-// }
-
-// // 웹 워커가 처음 실행될 때 업데이트 시작
-// postKoreanTime();
-
-function getCurrentDateTime() {
+function updateClock() {
   const now = new Date();
+  const options = { year: "numeric", month: "2-digit", day: "2-digit" };
+  const Dotdate = now.toLocaleDateString("ko-KR", options); //0000.00.00. 형식
+  const date = Dotdate.slice(0, -1); //0000.00.00 형식
+  const hours = now.getHours();
+  const minutes = now.getMinutes();
 
-  const year = now.getFullYear();
-  const month = (now.getMonth() + 1).toString().padStart(2, '0');
-  const day = now.getDate().toString().padStart(2, '0');
-  const hours = now.getHours().toString().padStart(2, '0');
-  const minutes = now.getMinutes().toString().padStart(2, '0');
+  const formattedHours = hours.toString().padStart(2, "0"); // 00 to 24
+  const formattedMinutes = minutes.toString().padStart(2, "0"); // 00 to 59
 
-  return `${year}. ${month}. ${day} ${hours}:${minutes}`;
+  // 24시간제
+  return `${date} ${formattedHours}:${formattedMinutes}`;
 }
 
-setInterval(() => {
-  const currentDateTime = getCurrentDateTime();
-  postMessage(currentDateTime);
-}, 1000);
+function tick() {
+  postMessage(updateClock());
+  setTimeout(tick, 1000);
+}
+
+tick();

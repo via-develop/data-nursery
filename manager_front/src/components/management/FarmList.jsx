@@ -197,7 +197,8 @@ const S = {
     }
     .header-table-sixth {
       /* width: 251px; */
-      width: 227px;
+      /* width: 227px; */
+      width: 175px;
     }
     .header-table-eighth {
       width: 154px;

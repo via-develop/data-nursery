@@ -67,21 +67,21 @@ function GraphWrap({ planterChoose, sowingData, dateRange }) {
 
     // 툴팁용 년 월 일 데이터
     const dayLabelYMD = []; //날짜 데이터 구하기 (시작날부터 종료날까지 날짜값 배열)
-    const currentDate1 = new Date(dateRange.startDate);
-    while (currentDate1 <= dateRange.endDate) {
+    const tooltipCurrentDate = new Date(dateRange.startDate);
+    while (tooltipCurrentDate <= dateRange.endDate) {
       const dateObject = {
-        year: currentDate1.getFullYear(),
-        month: currentDate1.getMonth() + 1, // 월은 0부터 시작하므로 1을 더해줌
-        day: currentDate1.getDate(),
+        year: tooltipCurrentDate.getFullYear(),
+        month: tooltipCurrentDate.getMonth() + 1, // 월은 0부터 시작하므로 1을 더해줌
+        day: tooltipCurrentDate.getDate(),
       };
 
       dayLabelYMD.push(dateObject);
-      currentDate1.setDate(currentDate1.getDate() + 1);
+      tooltipCurrentDate.setDate(tooltipCurrentDate.getDate() + 1);
     }
 
     // 날짜 길이 대로 날짜 배열 생성
     const startDate = new Date(dateRange.startDate);
-    const dateArray = Array.from({ length: dayLabel.length }, (_, index) => {
+    const dateArray = Array.from({ length: dayLabel.length + 1 }, (_, index) => {
       const currentDate = new Date(startDate);
       currentDate.setDate(startDate.getDate() + index);
       return currentDate.toISOString().split("T")[0]; // ISO 형식의 문자열로 변환
@@ -94,7 +94,7 @@ function GraphWrap({ planterChoose, sowingData, dateRange }) {
     graphData.forEach((item) => {
       const index = dateArray.indexOf(item.x);
       if (index !== -1) {
-        dataArray[index] = item.y;
+        dataArray[index - 1] = item.y;
       }
     });
 

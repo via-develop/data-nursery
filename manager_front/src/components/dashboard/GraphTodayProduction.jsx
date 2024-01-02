@@ -4,7 +4,6 @@ import styled from "styled-components";
 import Chart from "chart.js/auto";
 import { registerables } from "chart.js";
 
-// import "chartjs-adapter-date-fns";
 import "chartjs-adapter-moment";
 
 const S = {
@@ -192,19 +191,6 @@ function GraphTodayProduction({ planterDateRange }) {
 
   return (
     <S.Wrap>
-      {/* <S.Legend>
-        <div className="legend-inner">
-          {!!nameColorArray &&
-            nameColorArray?.map((data, index) => {
-              return (
-                <div className="inner" key={`map${index}`}>
-                  <p>{data.name}</p>
-                  <div className="legend-color" style={{ backgroundColor: data.color }}></div>
-                </div>
-              );
-            })}
-        </div>
-      </S.Legend> */}
       <canvas ref={graphRef} />
     </S.Wrap>
   );

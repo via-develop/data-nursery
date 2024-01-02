@@ -421,7 +421,6 @@ function WorkHistoryPage() {
           ) : (
             <>
               <S.SelectedDateWrap>
-                {/* <p>{DateKoreanFormatting(new Date(date.year, date.month - 1, date.day))}</p> */}
                 <p>{DateKoreanFormatting(koreanDate)}</p>
               </S.SelectedDateWrap>
               <p className="total-seed-quantity-text">총파종량</p>
