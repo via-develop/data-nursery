@@ -98,7 +98,7 @@ export function GetMonthList(selectYear) {
   const lastMonth = new Date().getMonth() + 1;
 
   if (2023 === selectYear) {
-    for (let i = 9; i <= lastMonth; i++) {
+    for (let i = 9; i <= 12; i++) {
       result.push(i);
     }
   } else if (2023 < selectYear && selectYear < lastYear) {
