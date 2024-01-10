@@ -315,7 +315,7 @@ function WorkHistoryPage() {
 
   useEffect(() => {
     setKoreanDate(new Date(date.year, date.month - 1, date.day));
-  }, []);
+  }, [date]);
 
   useEffect(() => {
     if (inView) {
