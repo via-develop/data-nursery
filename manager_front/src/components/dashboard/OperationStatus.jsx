@@ -207,7 +207,6 @@ function OperationStatus({ currentDate }) {
     page: operationListPage,
     size: 20,
     successFn: (res) => {
-      
       // 2페이지로 가면 1페이지에 있는 항목 30초마다 불러오지 못해서 1페이지부터 불러오기 위함
       if (operationListPage != 1) {
         setOperationListPage(1);
