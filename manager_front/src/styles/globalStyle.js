@@ -8,7 +8,7 @@ const GlobalStyle = createGlobalStyle`
   body {
     /* width: 100%; */
     height: 100%;
-    min-width: 1920px;
+    /* min-width: 1920px; */
     /* 드래그 막기 */
     -webkit-user-select: none;
     -moz-user-select: none;
